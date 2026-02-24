@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX CAPITAL — Investment Intelligence Dashboard v4</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#020810;--p1:#060e1c;--p2:#0a1428;--p3:#0e1c35;
+  --b1:rgba(0,200,255,0.1);--b2:rgba(0,200,255,0.22);
+  --a1:#00d4ff;--a2:#00ffb3;--a3:#ff6b35;--a4:#b94dff;
+  --gold:#ffc832;--red:#ff3d5a;--pink:#ff3fa0;--teal:#3cf0ff;--lime:#8fff5a;
+  --text:#d8eeff;--m1:#3d6080;--m2:#6a90aa;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,0.022) 1px,transparent 1px);background-size:54px 54px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;top:-40%;left:-40%;width:180%;height:180%;background:radial-gradient(ellipse at 12% 22%,rgba(0,200,255,0.05) 0%,transparent 50%),radial-gradient(ellipse at 88% 78%,rgba(185,77,255,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;animation:abg 20s ease-in-out infinite alternate;}
+@keyframes abg{0%{transform:translate(0,0)}100%{transform:translate(20px,-12px)}}
+.w{position:relative;z-index:1;max-width:1800px;margin:0 auto;padding:0 22px 80px;}
+
+/* TICKER */
+#tickerWrap{position:sticky;top:0;z-index:100;background:rgba(2,8,16,0.97);border-bottom:1px solid var(--b2);backdrop-filter:blur(14px);overflow:hidden;height:34px;display:flex;align-items:center;}
+#tickerInner{display:flex;align-items:center;white-space:nowrap;animation:scroll 90s linear infinite;}
+#tickerInner:hover{animation-play-state:paused;}
+.ti{display:inline-flex;align-items:center;gap:6px;padding:0 18px;font-family:'DM Mono',monospace;font-size:11px;border-right:1px solid var(--b1);}
+.ti-sym{color:var(--a1);font-weight:500;cursor:pointer;transition:color 0.2s;}
+.ti-sym:hover{color:var(--a2);text-decoration:underline;}
+.ti-name{color:var(--m2);font-size:9.5px;}
+.ti-price{color:var(--text);}
+.ti-up{color:var(--a2);}.ti-dn{color:var(--red);}
+.tl{font-family:'DM Mono',monospace;font-size:9px;color:var(--m1);letter-spacing:2px;padding:0 14px 0 8px;border-right:1px solid var(--b2);}
+@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* HEADER */
+header{padding:20px 0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b1);margin-bottom:18px;}
+.logo{display:flex;align-items:center;gap:13px;}
+.logo-icon{width:46px;height:46px;background:linear-gradient(135deg,var(--a1),var(--a2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;animation:lp 3s ease-in-out infinite;}
+@keyframes lp{0%,100%{box-shadow:0 0 20px rgba(0,212,255,0.35)}50%{box-shadow:0 0 44px rgba(0,212,255,0.62),0 0 66px rgba(0,255,179,0.15)}}
+.logo-text{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:5px;background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--m1);letter-spacing:3px;margin-top:1px;}
+.hdr-r{display:flex;align-items:center;gap:18px;}
+.live-badge{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:10px;color:var(--a2);letter-spacing:2px;}
+.ld{width:7px;height:7px;background:var(--a2);border-radius:50%;animation:bl 1.4s ease-in-out infinite;box-shadow:0 0 8px var(--a2);}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0.1}}
+.dtag{font-family:'DM Mono',monospace;font-size:10px;color:var(--m1);border:1px solid var(--b1);padding:4px 12px;border-radius:5px;}
+
+/* VERDICT */
+.verdict{background:linear-gradient(135deg,rgba(0,212,255,0.07),rgba(0,255,179,0.04));border:1px solid rgba(0,255,179,0.2);border-radius:12px;padding:16px 22px;margin-bottom:18px;position:relative;}
+.verdict::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--a1),var(--a2));border-radius:3px 0 0 3px;}
+.v-lbl{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:4px;color:var(--a2);margin-bottom:5px;}
+.v-body{font-size:12.5px;line-height:1.82;color:#88b2ca;}
+.v-body strong{color:var(--a1);}
+
+/* PORTFOLIO TRACKER */
+#tracker{background:linear-gradient(135deg,var(--p1),var(--p2));border:1px solid var(--b2);border-radius:14px;padding:18px 22px;margin-bottom:18px;position:relative;overflow:hidden;}
+#tracker::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,212,255,0.04),transparent,rgba(0,255,179,0.03));pointer-events:none;}
+.tr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+.tr-info{display:flex;align-items:center;gap:14px;}
+.tr-title{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:3px;color:var(--a1);}
+.tr-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--m2);letter-spacing:1.2px;margin-top:2px;}
+.d0badge{font-family:'DM Mono',monospace;font-size:10px;background:rgba(0,212,255,0.12);color:var(--a1);border:1px solid rgba(0,212,255,0.3);padding:4px 12px;border-radius:4px;letter-spacing:1px;}
+.rbtn{background:none;border:1px solid var(--b1);color:var(--m2);font-family:'DM Mono',monospace;font-size:9px;padding:4px 12px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;}
+.rbtn:hover{border-color:var(--a1);color:var(--a1);}
+.tr-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px;}
+.tk{background:rgba(0,0,0,0.3);border:1px solid var(--b1);border-radius:9px;padding:11px 13px;}
+.tk-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--m1);text-transform:uppercase;margin-bottom:4px;}
+.tk-v{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;}
+.tk-s{font-size:9.5px;color:var(--m2);margin-top:2px;}
+.cc{color:var(--a1);}.cg{color:var(--a2);}.co{color:var(--gold);}.cp{color:var(--a4);}.cr{color:var(--red);}.cw{color:var(--a3);}
+.rank-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.rp{background:rgba(0,0,0,0.25);border:1px solid var(--b1);border-radius:9px;padding:13px 14px;}
+.rp-t{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--m2);text-transform:uppercase;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--b1);}
+.rrow{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:5px;transition:background 0.2s;cursor:pointer;}
+.rrow:hover{background:rgba(0,212,255,0.05);}
+.rn{font-family:'Bebas Neue',sans-serif;font-size:15px;width:20px;text-align:center;}
+.rname{font-size:11px;font-weight:600;flex:1;}
+.rval{font-family:'DM Mono',monospace;font-size:11px;}
+.rbw{width:55px;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+.rb{height:100%;border-radius:2px;transition:width 1.4s ease;}
+.r1{color:var(--gold);}.r2{color:var(--a1);}.r3{color:var(--a4);}.r4{color:var(--m2);}
+
+/* KPI SECTOR CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:16px;}
+.kpi{background:var(--p1);border:1px solid var(--b1);border-radius:9px;padding:12px 13px;cursor:pointer;position:relative;overflow:hidden;opacity:0;animation:fu 0.5s ease forwards;transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s;}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kc,var(--a1));}
+.kpi:hover,.kpi.active{transform:translateY(-3px);border-color:var(--kc,var(--a1));box-shadow:0 0 16px color-mix(in srgb,var(--kc,var(--a1)) 28%,transparent);}
+.kpi-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--m1);text-transform:uppercase;margin-bottom:4px;}
+.kpi-v{font-family:'Bebas Neue',sans-serif;font-size:23px;line-height:1;color:var(--kc,var(--a1));margin-bottom:2px;}
+.kpi-s{font-size:9px;color:var(--m2);}
+.kpi-h{position:absolute;bottom:6px;right:8px;font-family:'DM Mono',monospace;font-size:8px;color:var(--m1);}
+.k1{--kc:var(--a1);}.k2{--kc:var(--a2);}.k3{--kc:var(--a4);}.k4{--kc:var(--gold);}.k5{--kc:var(--a3);}.k6{--kc:var(--pink);}.k7{--kc:var(--teal);}.k8{--kc:var(--lime);}
+@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.kpi:nth-child(1){animation-delay:.04s}.kpi:nth-child(2){animation-delay:.08s}.kpi:nth-child(3){animation-delay:.12s}.kpi:nth-child(4){animation-delay:.16s}.kpi:nth-child(5){animation-delay:.20s}.kpi:nth-child(6){animation-delay:.24s}.kpi:nth-child(7){animation-delay:.28s}.kpi:nth-child(8){animation-delay:.32s}
+
+/* SECTOR PANEL */
+#sp{display:none;background:var(--p1);border:1px solid var(--b2);border-radius:14px;margin-bottom:18px;overflow:hidden;}
+#sp.on{display:block;animation:fu 0.3s ease forwards;}
+.sp-hdr{display:flex;align-items:flex-start;justify-content:space-between;padding:15px 20px 12px;border-bottom:1px solid var(--b1);}
+.sp-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;margin-bottom:5px;}
+.sp-meta{display:flex;gap:8px;flex-wrap:wrap;}
+.sp-badge{font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:4px;letter-spacing:1px;}
+.sp-close{background:none;border:1px solid var(--b1);color:var(--m2);font-size:10px;padding:5px 12px;border-radius:5px;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:1px;transition:all 0.2s;white-space:nowrap;}
+.sp-close:hover{border-color:var(--a1);color:var(--a1);}
+.sp-body{display:grid;grid-template-columns:1fr 370px;}
+.sp-tbl{padding:13px 16px;overflow-x:auto;}
+.sp-charts{border-left:1px solid var(--b1);padding:13px 15px;display:flex;flex-direction:column;gap:13px;}
+table{width:100%;border-collapse:collapse;}
+th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--m1);text-transform:uppercase;padding:7px 9px;text-align:left;border-bottom:1px solid var(--b1);}
+td{padding:7px 9px;font-size:11.5px;border-bottom:1px solid rgba(0,200,255,0.04);vertical-align:middle;}
+tr:hover td{background:rgba(0,200,255,0.03);}
+.tsym{font-family:'DM Mono',monospace;font-weight:500;font-size:12px;color:var(--a1);cursor:pointer;text-decoration:underline dotted;transition:color 0.15s;}
+.tsym:hover{color:var(--a2);}
+.tnm{font-weight:600;font-size:11.5px;}
+.tcat{font-size:10px;color:var(--m2);max-width:220px;}
+.tag{display:inline-block;padding:2px 7px;border-radius:3px;font-family:'DM Mono',monospace;font-size:9.5px;font-weight:500;}
+.up{background:rgba(0,255,179,0.11);color:var(--a2);}.dn{background:rgba(255,61,90,0.11);color:var(--red);}
+.rl{background:rgba(0,255,179,0.1);color:var(--a2);}.rm{background:rgba(255,200,50,0.1);color:var(--gold);}.rh{background:rgba(255,107,53,0.11);color:var(--a3);}.rx{background:rgba(255,61,90,0.11);color:var(--red);}
+.cvb{font-family:'Bebas Neue',sans-serif;font-size:13px;}
+.c5{color:var(--a2);}.c4{color:var(--a1);}.c3{color:var(--gold);}.c2{color:var(--a3);}.c1{color:var(--red);}
+.tg12{font-family:'DM Mono',monospace;font-size:11px;color:var(--a2);}
+.tg24{font-family:'DM Mono',monospace;font-size:11px;color:var(--a1);}
+.ch-t{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--m1);text-transform:uppercase;margin-bottom:7px;}
+.ch-b{position:relative;height:130px;}
+
+/* ===== STOCK MODAL ===== */
+#modal{display:none;position:fixed;inset:0;z-index:2000;background:rgba(2,8,16,0.94);backdrop-filter:blur(18px);overflow-y:auto;}
+#modal.open{display:flex;align-items:flex-start;justify-content:center;padding:30px 20px;}
+.mcard{background:var(--p1);border:1px solid var(--b2);border-radius:18px;width:100%;max-width:1060px;overflow:hidden;animation:msl 0.35s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes msl{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mhdr{display:flex;align-items:flex-start;justify-content:space-between;padding:22px 28px 16px;border-bottom:1px solid var(--b1);background:linear-gradient(135deg,var(--p2),var(--p1));}
+.mhl{display:flex;gap:16px;align-items:flex-start;}
+.mbadge{width:54px;height:54px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;flex-shrink:0;}
+.mtitle{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;line-height:1;margin-bottom:3px;}
+.msector{font-family:'DM Mono',monospace;font-size:10px;color:var(--m2);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.mtags{display:flex;gap:7px;flex-wrap:wrap;}
+.mtag{font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid;}
+.mcx{background:none;border:1px solid var(--b1);color:var(--m2);font-size:16px;width:34px;height:34px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;}
+.mcx:hover{border-color:var(--a1);color:var(--a1);}
+.mbody{padding:22px 28px;}
+
+/* price KPIs */
+.prow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+.pcard{background:var(--p2);border:1px solid var(--b1);border-radius:10px;padding:12px 14px;text-align:center;}
+.pc-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--m1);text-transform:uppercase;margin-bottom:4px;}
+.pc-v{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;}
+.pc-s{font-size:10px;color:var(--m2);margin-top:3px;}
+
+/* chart tabs */
+.ctabs{display:flex;gap:4px;margin-bottom:10px;}
+.ct{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border:1px solid var(--b1);border-radius:5px;cursor:pointer;color:var(--m2);background:none;transition:all 0.2s;}
+.ct:hover{color:var(--text);}
+.ct.act{color:var(--a1);border-color:rgba(0,212,255,0.4);background:rgba(0,212,255,0.08);}
+.chartarea{position:relative;height:190px;background:var(--p2);border:1px solid var(--b1);border-radius:10px;padding:12px;margin-bottom:18px;}
+
+/* targets */
+.trow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.tcard{background:var(--p2);border-radius:10px;padding:12px;text-align:center;border:1px solid var(--b1);}
+.tc-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--m1);text-transform:uppercase;margin-bottom:4px;}
+.tc-v{font-family:'Bebas Neue',sans-serif;font-size:25px;}
+.tc-s{font-size:10px;color:var(--m2);margin-top:2px;}
+
+/* analysis */
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+.apanel{background:var(--p2);border:1px solid var(--b1);border-radius:10px;padding:15px;}
+.apt{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--b1);}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.fi{background:rgba(0,0,0,0.2);border-radius:6px;padding:8px 10px;}
+.fi-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--m1);text-transform:uppercase;margin-bottom:3px;}
+.fi-v{font-family:'Bebas Neue',sans-serif;font-size:18px;line-height:1;}
+.outlook{font-size:11.5px;line-height:1.78;color:#7aafcc;}
+.bbgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.bull{background:rgba(0,255,179,0.07);border:1px solid rgba(0,255,179,0.2);border-radius:7px;padding:10px 12px;}
+.bear{background:rgba(255,61,90,0.07);border:1px solid rgba(255,61,90,0.18);border-radius:7px;padding:10px 12px;}
+.bb-t{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;margin-bottom:6px;}
+.bull .bb-t{color:var(--a2);}.bear .bb-t{color:var(--red);}
+.bbi{font-size:11px;color:var(--m2);margin-bottom:4px;padding-left:10px;position:relative;}
+.bbi::before{content:'•';position:absolute;left:0;}
+.bull .bbi::before{color:var(--a2);}.bear .bbi::before{color:var(--red);}
+
+/* citations */
+.citbox{background:var(--p2);border:1px solid var(--b1);border-radius:10px;padding:15px;}
+.cit-t{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;margin-bottom:12px;color:var(--a1);}
+.citgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cititem{background:rgba(0,0,0,0.2);border:1px solid var(--b1);border-radius:7px;padding:10px 12px;display:flex;gap:8px;transition:border-color 0.2s;}
+.cititem:hover{border-color:var(--b2);}
+.citicon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.citsrc{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--a1);text-transform:uppercase;margin-bottom:2px;}
+.citdesc{font-size:11px;color:var(--m2);line-height:1.5;margin-bottom:4px;}
+.citlink{font-family:'DM Mono',monospace;font-size:9px;color:var(--a4);text-decoration:none;}
+.citlink:hover{text-decoration:underline;color:var(--a2);}
+
+/* IPO */
+#ipo{background:linear-gradient(135deg,var(--p1),rgba(10,20,40,0.9));border:1px solid rgba(185,77,255,0.25);border-radius:14px;padding:20px 22px;margin-bottom:18px;position:relative;overflow:hidden;}
+#ipo::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--a4),var(--pink),var(--gold));}
+.ipo-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.ipo-title{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:3px;color:var(--a4);}
+.ipo-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--m2);letter-spacing:1.5px;margin-top:3px;}
+.ipo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;}
+.icard{background:rgba(0,0,0,0.35);border:1px solid rgba(185,77,255,0.18);border-radius:10px;padding:14px;transition:all 0.22s;position:relative;overflow:hidden;}
+.icard:hover{border-color:rgba(185,77,255,0.42);transform:translateY(-2px);box-shadow:0 0 18px rgba(185,77,255,0.14);}
+.icard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ic,var(--a4));}
+.ico{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;margin-bottom:2px;}
+.isect{font-family:'DM Mono',monospace;font-size:9px;color:var(--m2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;}
+.ival{font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--ic,var(--a4));}
+.ilvl{font-family:'DM Mono',monospace;font-size:9px;color:var(--m1);letter-spacing:1px;margin-bottom:8px;}
+.irow{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.iwhen{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:3px;background:rgba(185,77,255,0.12);color:var(--a4);border:1px solid rgba(185,77,255,0.25);}
+.iprob{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);}
+.idesc{font-size:11px;line-height:1.62;color:#507080;}
+.ihype{position:absolute;top:10px;right:10px;font-size:15px;}
+
+/* TABS */
+.tabs{display:flex;gap:2px;margin-bottom:18px;border-bottom:1px solid var(--b1);}
+.tb{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--m1);background:none;border:none;border-bottom:2px solid transparent;padding:8px 14px;cursor:pointer;transition:all 0.2s;margin-bottom:-1px;}
+.tb:hover{color:var(--text);}.tb.act{color:var(--a1);border-bottom-color:var(--a1);}
+.tp{display:none;}.tp.act{display:block;}
+
+/* OVERVIEW */
+.ovline{background:var(--p1);border:1px solid var(--b1);border-radius:12px;padding:17px;margin-bottom:14px;opacity:0;animation:fu 0.6s ease .2s forwards;}
+.ovrow{display:grid;grid-template-columns:2fr 1fr 1fr;gap:13px;margin-bottom:14px;}
+.cc{background:var(--p1);border:1px solid var(--b1);border-radius:12px;padding:17px;opacity:0;animation:fu 0.6s ease forwards;}
+.cc:hover{border-color:var(--b2);}
+.cc-t{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--m1);text-transform:uppercase;margin-bottom:10px;}
+.cc-b{position:relative;height:195px;}
+.cc:nth-child(1){animation-delay:.2s}.cc:nth-child(2){animation-delay:.3s}.cc:nth-child(3){animation-delay:.35s}
+
+/* PICKS */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.pk{border-radius:12px;padding:17px;border:1px solid;opacity:0;animation:fu 0.5s ease forwards;position:relative;overflow:hidden;}
+.pt1{background:linear-gradient(135deg,rgba(0,212,255,0.07),rgba(0,212,255,0.02));border-color:rgba(0,212,255,0.26);}
+.pt2{background:linear-gradient(135deg,rgba(0,255,179,0.07),rgba(0,255,179,0.02));border-color:rgba(0,255,179,0.26);}
+.pt3{background:linear-gradient(135deg,rgba(255,107,53,0.07),rgba(255,107,53,0.02));border-color:rgba(255,107,53,0.26);}
+.pk-tier{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:4px;margin-bottom:4px;}
+.pt1 .pk-tier{color:var(--a1);}.pt2 .pk-tier{color:var(--a2);}.pt3 .pk-tier{color:var(--a3);}
+.pk-nm{font-family:'Bebas Neue',sans-serif;font-size:23px;letter-spacing:1px;line-height:1;margin-bottom:3px;}
+.pk-tk{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:2px 9px;border-radius:3px;margin-bottom:9px;}
+.pt1 .pk-tk{background:rgba(0,212,255,0.13);color:var(--a1);}.pt2 .pk-tk{background:rgba(0,255,179,0.13);color:var(--a2);}.pt3 .pk-tk{background:rgba(255,107,53,0.13);color:var(--a3);}
+.pk-why{font-size:11px;line-height:1.72;color:#5a88a2;margin-bottom:9px;}
+.pk-st{display:flex;gap:12px;}
+.pk-sv{font-family:'Bebas Neue',sans-serif;font-size:18px;}
+.pt1 .pk-sv{color:var(--a1);}.pt2 .pk-sv{color:var(--a2);}.pt3 .pk-sv{color:var(--a3);}
+.pk-sl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--m1);}
+
+/* ALLOC */
+.alcrd{background:var(--p1);border:1px solid var(--b1);border-radius:12px;padding:20px;margin-bottom:20px;opacity:0;animation:fu 0.6s ease forwards;}
+.alg{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:12px;}
+.abr{margin-bottom:9px;}
+.abt{display:flex;justify-content:space-between;margin-bottom:3px;}
+.abnm{font-size:11.5px;font-weight:600;}.abpct{font-family:'DM Mono',monospace;font-size:11px;color:var(--a1);}
+.abtr{height:5px;background:var(--p2);border-radius:3px;overflow:hidden;}
+.abfill{height:100%;border-radius:3px;width:0;transition:width 1.6s cubic-bezier(0.4,0,0.2,1);}
+.rkg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.rc{background:var(--p1);border:1px solid var(--b1);border-radius:10px;padding:13px;text-align:center;transition:all 0.2s;}
+.rc:hover{transform:scale(1.04);border-color:var(--b2);}
+.rc-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--m1);margin-bottom:6px;text-transform:uppercase;}
+.rc-v{font-family:'Bebas Neue',sans-serif;font-size:27px;}
+.rc-s{font-size:10px;color:var(--m2);margin-top:3px;}
+
+/* section header */
+.sh{display:flex;align-items:center;gap:11px;margin-bottom:14px;}
+.sh-t{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;white-space:nowrap;}
+.sh-l{flex:1;height:1px;background:var(--b1);}
+.sh-g{font-family:'DM Mono',monospace;font-size:9px;color:var(--a1);border:1px solid rgba(0,212,255,0.26);padding:3px 9px;border-radius:4px;letter-spacing:1px;white-space:nowrap;}
+
+.disc{border-top:1px solid var(--b1);padding-top:16px;font-family:'DM Mono',monospace;font-size:10px;color:var(--m1);line-height:1.9;}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--m1);border-radius:3px;}::-webkit-scrollbar-thumb:hover{background:var(--a1);}
+
+@media(max-width:1300px){.kpi-row{grid-template-columns:repeat(4,1fr);}.sp-body{grid-template-columns:1fr;}.sp-charts{border-left:none;border-top:1px solid var(--b1);}.ovrow{grid-template-columns:1fr 1fr;}.tr-kpis{grid-template-columns:repeat(3,1fr);}.rank-grid{grid-template-columns:1fr 1fr;}.ipo-grid{grid-template-columns:repeat(2,1fr);}.prow{grid-template-columns:repeat(3,1fr);}.agrid{grid-template-columns:1fr;}.citgrid{grid-template-columns:1fr;}.trow{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:800px){.kpi-row{grid-template-columns:repeat(2,1fr);}.pgrid{grid-template-columns:1fr;}.rkg{grid-template-columns:repeat(2,1fr);}.alg{grid-template-columns:1fr;}.tr-kpis{grid-template-columns:repeat(2,1fr);}.rank-grid{grid-template-columns:1fr;}.ipo-grid{grid-template-columns:1fr;}.mcard{border-radius:0;}}
+/* Range slider — cross-browser desktop+mobile fix */
+input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;cursor:pointer;border:2px solid #020810;box-shadow:0 0 4px rgba(0,0,0,0.5);}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;cursor:pointer;border:2px solid #020810;}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:rgba(255,255,255,0.1);}
+</style>
+</head>
+<body>
+
+<div id="tickerWrap"><span class="tl">◈ APEX LIVE</span><div id="tickerInner"></div></div>
+
+<div class="w">
+<header>
+  <div class="logo">
+    <div class="logo-icon">⬡</div>
+    <div>
+      <div class="logo-text">APEX CAPITAL</div>
+      <div class="logo-sub">EMERGING TECH &amp; ENERGY · INVESTMENT INTELLIGENCE</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <div class="live-badge"><div class="ld" id="liveDot"></div><span id="liveBadge">CONNECTING...</span></div>
+    <div class="dtag" id="dtag"></div>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="v-lbl">⚡ CLAUDE'S MASTER VERDICT — Q1 2026</div>
+  <div class="v-body"><strong>3-Layer Strategy:</strong> Layer 1 (40%) — <strong>AI Infrastructure + Nuclear Energy</strong> as unshakeable anchors. Layer 2 (35%) — <strong>Semiconductors + Cybersecurity</strong> for revenue acceleration. Layer 3 (15%) — <strong>Quantum + Robotics + Biotech</strong> speculative, capped 2–4% each. 10% cash reserve. <strong>Click any sector KPI → drill into 10 stocks. Click any ticker → full deep-dive financial analysis with charts, bull/bear case, outlook &amp; citations.</strong></div>
+</div>
+
+<!-- PORTFOLIO TRACKER -->
+<div id="tracker">
+  <div class="tr-top">
+    <div class="tr-info">
+      <span style="font-size:20px;">💼</span>
+      <div>
+        <div class="tr-title">$100,000 PAPER PORTFOLIO TRACKER</div>
+        <div class="tr-sub" id="tr-sub">$1,250 × 80 STOCKS · 8 SECTORS EQUAL WEIGHT · DAY 0: FEB 24, 2026</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <span class="d0badge" id="d0badge">◉ DAY 0 — FEB 24, 2026</span>
+      <button class="rbtn" onclick="toggleAllocEditor()">⚙ CUSTOMIZE</button>
+      <button class="rbtn" onclick="resetPortfolio()">↺ RESET DAY 0</button>
+    </div>
+  </div>
+
+  <!-- SECTOR ALLOCATION EDITOR -->
+  <div id="allocEditor" style="display:none;background:rgba(0,0,0,0.35);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--a1);">⚙ CUSTOMIZE SECTOR ALLOCATION — $100,000 TOTAL</div>
+      <div style="display:flex;gap:8px;">
+        <button class="rbtn" onclick="equalizeAlloc()">= EQUAL WEIGHT</button>
+        <button class="rbtn" onclick="clearAlloc()">✕ CLEAR ALL</button>
+        <button class="rbtn" style="color:var(--a2);border-color:rgba(0,255,179,0.4);" onclick="applyAlloc()">✓ APPLY & RESET</button>
+      </div>
+    </div>
+    <div id="allocSliders" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--b1);">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--m2);">Remaining unallocated: <span id="allocRemain" style="color:var(--gold);font-weight:600;">$0</span></div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--m2);">Total: <span id="allocTotal" style="color:var(--a1);font-weight:600;">$100,000</span></div>
+    </div>
+  </div>
+
+  <div class="tr-kpis">
+    <div class="tk"><div class="tk-l">Portfolio Value</div><div class="tk-v cc" id="tv">$100,000.00</div><div class="tk-s">Starting capital deployed</div></div>
+    <div class="tk"><div class="tk-l">Total P&amp;L</div><div class="tk-v cg" id="tpl">+$0.00</div><div class="tk-s" id="tpct">+0.000% · Day 0</div></div>
+    <div class="tk"><div class="tk-l">Best Sector</div><div class="tk-v co" id="tbs">—</div><div class="tk-s" id="tbsv">Calculating...</div></div>
+    <div class="tk"><div class="tk-l">Best Stock</div><div class="tk-v cp" id="tbst">—</div><div class="tk-s" id="tbstv">Calculating...</div></div>
+    <div class="tk"><div class="tk-l">Worst Sector</div><div class="tk-v cw" id="tws">—</div><div class="tk-s" id="twsv">Calculating...</div></div>
+    <div class="tk"><div class="tk-l">Updated</div><div class="tk-v cc" id="ttime">—</div><div class="tk-s" id="tmode">Live Finnhub</div></div>
+  </div>
+  <div class="rank-grid">
+    <div class="rp"><div class="rp-t">🏆 SECTOR PERFORMANCE RANKING</div><div id="secRank"></div></div>
+    <div class="rp"><div class="rp-t">📈 TOP 10 MOVERS TODAY</div><div id="topStks"></div></div>
+    <div class="rp"><div class="rp-t">📉 BOTTOM 5 — WATCH LIST</div><div id="botStks"></div></div>
+  </div>
+</div>
+
+<!-- SECTOR KPIS -->
+<div class="kpi-row">
+  <div class="kpi k1" onclick="openSec(0)" id="kpi-0"><div class="kpi-l">AI Infrastructure</div><div class="kpi-v">$7T</div><div class="kpi-s">Market by 2030</div><div class="kpi-h">↓ 10 STOCKS</div></div>
+  <div class="kpi k2" onclick="openSec(1)" id="kpi-1"><div class="kpi-l">Nuclear Energy</div><div class="kpi-v">+26%</div><div class="kpi-s">CEG EPS Growth</div><div class="kpi-h">↓ 10 STOCKS</div></div>
+  <div class="kpi k3" onclick="openSec(2)" id="kpi-2"><div class="kpi-l">Semiconductors</div><div class="kpi-v">$126B</div><div class="kpi-s">Equip Sales 2026</div><div class="kpi-h">↓ 10 STOCKS</div></div>
+  <div class="kpi k4" onclick="openSec(3)" id="kpi-3"><div class="kpi-l">Quantum Computing</div><div class="kpi-v">$198B</div><div class="kpi-s">Market by 2040</div><div class="kpi-h">↓ 10 STOCKS</div></div>
+  <div class="kpi k5" onclick="openSec(4)" id="kpi-4"><div class="kpi-l">Cybersecurity</div><div class="kpi-v">+26%</div><div class="kpi-s">CRWD Upside</div><div class="kpi-h">↓ 10 STOCKS</div></div>
+  <div class="kpi k6" onclick="openSec(5)" id="kpi-5"><div class="kpi-l">Robotics / Auto.</div><div class="kpi-v">$1T</div><div class="kpi-s">Market by 2030</div><div class="kpi-h">↓ 10 STOCKS</div></div>
+  <div class="kpi k7" onclick="openSec(6)" id="kpi-6"><div class="kpi-l">Biotech / AI Health</div><div class="kpi-v">+88%</div><div class="kpi-s">RXRX 2025 Return</div><div class="kpi-h">↓ 10 STOCKS</div></div>
+  <div class="kpi k8" onclick="openSec(7)" id="kpi-7"><div class="kpi-l">Clean Energy/Grid</div><div class="kpi-v">$120B</div><div class="kpi-s">NEE Capex 2029</div><div class="kpi-h">↓ 10 STOCKS</div></div>
+</div>
+
+<!-- SECTOR PANEL -->
+<div id="sp">
+  <div class="sp-hdr">
+    <div>
+      <div class="sp-title" id="sp-title"></div>
+      <div class="sp-meta"><span class="sp-badge" id="sb1"></span><span class="sp-badge" id="sb2"></span><span class="sp-badge" id="sb3"></span></div>
+    </div>
+    <button class="sp-close" onclick="closeSec()">✕ CLOSE</button>
+  </div>
+  <div class="sp-body">
+    <div class="sp-tbl">
+      <table><thead><tr><th>TICKER ↗</th><th>COMPANY</th><th>CONVICTION</th><th>RISK</th><th>12-MO</th><th>24-MO</th><th>2025</th><th>KEY CATALYST</th></tr></thead><tbody id="sptb"></tbody></table>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--m1);margin-top:8px;letter-spacing:1px;">↗ CLICK ANY TICKER FOR FULL DEEP-DIVE ANALYSIS</div>
+    </div>
+    <div class="sp-charts">
+      <div><div class="ch-t">12-MONTH UPSIDE %</div><div class="ch-b"><canvas id="cb1"></canvas></div></div>
+      <div><div class="ch-t">24-MONTH UPSIDE %</div><div class="ch-b"><canvas id="cb2"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- IPO WATCHLIST -->
+<div id="ipo">
+  <div class="ipo-hdr">
+    <div>
+      <div class="ipo-title">🚀 UPCOMING IPO WATCHLIST — GRAND SLAM OPPORTUNITIES</div>
+      <div class="ipo-sub">COMPANIES GOING PUBLIC 2026–2027 · POTENTIAL CATEGORY-DEFINING LISTINGS</div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--m1);text-align:right;">Sources: Crunchbase · AlphaSense<br>U.S. News · Built In · OilPrice</div>
+  </div>
+  <div class="ipo-grid" id="ipogrid"></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tb act" onclick="swTab('ov',this)">Overview</button>
+  <button class="tb" onclick="swTab('pk',this)">Top Picks</button>
+  <button class="tb" onclick="swTab('al',this)">Allocation</button>
+</div>
+
+<div class="tp act" id="tab-ov">
+  <div class="sh"><div class="sh-t">SECTOR GROWTH PROJECTIONS</div><div class="sh-l"></div><div class="sh-g">2024→2028 INDEX</div></div>
+  <div class="ovline"><div class="cc-t">PROJECTED SECTOR REVENUE INDEX — 2024 Baseline = 100</div><div style="position:relative;height:255px;"><canvas id="lc"></canvas></div></div>
+  <div class="ovrow">
+    <div class="cc"><div class="cc-t">2025 TOP PERFORMING STOCKS — ANNUAL RETURN %</div><div class="cc-b"><canvas id="bc"></canvas></div></div>
+    <div class="cc"><div class="cc-t">PORTFOLIO SECTOR MIX</div><div class="cc-b"><canvas id="pc"></canvas></div></div>
+    <div class="cc"><div class="cc-t">RISK vs. RETURN SCATTER</div><div class="cc-b"><canvas id="sc"></canvas></div></div>
+  </div>
+</div>
+
+<div class="tp" id="tab-pk">
+  <div class="sh"><div class="sh-t">TOP CONVICTION PICKS</div><div class="sh-l"></div><div class="sh-g">TIERED BY CONFIDENCE</div></div>
+  <div class="pgrid">
+    <div class="pk pt1" style="animation-delay:.08s"><div class="pk-tier">TIER 1 — CORE ANCHOR</div><div class="pk-nm">NVIDIA</div><div class="pk-tk">NVDA</div><div class="pk-why">The undisputed backbone of AI infrastructure. Blackwell GPU demand still vastly exceeds supply. Data center revenue +66% YoY to $51B. $500B+ hyperscaler capex flows through NVDA. FY27 revenue +64%. CUDA ecosystem moat competitors have failed to crack for years.</div><div class="pk-st"><div><div class="pk-sv">64%</div><div class="pk-sl">FY27 REV GROWTH</div></div><div><div class="pk-sv">$302</div><div class="pk-sl">ANALYST TARGET</div></div><div><div class="pk-sv">LOW</div><div class="pk-sl">RISK</div></div></div></div>
+    <div class="pk pt1" style="animation-delay:.12s"><div class="pk-tier">TIER 1 — CORE ANCHOR</div><div class="pk-nm">CONSTELLATION</div><div class="pk-tk">CEG</div><div class="pk-why">21 nuclear reactors, 22,000 MW of 24/7 carbon-free baseload. Meta signed a 20-year 1.1GW PPA. Microsoft + Google locked in. EPS growing 26% in 2026. Dividend raised 10%. AI power crisis deepens every quarter and CEG is the only company that can deliver clean reliable power at this scale.</div><div class="pk-st"><div><div class="pk-sv">26%</div><div class="pk-sl">EPS GROWTH</div></div><div><div class="pk-sv">20yr</div><div class="pk-sl">META PPA</div></div><div><div class="pk-sv">MED</div><div class="pk-sl">RISK</div></div></div></div>
+    <div class="pk pt1" style="animation-delay:.16s"><div class="pk-tier">TIER 1 — CORE ANCHOR</div><div class="pk-nm">PALANTIR</div><div class="pk-tk">PLTR</div><div class="pk-why">Revenue hit 62% YoY — fastest since IPO. AIP platform is the enterprise bridge for real-world AI on existing data. US commercial growing 70%+ YoY. Government contracts provide recession-proof floor. Wedbush $230 target. Clearest AI software monetization story in public markets today.</div><div class="pk-st"><div><div class="pk-sv">62%</div><div class="pk-sl">REV GROWTH</div></div><div><div class="pk-sv">$230</div><div class="pk-sl">WEDBUSH</div></div><div><div class="pk-sv">MED</div><div class="pk-sl">RISK</div></div></div></div>
+    <div class="pk pt2" style="animation-delay:.20s"><div class="pk-tier">TIER 2 — STRATEGIC HOLD</div><div class="pk-nm">GE VERNOVA</div><div class="pk-tk">GEV</div><div class="pk-why">World's #1 gas turbine maker, 25% global market share. Order book sold out through 2028. 2028 revenue raised to $52B. EBITDA margins expanding 14%→20%. FCF raised to $22B+. Up 99% in 2025 and the AI power demand story has years of runway ahead.</div><div class="pk-st"><div><div class="pk-sv">$52B</div><div class="pk-sl">2028 REV</div></div><div><div class="pk-sv">+99%</div><div class="pk-sl">2025 RTN</div></div><div><div class="pk-sv">MED</div><div class="pk-sl">RISK</div></div></div></div>
+    <div class="pk pt2" style="animation-delay:.24s"><div class="pk-tier">TIER 2 — STRATEGIC HOLD</div><div class="pk-nm">BROADCOM</div><div class="pk-tk">AVGO</div><div class="pk-why">Designed Google's TPUs. $90B+ FY27 opportunity from hyperscaler custom chips. OpenAI deal worth hundreds of billions. Apple AI chip mass production 2026. Up 72% in 2025. The picks-and-shovels AI chip play beyond NVDA at a far lower valuation multiple.</div><div class="pk-st"><div><div class="pk-sv">$90B</div><div class="pk-sl">FY27 OPPTY</div></div><div><div class="pk-sv">+72%</div><div class="pk-sl">2025 RTN</div></div><div><div class="pk-sv">LOW</div><div class="pk-sl">RISK</div></div></div></div>
+    <div class="pk pt3" style="animation-delay:.28s"><div class="pk-tier">TIER 3 — SPECULATIVE / ASYMMETRIC</div><div class="pk-nm">NEBIUS GROUP</div><div class="pk-tk">NBIS</div><div class="pk-why">Full-stack AI infra targeting $7–9B annualized revenue by end of 2026 from ~$1B. $19B Microsoft deal + $3B Meta deal. Expanding to 1GW of connected power. Extreme execution risk — cap at 2–3% max. If they deliver, the highest-return story in the entire portfolio.</div><div class="pk-st"><div><div class="pk-sv">1600%</div><div class="pk-sl">REV TARGET</div></div><div><div class="pk-sv">$19B</div><div class="pk-sl">MSFT DEAL</div></div><div><div class="pk-sv">X-HIGH</div><div class="pk-sl">RISK</div></div></div></div>
+  </div>
+</div>
+
+<div class="tp" id="tab-al">
+  <div class="sh"><div class="sh-t">PORTFOLIO ALLOCATION</div><div class="sh-l"></div><div class="sh-g">BALANCED GROWTH STRATEGY</div></div>
+  <div class="alcrd">
+    <div class="alg">
+      <div id="albars"></div>
+      <div><div class="cc-t">SECTOR WEIGHT DISTRIBUTION</div><div style="position:relative;height:250px;"><canvas id="dc"></canvas></div></div>
+    </div>
+  </div>
+  <div class="sh"><div class="sh-t">RISK METRICS</div><div class="sh-l"></div></div>
+  <div class="rkg">
+    <div class="rc"><div class="rc-l">PROJECTED 3-YR CAGR</div><div class="rc-v" style="color:var(--a2)">28%</div><div class="rc-s">Blended across 8 sectors</div></div>
+    <div class="rc"><div class="rc-l">SHARPE RATIO EST.</div><div class="rc-v" style="color:var(--a1)">1.4</div><div class="rc-s">Risk-adjusted return</div></div>
+    <div class="rc"><div class="rc-l">MAX DRAWDOWN RISK</div><div class="rc-v" style="color:var(--gold)">-35%</div><div class="rc-s">Estimated bear case</div></div>
+    <div class="rc"><div class="rc-l">SPECULATIVE EXPOSURE</div><div class="rc-v" style="color:var(--a3)">15%</div><div class="rc-s">Quantum + micro-nuclear + NBIS</div></div>
+  </div>
+</div>
+
+<div class="disc">⚠️ DISCLAIMER: This dashboard is for informational and educational purposes only and does not constitute financial advice. Portfolio simulations use estimated baseline prices; intraday variance is simulated for UI demonstration only — not real market data. Always verify prices via a licensed broker. All analyst targets sourced from publicly available research as of February 2026. Past performance does not guarantee future results. Consult a licensed financial advisor before investing.</div>
+</div>
+
+<!-- STOCK DEEP DIVE MODAL -->
+<div id="modal">
+  <div class="mcard">
+    <div class="mhdr">
+      <div class="mhl">
+        <div class="mbadge" id="m-badge"></div>
+        <div>
+          <div class="mtitle" id="m-title"></div>
+          <div class="msector" id="m-sector"></div>
+          <div class="mtags" id="m-tags"></div>
+        </div>
+      </div>
+      <button class="mcx" onclick="closeModal()">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="prow" id="m-prow"></div>
+      <div class="ctabs">
+        <button class="ct act" onclick="switchChart('1D',this)">1 DAY</button>
+        <button class="ct" onclick="switchChart('7D',this)">7 DAYS</button>
+        <button class="ct" onclick="switchChart('1M',this)">1 MONTH</button>
+        <button class="ct" onclick="switchChart('1Y',this)">1 YEAR</button>
+      </div>
+      <div class="chartarea"><canvas id="mchart"></canvas></div>
+      <div class="trow" id="m-trow"></div>
+      <div class="agrid" id="m-agrid"></div>
+      <div class="citbox" id="m-cit"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+Chart.defaults.color='#3d6080';
+Chart.defaults.borderColor='rgba(0,200,255,0.07)';
+Chart.defaults.font.family="'DM Mono',monospace";
+document.getElementById('dtag').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+
+// ============================================================
+// TICKER PRICES — all 80 stocks with base prices
+// ============================================================
+const TICKERS=[
+  {s:'NVDA',b:136.0},{s:'MSFT',b:408.0},{s:'GOOG',b:185.0},{s:'AMZN',b:218.0},{s:'META',b:672.0},
+  {s:'ORCL',b:174.0},{s:'PLTR',b:92.0},{s:'CRWV',b:62.0},{s:'NBIS',b:28.0},{s:'IREN',b:8.4},
+  {s:'CEG',b:280.0},{s:'VST',b:138.0},{s:'GEV',b:362.0},{s:'BE',b:26.0},{s:'TLN',b:168.0},
+  {s:'MTZ',b:145.0},{s:'OKLO',b:42.0},{s:'NNE',b:18.0},{s:'CCJ',b:48.0},{s:'NEE',b:74.0},
+  {s:'TSM',b:194.0},{s:'AVGO',b:236.0},{s:'AMD',b:118.0},{s:'AMAT',b:198.0},{s:'MRVL',b:82.0},
+  {s:'LRCX',b:84.0},{s:'ASML',b:742.0},{s:'MU',b:88.0},{s:'INTC',b:22.0},
+  {s:'IONQ',b:32.0},{s:'QBTS',b:14.0},{s:'RGTI',b:12.0},{s:'IBM',b:232.0},
+  {s:'QUBT',b:8.0},{s:'HON',b:218.0},
+  {s:'CRWD',b:380.0},{s:'PANW',b:184.0},{s:'ZS',b:208.0},{s:'FTNT',b:94.0},{s:'S',b:26.0},
+  {s:'OKTA',b:104.0},{s:'NET',b:122.0},{s:'VRNS',b:48.0},{s:'CYBR',b:314.0},{s:'LAES',b:4.2},
+  {s:'TSLA',b:328.0},{s:'ISRG',b:524.0},{s:'ABB',b:42.0},{s:'PATH',b:14.0},{s:'TER',b:98.0},
+  {s:'KTOS',b:32.0},{s:'FANUY',b:18.0},{s:'CDNS',b:298.0},{s:'RR',b:3.8},
+  {s:'RXRX',b:9.0},{s:'AMGN',b:272.0},{s:'ILMN',b:118.0},{s:'VEEV',b:218.0},{s:'DXCM',b:82.0},
+  {s:'GH',b:26.0},{s:'TDOC',b:8.0},{s:'ACMR',b:12.0},{s:'PRVA',b:24.0},
+  {s:'BEP',b:28.0},{s:'PWR',b:298.0},{s:'ENPH',b:68.0},{s:'FLNC',b:12.0},{s:'FSLR',b:172.0},
+  {s:'STEM',b:2.4},{s:'ITRI',b:88.0},{s:'RUN',b:16.0},{s:'BEPC',b:26.0},
+];
+
+const SECTOR_T=[
+  {n:'AI Infra',c:'#00d4ff',ss:['NVDA','MSFT','GOOG','AMZN','META','ORCL','PLTR','CRWV','NBIS','IREN']},
+  {n:'Nuclear',c:'#00ffb3',ss:['CEG','VST','GEV','BE','TLN','MTZ','OKLO','NNE','CCJ','NEE']},
+  {n:'Semiconductors',c:'#b94dff',ss:['NVDA','TSM','AVGO','AMD','AMAT','MRVL','LRCX','ASML','MU','INTC']},
+  {n:'Quantum',c:'#ffc832',ss:['IONQ','QBTS','RGTI','GOOG','IBM','MSFT','NVDA','QUBT','HON','AMZN']},
+  {n:'Cybersecurity',c:'#ff6b35',ss:['CRWD','PANW','ZS','FTNT','S','OKTA','NET','VRNS','CYBR','LAES']},
+  {n:'Robotics',c:'#ff3fa0',ss:['TSLA','ISRG','ABB','PATH','TER','KTOS','FANUY','CDNS','HON','RR']},
+  {n:'Biotech',c:'#3cf0ff',ss:['RXRX','ISRG','AMGN','ILMN','VEEV','DXCM','GH','TDOC','ACMR','PRVA']},
+  {n:'Clean Energy',c:'#8fff5a',ss:['NEE','BEP','PWR','ENPH','FLNC','FSLR','STEM','ITRI','RUN','BEPC']},
+];
+
+// ============================================================
+// LIVE PRICE ENGINE — Finnhub WebSocket + REST + sim fallback
+// ============================================================
+const FINNHUB_KEY  = 'd6f0bi1r01qvn4o1bmfgd6f0bi1r01qvn4o1bmg0';
+const FINNHUB_WS   = 'wss://ws.finnhub.io';
+const FINNHUB_REST = 'https://finnhub.io/api/v1';
+
+let sessionStart = Date.now();
+let lastPrices   = {};  // sym → current live price
+let basePrices   = {};  // sym → cost basis (set on reset, NEVER overwritten by fetchAllQuotes after reset)
+let baseSet      = false; // true once basePrices are locked in from reset/boot
+let liveMode     = false;
+let wsReady      = false;
+let fhSocket     = null;
+let simInterval  = null;
+
+// ── Sector allocation: $ amount invested per sector ──
+// Default: $12,500 per sector × 8 = $100,000
+// Each sector's stocks get equal share of that sector's allocation
+const SECTOR_COLORS = ['#00d4ff','#00ffb3','#b94dff','#ffc832','#ff6b35','#ff3fa0','#3cf0ff','#8fff5a'];
+const SECTOR_NAMES  = ['AI Infra','Nuclear','Semiconductors','Quantum','Cybersecurity','Robotics','Biotech','Clean Energy'];
+let sectorAlloc = [12500,12500,12500,12500,12500,12500,12500,12500]; // $ per sector
+
+// Compute per-stock investment given current sector allocation.
+// A stock may appear in multiple sectors (e.g. NVDA in AI Infra + Semis + Quantum).
+// Its total allocation = SUM of (sectorAlloc[i] / sector_size) for each sector it belongs to.
+// This ensures Σ all stock investments = Σ sectorAlloc = $100,000 exactly.
+function getStockInvestment(sym) {
+  let total = 0;
+  for (let i = 0; i < SECTOR_T.length; i++) {
+    if (SECTOR_T[i].ss.includes(sym)) {
+      total += sectorAlloc[i] / SECTOR_T[i].ss.length;
+    }
+  }
+  return total;
+}
+function getTotalInvested() {
+  return sectorAlloc.reduce((a, v) => a + v, 0);
+}
+
+// ── Sim fallback ──
+function seededRand(seed, step) {
+  const a = Math.sin(seed * 127.1 + step * 311.7) * 43758.5453;
+  const b = Math.cos(seed * 269.5 + step * 183.3) * 43758.5453;
+  return ((a - Math.floor(a)) + (b - Math.floor(b))) / 2;
+}
+function getVol(sym) {
+  const sd = SDATA[sym];
+  if (!sd) return 0.0015;
+  return { LOW:0.0008, MED:0.0015, HIGH:0.0028, 'X-HIGH':0.0045 }[sd.risk] || 0.0015;
+}
+function simPrice(sym, base) {
+  const vol  = getVol(sym);
+  const seed = sym.split('').reduce((a,c,i) => a + c.charCodeAt(0)*(i+7), 1);
+  const sec  = Math.floor((Date.now() - sessionStart) / 1000);
+  if (sec === 0) return base;
+  let p = base;
+  for (let i = 0; i < sec; i++) {
+    const r = seededRand(seed, i);
+    p = p * (1 + (r - 0.5) * 2 * vol);
+  }
+  return Math.min(Math.max(p, base * 0.2), base * 3.0);
+}
+
+// ── Status badge ──
+function setLiveStatus(mode) {
+  // liveMode=true ONLY when WebSocket is actively streaming real trades
+  // 'delayed' = REST quotes loaded but WS not yet connected → sim still runs
+  liveMode = (mode === 'live');
+  const badge = document.getElementById('liveBadge');
+  const dot   = document.getElementById('liveDot');
+  if (!badge) return;
+  const cfg = {
+    live:    { text:'LIVE PRICES',    color:'var(--a2)',  shadow:'0 0 8px var(--a2)' },
+    delayed: { text:'DELAYED PRICES', color:'var(--gold)',shadow:'0 0 8px var(--gold)' },
+    sim:     { text:'SIMULATED',      color:'var(--m2)',  shadow:'none' },
+  }[mode] || { text:'CONNECTING...', color:'var(--m1)', shadow:'none' };
+  badge.textContent    = cfg.text;
+  badge.style.color    = cfg.color;
+  dot.style.background = cfg.color;
+  dot.style.boxShadow  = cfg.shadow;
+}
+
+// ── Init prices to base values ──
+function initPrices() {
+  TICKERS.forEach(t => { lastPrices[t.s] = t.b; });
+}
+
+// ── Snapshot current lastPrices as cost basis for P&L ──
+function lockBasePrices() {
+  TICKERS.forEach(t => { basePrices[t.s] = lastPrices[t.s] || t.b; });
+  baseSet = true;
+}
+
+// ── REST batch quote — ONLY updates lastPrices, NEVER basePrices after baseSet ──
+async function fetchAllQuotes() {
+  const batchSize = 20;
+  let gotAny = false;
+  const syms = TICKERS.map(t => t.s);
+  for (let i = 0; i < syms.length; i += batchSize) {
+    const batch = syms.slice(i, i + batchSize);
+    await Promise.allSettled(batch.map(async sym => {
+      try {
+        const res = await fetch(`${FINNHUB_REST}/quote?symbol=${sym}&token=${FINNHUB_KEY}`);
+        if (!res.ok) return;
+        const d = await res.json();
+        if (d && d.c && d.c > 0) {
+          lastPrices[sym] = d.c;
+          gotAny = true;
+        }
+      } catch(e) {}
+    }));
+    if (i + batchSize < syms.length) await new Promise(r => setTimeout(r, 250));
+  }
+  if (gotAny) { setLiveStatus('delayed'); buildTicker(); updateTracker(); }
+  return gotAny;
+}
+
+// ── WebSocket ──
+function connectWebSocket() {
+  if (fhSocket) { try { fhSocket.close(); } catch(e) {} }
+  fhSocket = new WebSocket(`${FINNHUB_WS}?token=${FINNHUB_KEY}`);
+  fhSocket.addEventListener('open', () => {
+    wsReady = true;
+    TICKERS.forEach(t => fhSocket.send(JSON.stringify({ type:'subscribe', symbol:t.s })));
+    setLiveStatus('live');
+    if (simInterval) { clearInterval(simInterval); simInterval = null; }
+  });
+  fhSocket.addEventListener('message', e => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'trade' && msg.data) {
+        msg.data.forEach(tr => {
+          if (tr.s && tr.p > 0 && tr.s in lastPrices) lastPrices[tr.s] = tr.p;
+        });
+        buildTicker(); updateTracker();
+        if (mSym && document.getElementById('modal').classList.contains('open')) updateModalPrices();
+      }
+    } catch(e) {}
+  });
+  fhSocket.addEventListener('close', () => { wsReady=false; setLiveStatus('delayed'); setTimeout(connectWebSocket,5000); });
+  fhSocket.addEventListener('error', () => { wsReady=false; setLiveStatus('delayed'); });
+}
+
+// ── Sim tick — runs only when market closed ──
+function simTick() {
+  if (liveMode) return;
+  TICKERS.forEach(t => { lastPrices[t.s] = simPrice(t.s, basePrices[t.s] || t.b); });
+  buildTicker(); updateTracker();
+  if (mSym && document.getElementById('modal').classList.contains('open')) updateModalPrices();
+}
+
+// ── Boot sequence ──
+// Step 1: init to base prices immediately → $100,000 / $0 P&L shown
+// Step 2: lock base prices (so P&L = 0 at start)
+// Step 3: start sim loop as immediate fallback
+// Step 4: fetch real quotes (updates lastPrices only, basePrices already locked)
+// Step 5: open WebSocket for streaming
+async function bootPriceEngine() {
+  initPrices();           // lastPrices = hardcoded base values
+  lockBasePrices();       // tentative basis = base values (shows $0 P&L immediately)
+  buildTicker();
+  updateTracker();
+  setLiveStatus('sim');
+  simInterval = setInterval(simTick, 1000);  // sim runs immediately
+
+  // Fetch real quotes → lastPrices gets real prices
+  const gotReal = await fetchAllQuotes();
+
+  // NOW re-lock basis to real current prices so P&L starts at $0 vs real prices
+  if (gotReal) lockBasePrices();
+
+  // Open WebSocket for live streaming
+  connectWebSocket();
+}
+
+function getPrice(sym) { return lastPrices[sym] || TICKERS.find(x=>x.s===sym)?.b || 100; }
+function getPct(sym)   {
+  const cur  = lastPrices[sym]  || 0;
+  const base = basePrices[sym]  || cur || 1;
+  return ((cur - base) / base) * 100;
+}
+
+// ── Ticker tape ──
+const TICKER_NAMES = {
+  NVDA:'NVIDIA', MSFT:'Microsoft', GOOG:'Alphabet', AMZN:'Amazon', META:'Meta',
+  ORCL:'Oracle', PLTR:'Palantir', CRWV:'CoreWeave', NBIS:'Nebius', IREN:'IREN',
+  CEG:'Constellation', VST:'Vistra', GEV:'GE Vernova', BE:'Bloom Energy', TLN:'Talen',
+  MTZ:'MasTec', OKLO:'Oklo', NNE:'Nano Nuclear', CCJ:'Cameco', NEE:'NextEra',
+  TSM:'TSMC', AVGO:'Broadcom', AMD:'AMD', AMAT:'Appl.Mat.', MRVL:'Marvell',
+  LRCX:'Lam Research', ASML:'ASML', MU:'Micron', INTC:'Intel',
+  IONQ:'IonQ', QBTS:'D-Wave', RGTI:'Rigetti', IBM:'IBM', QUBT:'Quantum Inc.', HON:'Honeywell',
+  CRWD:'CrowdStrike', PANW:'Palo Alto', ZS:'Zscaler', FTNT:'Fortinet', S:'SentinelOne',
+  OKTA:'Okta', NET:'Cloudflare', VRNS:'Varonis', CYBR:'CyberArk', LAES:'SEALSQ',
+  TSLA:'Tesla', ISRG:'Intuitive Surg.', ABB:'ABB', PATH:'UiPath', TER:'Teradyne',
+  KTOS:'Kratos', FANUY:'Fanuc', CDNS:'Cadence', RR:'Richtech',
+  RXRX:'Recursion', AMGN:'Amgen', ILMN:'Illumina', VEEV:'Veeva', DXCM:'DexCom',
+  GH:'Guardant', TDOC:'Teladoc', ACMR:'AC Immune', PRVA:'Privia',
+  BEP:'Brookfield RE', PWR:'Quanta', ENPH:'Enphase', FLNC:'Fluence', FSLR:'First Solar',
+  STEM:'Stem', ITRI:'Itron', RUN:'Sunrun', BEPC:'Brookfield Corp',
+};
+
+function buildTicker() {
+  const inner    = document.getElementById('tickerInner');
+  const allItems = [...TICKERS, ...TICKERS];
+  const existing = inner.querySelectorAll('.ti');
+  if (existing.length === allItems.length) {
+    existing.forEach((el, i) => {
+      const t    = allItems[i];
+      const cur  = lastPrices[t.s]  || t.b;
+      const base = basePrices[t.s]  || t.b;
+      const pct  = ((cur - base) / base) * 100;
+      const priceEl = el.querySelector('.ti-price');
+      if (priceEl) priceEl.textContent = '$' + cur.toFixed(2);
+      const spans = el.querySelectorAll('span');
+      const chg   = spans[spans.length - 1];
+      if (chg) { chg.className = pct>=0?'ti-up':'ti-dn'; chg.textContent=(pct>=0?'▲':'▼')+Math.abs(pct).toFixed(2)+'%'; }
+    });
+    return;
+  }
+  inner.innerHTML = '';
+  allItems.forEach(t => {
+    const cur  = lastPrices[t.s]  || t.b;
+    const base = basePrices[t.s]  || t.b;
+    const pct  = ((cur - base) / base) * 100;
+    const el   = document.createElement('span');
+    el.className = 'ti';
+    el.innerHTML =
+      `<span class="ti-sym" onclick="openStock('${t.s}')">${t.s}</span>` +
+      `<span class="ti-name">${TICKER_NAMES[t.s]||t.s}</span>` +
+      `<span class="ti-price">$${cur.toFixed(2)}</span>` +
+      `<span class="${pct>=0?'ti-up':'ti-dn'}">${pct>=0?'▲':'▼'}${Math.abs(pct).toFixed(2)}%</span>`;
+    inner.appendChild(el);
+  });
+}
+
+// ── Portfolio Tracker ──
+// P&L = Σ [ (sectorAlloc[i]/10) × (livePrice/basePrice) ] − totalInvested
+// basePrices locked at reset → always starts at exactly $0 P&L
+function updateTracker() {
+  const totalInvested = getTotalInvested();
+
+  // Build per-stock perf
+  const perf = TICKERS.map(t => {
+    const cur       = lastPrices[t.s]  || t.b;
+    const base      = basePrices[t.s]  || t.b;
+    const inv       = getStockInvestment(t.s);  // $ allocated to this stock
+    const pct       = base > 0 ? ((cur - base) / base) * 100 : 0;
+    const val       = base > 0 ? inv * (cur / base) : inv;
+    return { s:t.s, cur, base, pct, inv, val };
+  });
+
+  // Only include stocks that have allocation (inv > 0)
+  const active     = perf.filter(x => x.inv > 0);
+  const totalVal   = active.reduce((a, x) => a + x.val, 0);
+  const totalRet   = totalVal - totalInvested;
+  const totalPct   = totalInvested > 0 ? (totalRet / totalInvested) * 100 : 0;
+
+  // Portfolio Value KPI
+  document.getElementById('tv').textContent =
+    '$' + totalVal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  // P&L KPI
+  const plEl = document.getElementById('tpl');
+  plEl.textContent = (totalRet >= 0 ? '+' : '') +
+    totalRet.toLocaleString('en-US', {style:'currency', currency:'USD'});
+  plEl.className = 'tk-v ' + (totalRet >= 0 ? 'cg' : 'cr');
+
+  // % + mode labels
+  document.getElementById('tpct').textContent =
+    (totalPct >= 0 ? '+' : '') + totalPct.toFixed(3) + '% total return';
+  document.getElementById('tmode').textContent = liveMode ? '● Finnhub Live' : '○ Simulated';
+  document.getElementById('ttime').textContent =
+    new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+
+  // Sector performance (only active/allocated sectors)
+  const sp = SECTOR_T.map((s, idx) => {
+    if (sectorAlloc[idx] === 0) return null;
+    const stocks = perf.filter(x => s.ss.includes(x.s) && x.inv > 0);
+    const avg    = stocks.length ? stocks.reduce((a,x)=>a+x.pct,0)/stocks.length : 0;
+    return { n:s.n, c:s.c, avg };
+  }).filter(Boolean).sort((a,b) => b.avg - a.avg);
+
+  if (sp.length > 0) {
+    document.getElementById('tbs').textContent  = sp[0].n;
+    document.getElementById('tbsv').textContent = (sp[0].avg>=0?'+':'')+sp[0].avg.toFixed(3)+'% avg';
+    document.getElementById('tws').textContent  = sp[sp.length-1].n;
+    document.getElementById('twsv').textContent = (sp[sp.length-1].avg>=0?'+':'')+sp[sp.length-1].avg.toFixed(3)+'% avg';
+  }
+
+  // Best stock
+  const activeSorted = [...active].sort((a,b)=>b.pct-a.pct);
+  if (activeSorted.length > 0) {
+    document.getElementById('tbst').textContent  = activeSorted[0].s;
+    document.getElementById('tbstv').textContent = (activeSorted[0].pct>=0?'+':'')+activeSorted[0].pct.toFixed(3)+'%';
+  }
+
+  // Sector ranking bars
+  const maxAbs = Math.max(...sp.map(x=>Math.abs(x.avg)), 0.001);
+  const sr = document.getElementById('secRank'); sr.innerHTML = '';
+  sp.forEach((s, i) => {
+    const rc = i===0?'r1':i===1?'r2':i===2?'r3':'r4';
+    const bw = Math.min(100, Math.abs(s.avg)/maxAbs*100);
+    sr.innerHTML +=
+      `<div class="rrow"><span class="rn ${rc}">${i+1}</span><span class="rname">${s.n}</span>` +
+      `<div class="rbw"><div class="rb" style="width:${bw}%;background:${s.c};"></div></div>` +
+      `<span class="rval" style="color:${s.avg>=0?'var(--a2)':'var(--red)'};">${s.avg>=0?'+':''}${s.avg.toFixed(3)}%</span></div>`;
+  });
+
+  // Top 10 movers (all 80 portfolio stocks, sorted by % change)
+  const allSorted = [...perf].sort((a,b) => b.pct - a.pct);
+  const ts = document.getElementById('topStks'); ts.innerHTML = '';
+  allSorted.slice(0, 10).forEach((s, i) => {
+    const rc   = i===0?'r1':i===1?'r2':i===2?'r3':'r4';
+    const name = TICKER_NAMES[s.s] || s.s;
+    ts.innerHTML +=
+      `<div class="rrow" onclick="openStock('${s.s}')">` +
+      `<span class="rn ${rc}">${i+1}</span>` +
+      `<span class="rname" style="font-family:'DM Mono',monospace;font-size:10px;">${s.s} <span style="color:var(--m2);font-size:9px;">${name}</span></span>` +
+      `<span class="rval" style="color:${s.pct>=0?'var(--a2)':'var(--red)'};">${s.pct>=0?'+':''}${s.pct.toFixed(2)}%</span>` +
+      `</div>`;
+  });
+
+  // Bottom 5
+  const bs = document.getElementById('botStks'); bs.innerHTML = '';
+  allSorted.slice(-5).reverse().forEach((s, i) => {
+    const name = TICKER_NAMES[s.s] || s.s;
+    bs.innerHTML +=
+      `<div class="rrow" onclick="openStock('${s.s}')">` +
+      `<span class="rn" style="color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:15px;width:20px;text-align:center;">${i+1}</span>` +
+      `<span class="rname" style="font-family:'DM Mono',monospace;font-size:10px;">${s.s} <span style="color:var(--m2);font-size:9px;">${name}</span></span>` +
+      `<span class="rval" style="color:var(--red);">${s.pct.toFixed(2)}%</span>` +
+      `</div>`;
+  });
+}
+
+// ── RESET — snapshot current live prices as new Day 0 cost basis ──
+// basePrices = lastPrices at moment of reset → P&L starts at exactly $0
+function resetPortfolio() {
+  sessionStart = Date.now();
+  lockBasePrices();  // snapshot current live prices → P&L = $0 exactly
+  const dateStr = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
+  document.getElementById('d0badge').textContent = '◉ DAY 0 — ' + dateStr;
+
+  // Restart sim loop so prices drift from the new baseline
+  if (!liveMode) {
+    if (simInterval) clearInterval(simInterval);
+    simInterval = setInterval(simTick, 1000);
+  }
+
+  updateTracker();
+
+  // Re-fetch REST quotes in background to refresh lastPrices
+  fetchAllQuotes().then(got => {
+    if (got) lockBasePrices(); // re-lock again to real prices after fetch
+  });
+}
+
+// ── SECTOR ALLOCATION EDITOR ──
+function toggleAllocEditor() {
+  const ed = document.getElementById('allocEditor');
+  if (ed.style.display === 'none') {
+    buildAllocEditor();
+    ed.style.display = 'block';
+  } else {
+    ed.style.display = 'none';
+  }
+}
+
+function buildAllocEditor() {
+  const container = document.getElementById('allocSliders');
+  container.innerHTML = '';
+
+  // Inject per-slider thumb colors as a style block (works on all desktop browsers)
+  let styleBlock = '<style id="allocSliderStyle">';
+  SECTOR_COLORS.forEach((color, i) => {
+    styleBlock += `#ar${i}::-webkit-slider-thumb{background:${color};}`;
+    styleBlock += `#ar${i}::-moz-range-thumb{background:${color};}`;
+    styleBlock += `#ar${i}{background:linear-gradient(to right,${color}66 0%,${color}66 ${sectorAlloc[i]/500}%,rgba(255,255,255,0.08) ${sectorAlloc[i]/500}%,rgba(255,255,255,0.08) 100%);}`;
+  });
+  styleBlock += '</style>';
+  const existing = document.getElementById('allocSliderStyle');
+  if (existing) existing.remove();
+  document.head.insertAdjacentHTML('beforeend', styleBlock);
+
+  SECTOR_NAMES.forEach((name, i) => {
+    const color   = SECTOR_COLORS[i];
+    const val     = sectorAlloc[i];
+    const perStock = (val / 10).toFixed(0);
+    container.innerHTML +=
+      `<div style="background:rgba(0,0,0,0.25);border:1px solid ${color}44;border-radius:8px;padding:10px 12px;">` +
+        `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">` +
+          `<span style="font-family:'DM Mono',monospace;font-size:10px;color:${color};letter-spacing:1px;font-weight:600;">${name.toUpperCase()}</span>` +
+          `<div style="display:flex;align-items:center;gap:8px;">` +
+            `<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--m2);">$<span id="av${i}">${perStock}</span>/stock</span>` +
+            `<input type="number" id="ai${i}" min="0" max="100000" step="500" value="${val}"` +
+              ` oninput="onAllocInput(${i})"` +
+              ` style="width:80px;background:rgba(0,0,0,0.4);border:1px solid ${color}88;color:${color};` +
+              `font-family:'DM Mono',monospace;font-size:11px;padding:4px 6px;border-radius:4px;text-align:right;outline:none;" />` +
+          `</div>` +
+        `</div>` +
+        `<input type="range" id="ar${i}" min="0" max="50000" step="500" value="${val}"` +
+          ` oninput="onAllocSlider(${i})" style="width:100%;" />` +
+      `</div>`;
+  });
+  refreshAllocTotals();
+}
+
+function updateSliderStyle(i) {
+  const color = SECTOR_COLORS[i];
+  const val   = sectorAlloc[i];
+  const pct   = (val / 50000) * 100;
+  const sl    = document.getElementById('ar'+i);
+  if (sl) sl.style.background = `linear-gradient(to right,${color}88 0%,${color}88 ${pct}%,rgba(255,255,255,0.08) ${pct}%,rgba(255,255,255,0.08) 100%)`;
+  // also update thumb color in style block
+  const st = document.getElementById('allocSliderStyle');
+  if (st) {
+    // Rebuild full style block
+    let s = '<style id="allocSliderStyle">';
+    SECTOR_COLORS.forEach((c, j) => {
+      s += `#ar${j}::-webkit-slider-thumb{background:${c};}`;
+      s += `#ar${j}::-moz-range-thumb{background:${c};}`;
+    });
+    s += '</style>';
+    st.outerHTML = s;
+  }
+}
+
+function onAllocInput(i) {
+  const num = parseFloat(document.getElementById('ai'+i).value) || 0;
+  sectorAlloc[i] = Math.max(0, Math.min(100000, num));
+  const sl = document.getElementById('ar'+i);
+  if (sl) sl.value = sectorAlloc[i];
+  const pp = document.getElementById('av'+i);
+  if (pp) pp.textContent = (sectorAlloc[i]/10).toFixed(0);
+  updateSliderStyle(i);
+  refreshAllocTotals();
+}
+
+function onAllocSlider(i) {
+  const val = parseFloat(document.getElementById('ar'+i).value) || 0;
+  sectorAlloc[i] = val;
+  const inp = document.getElementById('ai'+i);
+  if (inp) inp.value = val;
+  const pp = document.getElementById('av'+i);
+  if (pp) pp.textContent = (val/10).toFixed(0);
+  updateSliderStyle(i);
+  refreshAllocTotals();
+}
+
+function refreshAllocTotals() {
+  const total   = getTotalInvested();
+  const remain  = 100000 - total;
+  const remEl   = document.getElementById('allocRemain');
+  const totEl   = document.getElementById('allocTotal');
+  if (remEl) { remEl.textContent = '$' + Math.abs(remain).toLocaleString(); remEl.style.color = remain < 0 ? 'var(--red)' : remain === 0 ? 'var(--a2)' : 'var(--gold)'; }
+  if (totEl) { totEl.textContent = '$' + total.toLocaleString(); totEl.style.color = total === 100000 ? 'var(--a2)' : total > 100000 ? 'var(--red)' : 'var(--gold)'; }
+}
+
+function equalizeAlloc() {
+  const eq = Math.round(100000 / 8 / 500) * 500;
+  sectorAlloc = Array(8).fill(eq);
+  buildAllocEditor();
+}
+
+function clearAlloc() {
+  sectorAlloc = Array(8).fill(0);
+  buildAllocEditor();
+}
+
+function applyAlloc() {
+  // Warn if over-allocated
+  const total = getTotalInvested();
+  if (total > 100000) {
+    alert(`Total allocation $${total.toLocaleString()} exceeds $100,000. Please reduce before applying.`);
+    return;
+  }
+  // Update subtitle
+  const active = sectorAlloc.filter(v=>v>0).length;
+  document.getElementById('tr-sub').textContent =
+    `${active} SECTORS · $${total.toLocaleString()} DEPLOYED · DAY 0 RESET APPLIED`;
+  // Close editor, reset P&L with new allocation
+  document.getElementById('allocEditor').style.display = 'none';
+  resetPortfolio();
+}
+
+// Boot the price engine (handles Finnhub WS + REST + sim fallback)
+bootPriceEngine();
+
+// ============================================================
+// STOCK DATA
+// ============================================================
+const SDATA={
+  NVDA:{name:'NVIDIA Corp',sector:'AI Infrastructure',col:'#00d4ff',mktcap:'$3.3T',pe:'34x',rev:'+122%',eps:'+76%',t12:'+35%',t24:'+65%',risk:'LOW',ret25:'+170%',conv:'★★★★★',
+    outlook:'NVIDIA is the undisputed backbone of the AI infrastructure buildout. Blackwell GPU architecture is in full production ramp with demand still vastly exceeding supply heading into 2026. Data center revenue grew 66% YoY to $51B in Q3 FY2026 — 89% of total revenue. Hyperscalers (Microsoft, Meta, Google, Amazon, Oracle) are competing aggressively for Blackwell chip allocations while executing on $500B+ combined capex plans for 2026. FY27 revenue is projected to grow +64% per Wall Street consensus. The CUDA software ecosystem creates a switching cost moat that AMD and Intel have failed to crack after years of effort. Near-term risk: export restrictions to China could pressure ~15% of revenue.',
+    bull:['Blackwell demand exceeds supply well into 2026','$500B+ hyperscaler capex flows through NVDA GPUs','CUDA ecosystem moat — near-impossible to replicate','NIM microservices and CUDA-Q quantum expanding TAM'],
+    bear:['China export restrictions limit ~15% of revenue','AMD gaining some enterprise AI traction','34x forward P/E leaves limited margin for error','Any hyperscaler capex pause hits NVDA immediately'],
+    cits:[{src:'Motley Fool',desc:'FY27 revenue forecast at +64% YoY; Blackwell chip cycle demand acceleration confirmed',url:'https://www.fool.com/investing/stock-market/market-sectors/information-technology/ai-stocks/',dt:'Feb 2026'},{src:'GuruFocus',desc:'Q1 FY27 guidance $71–72B; gross margins 73–75%; hyperscaler capex $600B+ combined 2026',url:'https://www.gurufocus.com/news/8637086',dt:'Feb 2026'},{src:'Wedbush',desc:'$302 price target; "Strong Buy"; central to AI infrastructure supercycle through 2027',url:'https://www.thestreet.com/investing/stocks/veteran-analyst-resets-ai-stock-buy-list-for-2026',dt:'Dec 2025'}]},
+  CEG:{name:'Constellation Energy',sector:'Nuclear / AI Energy',col:'#00ffb3',mktcap:'$44B',pe:'33x',rev:'+11%',eps:'+26%',t12:'+22%',t24:'+45%',risk:'LOW',ret25:'+45%',conv:'★★★★★',
+    outlook:'Constellation Energy is the largest nuclear fleet operator in the US — 21 reactors generating 22,000 MW of 24/7 carbon-free baseload power. This is exactly what hyperscalers need: reliable clean energy that does not depend on weather. Meta signed a 20-year, 1.1 GW PPA in 2025. Microsoft and Google have long-term agreements in place. EPS is expected to grow 26% in 2026. The $27B Calpine acquisition adds 27GW of natural gas capacity as a bridge fuel. Dividend raised 10% in 2025 following a 25% raise in 2024. The AI power demand crisis gives CEG pricing power for the first time in decades.',
+    bull:['Only US company with nuclear fleet at scale for AI power demand','20-year Meta PPA + Google/Microsoft deals = locked-in revenue','EPS growing 26% in 2026; Calpine acquisition adds 27GW gas','Dividend growing 10%+ annually — rare growth + income combo'],
+    bear:['Nuclear regulatory risk and aging plant maintenance costs','Interest rate sensitivity on long-term capital projects','Calpine integration risk and elevated debt load','Uranium price fluctuations impact fuel cost structure'],
+    cits:[{src:'Zacks / Yahoo Finance',desc:'CEG EPS growth 22.5% in 2026; Meta signed 20-year 1.1GW nuclear PPA for Illinois data centers',url:'https://finance.yahoo.com/news/3-nuclear-power-stocks-set-132100209.html',dt:'Dec 2025'},{src:'24/7 Wall St.',desc:'Top nuclear energy pick for 2026 AI data center power demand wave; dividend growing 10% annually',url:'https://247wallst.com',dt:'Jan 2026'}]},
+  PLTR:{name:'Palantir Technologies',sector:'AI Software',col:'#b94dff',mktcap:'$198B',pe:'190x',rev:'+62%',eps:'+40%',t12:'+25%',t24:'+55%',risk:'MED',ret25:'+80%',conv:'★★★★★',
+    outlook:"Palantir's revenue accelerated to 62% YoY growth in Q3 2025 — the fastest rate since its IPO. The Artificial Intelligence Platform (AIP) is the enterprise bridge for companies wanting to deploy real-world AI on their existing data infrastructure. US commercial revenue grew 70%+ YoY. Government contracts provide a recession-proof revenue base expanding internationally. The transition from government contractor to broad enterprise AI platform company is the defining story of the next 2 years. Wedbush maintains a $230 price target. The primary risk is the 190x forward P/E — any deceleration in growth would compress the multiple severely.",
+    bull:['62% revenue growth — fastest since IPO and still accelerating','AIP creates true enterprise AI deployment, not just a chatbot layer','Government revenue provides recession-proof floor','US commercial 70%+ YoY growth confirms strong product-market fit'],
+    bear:['190x forward P/E — zero margin for error','Revenue deceleration would cause severe multiple compression','Competition from Microsoft, Google, Salesforce in enterprise AI','Government contract dependence creates political risk'],
+    cits:[{src:'Wedbush Securities',desc:'$230 price target, outperform; AIP platform driving 62% YoY revenue acceleration from enterprise AI',url:'https://www.thestreet.com/investing/stocks/veteran-analyst-resets-ai-stock-buy-list-for-2026',dt:'Dec 2025'},{src:'Motley Fool',desc:'Palantir AIP significantly reducing enterprise process time; government + commercial dual engine growth',url:'https://www.fool.com',dt:'Feb 2026'}]},
+  GEV:{name:'GE Vernova',sector:'Power Infrastructure',col:'#00ffb3',mktcap:'$99B',pe:'62x',rev:'+22%',eps:'+85%',t12:'+30%',t24:'+60%',risk:'MED',ret25:'+99%',conv:'★★★★★',
+    outlook:"GE Vernova is the world's #1 gas turbine manufacturer with 25% global market share. Approximately 25% of all electricity generated on Earth passes through GEV equipment. Order book is sold out through 2028. Management raised 2028 revenue guidance to $52B (from $45B), lifted EBITDA margin targets to 20% (from 14%), and raised cumulative FCF to $22B+ (from $14B). The company went public April 2024 and surged 99% in 2025 as the AI power demand thesis played out exactly as expected. This is the most direct pure-play on power infrastructure for the AI buildout, and structural demand from hyperscalers ensures the order book continues to fill.",
+    bull:['Order book sold out through 2028 — demand vastly exceeds manufacturing capacity','2028 revenue raised to $52B; EBITDA margins expanding 14%→20%','25% of global electricity uses GEV equipment — essential infrastructure','Management consistently raising guidance post-IPO'],
+    bear:['Long manufacturing lead times limit near-term revenue surprises','Competition from Siemens Energy and Mitsubishi','Energy transition could reduce long-term gas turbine demand','62x P/E requires continued execution'],
+    cits:[{src:'ainvest.com',desc:'GEV 2028 revenue raised to $52B; EBITDA margins to 20%; FCF raised to $22B+ cumulative through 2028',url:'https://www.ainvest.com/news/top-5-growth-stocks-2026-ai-infrastructure-energy-transition-leaders-2602/',dt:'Feb 2026'}]},
+  AVGO:{name:'Broadcom Inc.',sector:'Semiconductors',col:'#b94dff',mktcap:'$1.1T',pe:'28x',rev:'+44%',eps:'+35%',t12:'+32%',t24:'+60%',risk:'LOW',ret25:'+72%',conv:'★★★★★',
+    outlook:"Broadcom's AI custom silicon business is at escape velocity. The company helped design Google's TPUs and has since attracted OpenAI and additional hyperscalers to its custom chip platform. Top 3 hyperscaler customers represent a $90B opportunity by FY2027. Apple is reportedly working with Broadcom on AI chips for potential mass production in 2026. The VMware acquisition has performed above expectations, adding durable software revenue. At 28x forward P/E, Broadcom is significantly cheaper than NVDA while offering comparable AI silicon exposure through custom chip design.",
+    bull:['$90B FY27 opportunity from top-3 hyperscaler custom AI chips','Apple AI chip potential adds massive new revenue stream','VMware acquisition exceeding expectations, adding software moat','28x forward P/E much cheaper than NVDA for AI chip exposure'],
+    bear:['Customer concentration risk — top 3 customers dominate AI revenue','Apple chip partnership not yet confirmed for mass production','VMware integration complexity lingers','Competition from Marvell and in-house hyperscaler chip teams'],
+    cits:[{src:'Motley Fool / Yahoo Finance',desc:'Top-3 hyperscaler custom chip opportunity = $90B by FY2027; OpenAI deal worth hundreds of billions',url:'https://finance.yahoo.com/news/prediction-3-stocks-join-3-123200532.html',dt:'Dec 2025'}]},
+  TSLA:{name:'Tesla Inc.',sector:'Robotics / AI Vehicles',col:'#ff3fa0',mktcap:'$1.05T',pe:'120x',rev:'+8%',eps:'+12%',t12:'+30%',t24:'+80%',risk:'HIGH',ret25:'+62%',conv:'★★★★☆',
+    outlook:'Tesla is evolving from an EV company into an AI robotics platform. The Optimus humanoid robot is the most watched hardware product in tech — if Tesla can mass produce Optimus at scale, it becomes a multi-trillion dollar business. Wedbush raised its price target to $600, citing the robotaxi and Optimus roadmap. Full Self-Driving (FSD) autonomous robotaxi deployment in specific US cities is planned for 2026. EV competition from Chinese manufacturers (BYD) is real and growing. The 120x P/E is pricing in significant Optimus and robotaxi success — the risk/reward is asymmetric but execution risk is high.',
+    bull:['Optimus humanoid robot — potential $1T+ opportunity if executed','FSD robotaxi deployment in 2026 could unlock ride-share revenue','Wedbush $600 target citing AI + robotics optionality','Gigafactory manufacturing scale unmatched in EVs and robots'],
+    bear:['EV competition from BYD and other Chinese manufacturers intensifying','120x P/E prices in significant Optimus success already','FSD regulatory approval uncertain in many markets','CEO distraction risk with multiple concurrent ventures'],
+    cits:[{src:'Wedbush Securities',desc:'$600 price target; Optimus humanoid robot and robotaxi deployment primary upside catalysts in 2026',url:'https://www.thestreet.com/investing/stocks/veteran-analyst-resets-ai-stock-buy-list-for-2026',dt:'Dec 2025'}]},
+  CRWD:{name:'CrowdStrike Holdings',sector:'Cybersecurity',col:'#ff6b35',mktcap:'$92B',pe:'78x',rev:'+28%',eps:'+40%',t12:'+26%',t24:'+55%',risk:'MED',ret25:'+68%',conv:'★★★★★',
+    outlook:"CrowdStrike is the AI-native leader in endpoint security. Its Falcon platform uses machine learning to detect and respond to threats in real time. Despite the 2024 IT outage, enterprise customers overwhelmingly stayed — proving Falcon's indispensability. Revenue grew 28% in FY2026 with guidance for sustained 25%+ growth. Wedbush raised its price target to $600. The shift to AI-powered autonomous security creates a major multi-year expansion across endpoint and cloud workload protection. The post-outage recovery demonstrated extraordinary customer loyalty.",
+    bull:['Wedbush $600 price target — premier cybersecurity buy for 2026','Post-outage customer retention proved product indispensability','AI-native architecture vs competitors retrofitting AI onto legacy systems','Cloud workload protection significantly expanding total addressable market'],
+    bear:['78x forward P/E limits upside if growth decelerates','Outage reputational overhang lingers in some government sectors','Competition intensifying from Palo Alto Networks and SentinelOne'],
+    cits:[{src:'Wedbush',desc:'$600 price target, outperform; premier AI cybersecurity platform; post-outage enterprise recovery confirmed',url:'https://www.thestreet.com/investing/stocks/veteran-analyst-resets-ai-stock-buy-list-for-2026',dt:'Dec 2025'}]},
+  IONQ:{name:'IonQ Inc.',sector:'Quantum Computing',col:'#ffc832',mktcap:'$7B',pe:'N/M',rev:'+105%',eps:'N/M',t12:'+50%',t24:'+150%',risk:'X-HIGH',ret25:'+155%',conv:'★★★☆☆',
+    outlook:"IonQ is the leading pure-play trapped-ion quantum computing company. Available on AWS, Azure, and Google Cloud. Acquired Quantum Circuits for $550M in 2024 and has a roadmap to millions of qubits by 2029. Revenue grew over 100% in 2025. This is a high-conviction speculative position — quantum market projected $198B by 2040, but commercial viability at scale is 5–7 years away. Size as a venture-style position (2–3% max). The asymmetric upside if quantum delivers is enormous, but so is the downside if timelines slip.",
+    bull:['Available on AWS/Azure/Google Cloud — widest distribution in quantum','SoftBank partnership provides capital and Asian market access','Revenue growing 100%+ YoY from expanding customer base','Roadmap to millions of qubits by 2029 most credible in industry'],
+    bear:['Pre-profitable with ongoing dilution risk','Commercial quantum advantage for business problems still years away','IBM, Google, Microsoft have vastly superior resources','50%+ drawdowns are routine for this stock'],
+    cits:[{src:'Jefferies / Motley Fool',desc:'Quantum market projected $198B by 2040; IonQ on all 3 major clouds; $550M Quantum Circuits acquisition',url:'https://www.fool.com',dt:'Jan 2026'}]},
+  BE:{name:'Bloom Energy Corp',sector:'AI Energy Infrastructure',col:'#00ffb3',mktcap:'$5.6B',pe:'85x',rev:'+57%',eps:'N/M',t12:'+40%',t24:'+90%',risk:'HIGH',ret25:'+291%',conv:'★★★★☆',
+    outlook:"Bloom Energy was 2025's best performing stock in the portfolio at +291%. Its solid oxide fuel cell technology enables on-site power generation for data centers, bypassing grid congestion. Oracle signed a major deal in 2025. Brookfield Infrastructure committed $5B in a partnership. Revenue turned from -17.5% to +57% YoY. Q3 2025 marked the first quarter of positive cash flows — the inflection point analysts had been waiting for. The on-site power thesis is now validated. Key risk: the 291% gain in 2025 raises the bar significantly, and fuel cells face competition from batteries, nuclear, and gas turbines.",
+    bull:['Revenue inflection from -17.5% to +57% YoY — massive positive turn','Oracle deal + $5B Brookfield validates data center power demand','On-site power bypasses grid congestion for AI data center siting','First positive cash flows Q3 2025 — profitability now in sight'],
+    bear:['291% 2025 gain raises the bar; hard to repeat','Competition from batteries, nuclear, gas turbines for data center power','Not yet profitable; dilution risk if capital needs arise','Technology cost premium vs grid power in many markets persists'],
+    cits:[{src:'24/7 Wall St. / Carbon Credits',desc:'Bloom Energy +291% in 2025; Oracle deal + $5B Brookfield partnership; first positive cash flows Q3 2025',url:'https://247wallst.com',dt:'Jan 2026'}]},
+  TSM:{name:'TSMC',sector:'Semiconductors',col:'#b94dff',mktcap:'$1.0T',pe:'24x',rev:'+30%',eps:'+35%',t12:'+30%',t24:'+58%',risk:'MED',ret25:'+55%',conv:'★★★★★',
+    outlook:'TSMC controls approximately 70% of the global foundry market. High-performance computing (including AI) now accounts for 58% of revenue. AI chip revenue is projected to compound at mid-to-high 50% annually through 2029. Advanced chips (7nm and below) were 77% of 2025 wafer revenue. Capital spending could reach $56B in 2026 to support advanced packaging and CoWoS capacity. Arizona fab construction is accelerating with 3nm mass production expected by 2027. Every major AI chip in the portfolio (NVDA, AVGO, AMD, etc.) must be manufactured at TSMC.',
+    bull:['70% global foundry market share — near monopoly on advanced chips','AI chip revenue growing mid-to-high 50% CAGR through 2029','Arizona fab diversification reducing geopolitical risk premium','Every major AI chip in existence is made at TSMC'],
+    bear:['Taiwan geopolitical risk remains significant overhang','US/Europe fab buildouts expensive and slow','Apple and NVDA customer concentration risk'],
+    cits:[{src:'Motley Fool',desc:'TSMC controls ~70% global foundry; AI chip revenue growing mid-to-high 50% annually through 2029',url:'https://www.fool.com/investing/2026/02/18/predict-ai-stocks-momentum-amat-tsm-nvda/',dt:'Feb 2026'}]},
+};
+function getSD(sym){
+  if(SDATA[sym]) return SDATA[sym];
+  return {
+    name:sym+' Corp',sector:'Portfolio Stock',col:'#00d4ff',
+    mktcap:'N/A',pe:'N/A',rev:'N/A',eps:'N/A',t12:'+20%',t24:'+40%',risk:'MED',ret25:'N/A',conv:'★★★☆☆',
+    outlook:`${sym} is part of the APEX CAPITAL diversified sector allocation. For full fundamental analysis, refer to Yahoo Finance, Seeking Alpha, or your broker platform.`,
+    bull:['Part of diversified sector allocation strategy','Included based on analyst coverage and sector exposure'],
+    bear:['Conduct independent due diligence before investing','Positions sized at $1,250 — appropriate for speculative exposure'],
+    cits:[]
+  };
+}
+
+// ============================================================
+// STOCK MODAL CHARTS — proper per-timeframe data
+// ============================================================
+let mChart=null, mSym=null;
+
+// Config per timeframe: candles, ms per candle, label interval, label format
+const TF_CONFIG = {
+  '1D': { candles:390, msPerCandle:60000,   labelEvery:60,  fmt:(i,now)=>{ const t=new Date(now - (390-i)*60000); return t.getHours()+':'+(t.getMinutes()<10?'0':'')+t.getMinutes(); } },
+  '7D': { candles:35,  msPerCandle:8640000, labelEvery:5,   fmt:(i,now)=>{ const d=new Date(now-(35-i)*8640000); return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]; } },
+  '1M': { candles:30,  msPerCandle:86400000,labelEvery:5,   fmt:(i,now)=>{ const d=new Date(now-(30-i)*86400000); return (d.getMonth()+1)+'/'+(d.getDate()); } },
+  '1Y': { candles:52,  msPerCandle:604800000,labelEvery:8,  fmt:(i,now)=>{ const d=new Date(now-(52-i)*604800000); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+" '"+(d.getFullYear()%100); } },
+};
+
+function buildChartSeries(sym, base, period) {
+  const cfg = TF_CONFIG[period];
+  if (!cfg) return { data: [base], labels: [''] };
+
+  const cur  = lastPrices[sym] || base;
+  const vol  = getVol(sym);
+  const seed = sym.split('').reduce((a, c, i) => a + c.charCodeAt(0) * (i + 7), 1);
+  const now  = Date.now();
+
+  // Volatility scales up for longer timeframes
+  const volScale  = { '1D':1, '7D':3, '1M':5, '1Y':14 }[period] || 1;
+  const scaledVol = vol * volScale;
+
+  // Start slightly before current price so chart shows realistic history
+  const startOffset = { '1D':0.995, '7D':0.96, '1M':0.92, '1Y':0.72 }[period] || 0.98;
+  let price = cur * startOffset;
+
+  const raw = [];
+  for (let i = 0; i < cfg.candles; i++) {
+    const r = seededRand(seed + period.charCodeAt(0) * 17, i);
+    price = price * (1 + (r - 0.5) * 2 * scaledVol);
+    raw.push(price);
+  }
+
+  // Taper-scale so chart ends exactly at current live price
+  const lastRaw = raw[raw.length - 1];
+  const scale   = cur / lastRaw;
+  const data    = raw.map((p, i) => {
+    const taper = i / raw.length;
+    return +( p * (1 + (scale - 1) * taper) ).toFixed(2);
+  });
+
+  const labels = data.map((_, i) => (i % cfg.labelEvery === 0) ? cfg.fmt(i, now) : '');
+  return { data, labels };
+}
+
+async function renderMChart(sym, base, period) {
+  if (mChart) { mChart.destroy(); mChart = null; }
+
+  // Show loading state
+  const ctx = document.getElementById('mchart').getContext('2d');
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  let data, labels;
+
+  // For 1D: fetch real intraday candles from Finnhub
+  if (period === '1D') {
+    try {
+      const now   = Math.floor(Date.now() / 1000);
+      const from  = now - 23400; // 6.5 trading hours in seconds
+      const res   = await fetch(
+        `${FINNHUB_REST}/stock/candle?symbol=${sym}&resolution=5&from=${from}&to=${now}&token=${FINNHUB_KEY}`
+      );
+      const d = await res.json();
+      if (d.s === 'ok' && d.c && d.c.length > 0) {
+        data   = d.c; // close prices
+        labels = d.t.map((ts, i) => {
+          const dt = new Date(ts * 1000);
+          const h  = dt.getHours(), m = dt.getMinutes();
+          // Label every ~hour (every 12 × 5min candles)
+          return (i % 12 === 0) ? `${h}:${m<10?'0':''}${m}` : '';
+        });
+        // Update last price in case WS hasn't fired yet
+        if (data.length > 0) lastPrices[sym] = data[data.length - 1];
+      }
+    } catch(e) {}
+  }
+
+  // Fallback / non-1D periods: use seeded simulation anchored to live price
+  if (!data) {
+    const result = buildChartSeries(sym, base, period);
+    data   = result.data;
+    labels = result.labels;
+  }
+
+  const first = data[0], last = data[data.length - 1];
+  const col   = last >= first ? '#00ffb3' : '#ff3d5a';
+
+  mChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: col,
+        backgroundColor: col + '15',
+        borderWidth: 1.5,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: col,
+        pointHoverBorderColor: '#020810',
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 250 },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#060e1c',
+          borderColor: col + '44',
+          borderWidth: 1,
+          callbacks: {
+            title: (items) => labels[items[0].dataIndex] || '',
+            label: (c)    => ` $${parseFloat(c.raw).toFixed(2)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { maxRotation: 0, font: { size: 9 }, color: '#3d6080' }
+        },
+        y: {
+          grid: { color: 'rgba(0,200,255,0.05)' },
+          ticks: { callback: v => `$${parseFloat(v).toFixed(0)}`, font: { size: 9 }, color: '#3d6080' },
+          position: 'right'
+        }
+      }
+    }
+  });
+}
+
+async function switchChart(p, btn) {
+  document.querySelectorAll('.ct').forEach(b => b.classList.remove('act'));
+  btn.classList.add('act');
+  if (!mSym) return;
+  const t = TICKERS.find(x => x.s === mSym);
+  await renderMChart(mSym, t ? t.b : 100, p);
+}
+
+// Update live price row in open modal without rebuilding whole modal
+function updateModalPrices() {
+  if (!mSym) return;
+  const t = TICKERS.find(x => x.s === mSym);
+  if (!t) return;
+  const cur  = lastPrices[mSym]  || t.b;
+  const base = basePrices[mSym]  || t.b;
+  const pct  = ((cur - base) / base) * 100;
+  const isUp = pct >= 0;
+  const pCards = document.querySelectorAll('#m-prow .pcard');
+  if (pCards[0]) pCards[0].querySelector('.pc-v').textContent = '$' + cur.toFixed(2);
+  if (pCards[1]) {
+    const el = pCards[1].querySelector('.pc-v');
+    el.textContent = (isUp ? '+' : '') + pct.toFixed(3) + '%';
+    el.style.color  = isUp ? 'var(--a2)' : 'var(--red)';
+    const sub = pCards[1].querySelector('.pc-s');
+    if (sub) sub.textContent = (isUp ? '+' : '') + '$' + Math.abs(cur - base).toFixed(2) + ' vs base';
+  }
+}
+function openStock(sym){
+  mSym=sym;
+  const sd=getSD(sym);
+  const t=TICKERS.find(x=>x.s===sym)||{s:sym,b:100};
+  const cur=lastPrices[sym]||t.b;
+  const pct=((cur-t.b)/t.b)*100;
+  const isUp=pct>=0;
+
+  document.getElementById('m-badge').style.cssText=`background:${sd.col}22;color:${sd.col};border:2px solid ${sd.col}44;font-size:13px;letter-spacing:1px;`;
+  document.getElementById('m-badge').textContent=sym;
+  document.getElementById('m-title').textContent=sd.name;
+  document.getElementById('m-sector').textContent=sd.sector;
+  document.getElementById('m-tags').innerHTML=
+    `<span class="mtag" style="color:${isUp?'var(--a2)':'var(--red)'};border-color:${isUp?'rgba(0,255,179,0.3)':'rgba(255,61,90,0.3)'};background:${isUp?'rgba(0,255,179,0.08)':'rgba(255,61,90,0.08)'};">${isUp?'▲':'▼'} ${isUp?'+':''}${pct.toFixed(2)}% TODAY</span>`+
+    `<span class="mtag" style="color:var(--a1);border-color:rgba(0,212,255,0.3);background:rgba(0,212,255,0.08);">RISK: ${sd.risk}</span>`+
+    `<span class="mtag" style="color:var(--gold);border-color:rgba(255,200,50,0.3);background:rgba(255,200,50,0.08);">2025: ${sd.ret25}</span>`+
+    `<span class="mtag" style="color:var(--a4);border-color:rgba(185,77,255,0.3);background:rgba(185,77,255,0.08);">${sd.conv}</span>`;
+
+  document.getElementById('m-prow').innerHTML=
+    `<div class="pcard"><div class="pc-l">Current Price</div><div class="pc-v" style="color:var(--a1)">$${cur.toFixed(2)}</div><div class="pc-s">Baseline $${t.b.toFixed(2)}</div></div>`+
+    `<div class="pcard"><div class="pc-l">Day Change</div><div class="pc-v" style="color:${isUp?'var(--a2)':'var(--red)'}">${isUp?'+':''}${pct.toFixed(3)}%</div><div class="pc-s">${isUp?'+':''}$${(cur-t.b).toFixed(2)}/share</div></div>`+
+    `<div class="pcard"><div class="pc-l">Market Cap</div><div class="pc-v" style="color:var(--text)">${sd.mktcap}</div><div class="pc-s">Current estimate</div></div>`+
+    `<div class="pcard"><div class="pc-l">Forward P/E</div><div class="pc-v" style="color:var(--gold)">${sd.pe}</div><div class="pc-s">Next 12 months</div></div>`+
+    `<div class="pcard"><div class="pc-l">Revenue Growth</div><div class="pc-v" style="color:var(--a2)">${sd.rev}</div><div class="pc-s">Most recent quarter YoY</div></div>`;
+
+  document.getElementById('m-trow').innerHTML=
+    `<div class="tcard"><div class="tc-l">12-Month Target</div><div class="tc-v" style="color:var(--a2)">${sd.t12}</div><div class="tc-s">Analyst consensus upside</div></div>`+
+    `<div class="tcard"><div class="tc-l">24-Month Target</div><div class="tc-v" style="color:var(--a1)">${sd.t24}</div><div class="tc-s">2-year projected upside</div></div>`+
+    `<div class="tcard"><div class="tc-l">Your Position</div><div class="tc-v" style="color:var(--gold)">$1,250</div><div class="tc-s">${(1250/cur).toFixed(3)} shares at entry</div></div>`+
+    `<div class="tcard"><div class="tc-l">12-Mo Proj. Value</div><div class="tc-v" style="color:var(--a4)">$${Math.round(1250*(1+parseFloat(sd.t12)/100))}</div><div class="tc-s">Based on analyst target</div></div>`;
+
+  document.getElementById('m-agrid').innerHTML=
+    `<div class="apanel"><div class="apt" style="color:${sd.col}">📊 FUNDAMENTALS &amp; BULL / BEAR</div>`+
+    `<div class="fgrid">`+
+    `<div class="fi"><div class="fi-l">Revenue Growth</div><div class="fi-v" style="color:var(--a2)">${sd.rev}</div></div>`+
+    `<div class="fi"><div class="fi-l">EPS Growth</div><div class="fi-v" style="color:var(--a2)">${sd.eps}</div></div>`+
+    `<div class="fi"><div class="fi-l">Risk Tier</div><div class="fi-v" style="color:var(--gold)">${sd.risk}</div></div>`+
+    `<div class="fi"><div class="fi-l">2025 Return</div><div class="fi-v" style="color:var(--a1)">${sd.ret25}</div></div>`+
+    `</div>`+
+    `<div class="bbgrid">`+
+    `<div class="bull"><div class="bb-t">BULL CASE</div>${sd.bull.map(b=>`<div class="bbi">${b}</div>`).join('')}</div>`+
+    `<div class="bear"><div class="bb-t">BEAR CASE</div>${sd.bear.map(b=>`<div class="bbi">${b}</div>`).join('')}</div>`+
+    `</div></div>`+
+    `<div class="apanel"><div class="apt" style="color:${sd.col}">🔭 12–24 MONTH OUTLOOK</div><div class="outlook">${sd.outlook}</div></div>`;
+
+  const stdCits=[
+    {src:'Yahoo Finance',desc:`Real-time price, earnings, news and analyst ratings for ${sym}`,url:`https://finance.yahoo.com/quote/${sym}`,dt:'Live'},
+    {src:'Seeking Alpha',desc:`In-depth analysis, earnings transcripts, quant ratings for ${sym}`,url:`https://seekingalpha.com/symbol/${sym}`,dt:'Live'},
+    {src:'Finviz',desc:`Technical charts, insider transactions, financial ratios for ${sym}`,url:`https://finviz.com/quote.ashx?t=${sym}`,dt:'Live'},
+    {src:'Nasdaq.com',desc:`Official listing data, earnings calendar, dividend history`,url:`https://www.nasdaq.com/market-activity/stocks/${sym.toLowerCase()}`,dt:'Live'},
+  ];
+  const allCits=[...sd.cits,...stdCits];
+  document.getElementById('m-cit').innerHTML=
+    `<div class="cit-t">📎 SOURCES &amp; CITATIONS</div>`+
+    `<div class="citgrid">${allCits.map(c=>`<div class="cititem"><div class="citicon">📰</div><div><div class="citsrc">${c.src} · ${c.dt||c.date}</div><div class="citdesc">${c.desc}</div><a class="citlink" href="${c.url}" target="_blank" rel="noopener noreferrer">↗ ${c.url.replace('https://','').split('/')[0]}</a></div></div>`).join('')}</div>`;
+
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(async ()=>{
+    document.querySelectorAll('.ct').forEach(b=>b.classList.remove('act'));
+    document.querySelectorAll('.ct')[0].classList.add('act');
+    await renderMChart(sym, t.b, '1D');
+  }, 50);
+}
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow='';
+  mSym=null;
+  if(mChart){mChart.destroy();mChart=null;}
+}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// ============================================================
+// SECTOR PANEL DATA — 80 stocks
+// ============================================================
+const SD=[
+  {id:0,nm:'AI INFRASTRUCTURE & CLOUD',col:'#00d4ff',b1:'CONVICTION: 9.5/10',b2:'MARKET: $7T BY 2030',b3:'RISK: MEDIUM',
+   cos:[{t:'NVDA',n:'NVIDIA Corp',cv:'★★★★★',r:'LOW',t12:35,t24:65,ret:'+170%',cat:'Blackwell chip + $500B hyperscaler capex. FY27 +64%'},{t:'MSFT',n:'Microsoft',cv:'★★★★★',r:'LOW',t12:28,t24:52,ret:'+28%',cat:'Azure AI Foundry + 65% Fortune 500 + $30B/qtr capex'},{t:'GOOG',n:'Alphabet',cv:'★★★★★',r:'LOW',t12:22,t24:45,ret:'+22%',cat:'$175–185B capex 2026 + Willow quantum advantage'},{t:'AMZN',n:'Amazon',cv:'★★★★★',r:'LOW',t12:26,t24:50,ret:'+31%',cat:'$200B AI capex + AWS Bedrock + Alexa+'},{t:'META',n:'Meta Platforms',cv:'★★★★☆',r:'LOW',t12:30,t24:55,ret:'+45%',cat:'$115–135B AI capex + Llama open source + Reels AI'},{t:'ORCL',n:'Oracle Corp',cv:'★★★★☆',r:'MED',t12:40,t24:78,ret:'+55%',cat:'$300B OpenAI compute deal; stock +40% after earnings'},{t:'PLTR',n:'Palantir',cv:'★★★★★',r:'MED',t12:25,t24:55,ret:'+80%',cat:'AIP platform 62% rev growth + $230 Wedbush target'},{t:'CRWV',n:'CoreWeave',cv:'★★★☆☆',r:'HIGH',t12:85,t24:150,ret:'IPO',cat:'GPU cloud; long-term OpenAI/Meta contracts; heavy debt'},{t:'NBIS',n:'Nebius Group',cv:'★★★☆☆',r:'X-HIGH',t12:200,t24:900,ret:'+88%',cat:'$19B MSFT + $3B Meta; targeting 1,600% revenue growth'},{t:'IREN',n:'IREN Ltd',cv:'★★★☆☆',r:'HIGH',t12:120,t24:250,ret:'+145%',cat:'$9.7B Microsoft GPU cloud contract at 85% EBITDA margin'}]},
+  {id:1,nm:'NUCLEAR & AI ENERGY POWER',col:'#00ffb3',b1:'CONVICTION: 9.2/10',b2:'DEMAND +75% BY 2050',b3:'RISK: MED-LOW',
+   cos:[{t:'CEG',n:'Constellation Energy',cv:'★★★★★',r:'LOW',t12:22,t24:45,ret:'+45%',cat:'21 reactors 22GW; MSFT+Meta+GOOG 20-year PPAs locked'},{t:'VST',n:'Vistra Corp',cv:'★★★★★',r:'MED',t12:25,t24:50,ret:'+51%',cat:'41GW; EBITDA target $6.8–7.6B 2026'},{t:'GEV',n:'GE Vernova',cv:'★★★★★',r:'MED',t12:30,t24:60,ret:'+99%',cat:'#1 gas turbine; orders sold out thru 2028; $52B rev 2028'},{t:'BE',n:'Bloom Energy',cv:'★★★★☆',r:'HIGH',t12:40,t24:90,ret:'+291%',cat:'Fuel cells for AI data centers; Oracle + $5B Brookfield'},{t:'TLN',n:'Talen Energy',cv:'★★★★☆',r:'HIGH',t12:35,t24:75,ret:'+88%',cat:'Nuclear+fossil+solar; AI data center co-location play'},{t:'MTZ',n:'MasTec Inc.',cv:'★★★★☆',r:'MED',t12:28,t24:55,ret:'+65%',cat:'$16.5B backlog; clean energy infra builder; EPS +58%'},{t:'OKLO',n:'Oklo Inc.',cv:'★★★☆☆',r:'X-HIGH',t12:80,t24:200,ret:'+210%',cat:'Aurora SMR microreactor; Altman-backed; pre-revenue'},{t:'NNE',n:'Nano Nuclear',cv:'★★☆☆☆',r:'X-HIGH',t12:100,t24:300,ret:'+310%',cat:'Micro-nuclear concept; extreme speculation; max 1%'},{t:'CCJ',n:'Cameco Corp',cv:'★★★★☆',r:'MED',t12:20,t24:40,ret:'+42%',cat:'Top uranium miner; US gov quad nuclear capacity by 2050'},{t:'NEE',n:'NextEra Energy',cv:'★★★★☆',r:'LOW',t12:15,t24:30,ret:'+18%',cat:'$120B solar/wind/storage 2029; data center PPAs'}]},
+  {id:2,nm:'SEMICONDUCTORS',col:'#b94dff',b1:'CONVICTION: 8.5/10',b2:'EQUIP SALES $126B IN 2026',b3:'RISK: MEDIUM',
+   cos:[{t:'NVDA',n:'NVIDIA Corp',cv:'★★★★★',r:'LOW',t12:35,t24:65,ret:'+170%',cat:'FY27 +64%; Blackwell demand; CUDA ecosystem moat'},{t:'TSM',n:'TSMC',cv:'★★★★★',r:'MED',t12:30,t24:58,ret:'+55%',cat:'70% global foundry; HPC/AI = 58% rev; +30% growth 2026'},{t:'AVGO',n:'Broadcom',cv:'★★★★★',r:'LOW',t12:32,t24:60,ret:'+72%',cat:'Custom AI chips; $90B FY27 hyperscaler opportunity'},{t:'AMD',n:'Advanced Micro Devices',cv:'★★★★☆',r:'MED',t12:25,t24:50,ret:'+34%',cat:'MI300X vs NVDA; Arista cites AI shift to AMD'},{t:'AMAT',n:'Applied Materials',cv:'★★★★☆',r:'MED',t12:22,t24:48,ret:'+35%',cat:'Equip +20% 2026; HBM needs 3–4x more wafer processing'},{t:'MRVL',n:'Marvell Technology',cv:'★★★★☆',r:'MED',t12:28,t24:55,ret:'+48%',cat:'Custom ASICs for AI networking; data center revenue surge'},{t:'LRCX',n:'Lam Research',cv:'★★★☆☆',r:'MED',t12:20,t24:42,ret:'+30%',cat:'Etch/deposition tools for DRAM/NAND AI memory'},{t:'ASML',n:'ASML Holdings',cv:'★★★★☆',r:'LOW',t12:18,t24:38,ret:'+25%',cat:'EUV monopoly; only company enabling 2nm+ chip production'},{t:'MU',n:'Micron Technology',cv:'★★★☆☆',r:'HIGH',t12:35,t24:70,ret:'+20%',cat:'HBM memory for AI; DRAM demand surge — cyclical risk'},{t:'INTC',n:'Intel Corp',cv:'★★☆☆☆',r:'HIGH',t12:15,t24:40,ret:'-28%',cat:'Turnaround; new CEO + foundry pivot — high risk play'}]},
+  {id:3,nm:'QUANTUM COMPUTING',col:'#ffc832',b1:'CONVICTION: 7.5/10',b2:'MARKET: $198B BY 2040',b3:'RISK: HIGH / X-HIGH',
+   cos:[{t:'IONQ',n:'IonQ Inc.',cv:'★★★☆☆',r:'X-HIGH',t12:50,t24:150,ret:'+155%',cat:'Trapped-ion on AWS/Azure/Google; millions of qubits 2029'},{t:'QBTS',n:'D-Wave Quantum',cv:'★★★☆☆',r:'X-HIGH',t12:45,t24:120,ret:'+280%',cat:'Annealing + gate-model; proved quantum supremacy'},{t:'RGTI',n:'Rigetti Computing',cv:'★★☆☆☆',r:'X-HIGH',t12:20,t24:80,ret:'+195%',cat:'108-qubit Cepheus 2026; minimal revenue; heavy dilution'},{t:'GOOG',n:'Alphabet (Willow)',cv:'★★★★★',r:'LOW',t12:22,t24:45,ret:'+22%',cat:'Willow chip verified quantum advantage; best-resourced'},{t:'IBM',n:'IBM Quantum',cv:'★★★★☆',r:'LOW',t12:14,t24:28,ret:'+14%',cat:'120-qubit Nighthawk; fault-tolerant target 2029'},{t:'MSFT',n:'Microsoft (Topo.)',cv:'★★★★★',r:'LOW',t12:28,t24:52,ret:'+28%',cat:'Topological qubits + Azure Quantum hybrid platform'},{t:'NVDA',n:'NVIDIA (CUDA-Q)',cv:'★★★★★',r:'MED',t12:35,t24:65,ret:'+170%',cat:'CUDA-Q = classical-quantum bridge; picks-and-shovels play'},{t:'QUBT',n:'Quantum Computing Inc.',cv:'★★☆☆☆',r:'X-HIGH',t12:80,t24:200,ret:'+66%',cat:'Room-temp photonic; no cooling costs; Qatalyst platform'},{t:'AMZN',n:'Amazon (Braket)',cv:'★★★★☆',r:'LOW',t12:26,t24:50,ret:'+31%',cat:'Amazon Braket quantum cloud + IonQ partnership'},{t:'HON',n:'Honeywell (Quantinuum)',cv:'★★★☆☆',r:'LOW',t12:18,t24:35,ret:'+12%',cat:'12 logical qubits with MSFT; IPO 2026/2027 planned'}]},
+  {id:4,nm:'CYBERSECURITY',col:'#ff6b35',b1:'CONVICTION: 8.0/10',b2:'CRWD TARGET $600 (+26%)',b3:'RISK: MEDIUM',
+   cos:[{t:'CRWD',n:'CrowdStrike',cv:'★★★★★',r:'MED',t12:26,t24:55,ret:'+68%',cat:'Wedbush $600 target; AI-native Falcon; post-incident recovery'},{t:'PANW',n:'Palo Alto Networks',cv:'★★★★☆',r:'MED',t12:22,t24:45,ret:'+24%',cat:'AI security + SASE convergence; platformization winning'},{t:'ZS',n:'Zscaler',cv:'★★★★☆',r:'MED',t12:25,t24:52,ret:'+35%',cat:'Zero-trust leader; AI data center perimeter security surge'},{t:'FTNT',n:'Fortinet',cv:'★★★★☆',r:'LOW',t12:18,t24:38,ret:'+18%',cat:'Profitable + cash gen; AI FortiGuard threat intelligence'},{t:'S',n:'SentinelOne',cv:'★★★☆☆',r:'HIGH',t12:30,t24:65,ret:'+52%',cat:'Purple AI platform; fastest endpoint detection; profitability 2026'},{t:'OKTA',n:'Okta',cv:'★★★☆☆',r:'MED',t12:20,t24:42,ret:'+30%',cat:'Identity + AI security convergence; post-breach recovery'},{t:'NET',n:'Cloudflare',cv:'★★★★☆',r:'MED',t12:28,t24:58,ret:'+40%',cat:'AI inference security + Workers AI edge + DDoS leader'},{t:'VRNS',n:'Varonis Systems',cv:'★★★☆☆',r:'HIGH',t12:25,t24:55,ret:'+35%',cat:'Data security for AI/ML pipelines; SaaS transition'},{t:'CYBR',n:'CyberArk',cv:'★★★★☆',r:'MED',t12:22,t24:45,ret:'+28%',cat:'Privileged access mgmt for AI systems; identity critical'},{t:'LAES',n:'SEALSQ Corp',cv:'★★☆☆☆',r:'X-HIGH',t12:60,t24:180,ret:'+55%',cat:'Post-quantum cryptography chips; NIST PQC = huge demand'}]},
+  {id:5,nm:'ROBOTICS & AUTOMATION',col:'#ff3fa0',b1:'CONVICTION: 8.2/10',b2:'MARKET: $1T BY 2030',b3:'RISK: MIXED',
+   cos:[{t:'TSLA',n:'Tesla (Optimus)',cv:'★★★★☆',r:'HIGH',t12:30,t24:80,ret:'+62%',cat:'Optimus humanoid robot; Wedbush $600; FSD robotaxi 2026'},{t:'ISRG',n:'Intuitive Surgical',cv:'★★★★★',r:'LOW',t12:22,t24:42,ret:'+32%',cat:'da Vinci AI surgery dominance; consumables recurring moat'},{t:'ABB',n:'ABB Ltd',cv:'★★★★☆',r:'LOW',t12:18,t24:35,ret:'+18%',cat:'#1 industrial robot maker; EV charging; reshoring wave'},{t:'PATH',n:'UiPath',cv:'★★★☆☆',r:'MED',t12:25,t24:55,ret:'+38%',cat:'AI-powered RPA + agentic AI enterprise workflows'},{t:'TER',n:'Teradyne',cv:'★★★☆☆',r:'MED',t12:20,t24:42,ret:'+38%',cat:'Robot + semiconductor testing; MiR autonomous robots'},{t:'KTOS',n:'Kratos Defense',cv:'★★★☆☆',r:'HIGH',t12:35,t24:75,ret:'+55%',cat:'Military drones + autonomous systems; $900B defense budget'},{t:'FANUY',n:'Fanuc Corp',cv:'★★★☆☆',r:'LOW',t12:15,t24:30,ret:'+15%',cat:'Largest industrial robot maker; CNC for reshoring'},{t:'CDNS',n:'Cadence Design',cv:'★★★★☆',r:'LOW',t12:20,t24:40,ret:'+25%',cat:'AI chip design EDA software; critical for custom silicon'},{t:'HON',n:'Honeywell',cv:'★★★★☆',r:'LOW',t12:16,t24:32,ret:'+14%',cat:'Industrial automation + process control; smart factory AI'},{t:'RR',n:'Richtech Robotics',cv:'★★☆☆☆',r:'X-HIGH',t12:80,t24:220,ret:'+120%',cat:'Service robots retail/hospitality; major retailer agreement'}]},
+  {id:6,nm:'BIOTECH / AI HEALTH',col:'#3cf0ff',b1:'CONVICTION: 7.8/10',b2:'AI DRUG DISCOVERY BOOM',b3:'RISK: HIGH / MIXED',
+   cos:[{t:'RXRX',n:'Recursion Pharma',cv:'★★★☆☆',r:'X-HIGH',t12:60,t24:160,ret:'+88%',cat:'AI drug discovery; 54 clinical programs; NVDA partnership'},{t:'ISRG',n:'Intuitive Surgical',cv:'★★★★★',r:'LOW',t12:22,t24:42,ret:'+32%',cat:'AI-guided robotic surgery; recurring consumables revenue'},{t:'AMGN',n:'Amgen',cv:'★★★★☆',r:'LOW',t12:15,t24:28,ret:'+15%',cat:'AI + quantum drug discovery; Quantinuum partnership'},{t:'ILMN',n:'Illumina',cv:'★★★☆☆',r:'MED',t12:20,t24:42,ret:'+20%',cat:'Genomic sequencing + AI analysis; Grail cancer detection'},{t:'VEEV',n:'Veeva Systems',cv:'★★★★☆',r:'MED',t12:22,t24:44,ret:'+26%',cat:'Cloud SaaS for pharma/biotech; AI Vault clinical trials'},{t:'DXCM',n:'DexCom',cv:'★★★☆☆',r:'MED',t12:25,t24:50,ret:'+20%',cat:'AI CGM devices; GLP-1 drug boom driving monitoring'},{t:'GH',n:'Guardant Health',cv:'★★★☆☆',r:'HIGH',t12:35,t24:80,ret:'+40%',cat:'Liquid biopsy AI cancer detection; FDA approvals 2026'},{t:'TDOC',n:'Teladoc Health',cv:'★★★☆☆',r:'HIGH',t12:30,t24:70,ret:'-10%',cat:'AI-powered telehealth turnaround; beaten-down valuation'},{t:'ACMR',n:'AC Immune SA',cv:'★★☆☆☆',r:'X-HIGH',t12:45,t24:120,ret:'+35%',cat:"Alzheimer AI pipeline; Phase 2/3 data catalysts 2026"},{t:'PRVA',n:'Privia Health',cv:'★★★☆☆',r:'MED',t12:20,t24:45,ret:'+22%',cat:'AI physician practice mgmt; value-based care growth'}]},
+  {id:7,nm:'CLEAN ENERGY & SMART GRID',col:'#8fff5a',b1:'CONVICTION: 8.0/10',b2:'NEXTEA $120B CAPEX 2029',b3:'RISK: LOW-MED',
+   cos:[{t:'NEE',n:'NextEra Energy',cv:'★★★★★',r:'LOW',t12:15,t24:30,ret:'+18%',cat:'$120B solar/wind/storage 2029; AI data center PPAs'},{t:'BEP',n:'Brookfield Renewable',cv:'★★★★☆',r:'LOW',t12:18,t24:38,ret:'+22%',cat:'10.5GW Microsoft deal; Google hydro; Westinghouse stake'},{t:'PWR',n:'Quanta Services',cv:'★★★★☆',r:'LOW',t12:18,t24:35,ret:'+28%',cat:'Grid infra construction; double-digit backlog for AI power'},{t:'ENPH',n:'Enphase Energy',cv:'★★★☆☆',r:'MED',t12:25,t24:55,ret:'+30%',cat:'AI-optimized microinverter + battery storage + EV charging'},{t:'FLNC',n:'Fluence Energy',cv:'★★★☆☆',r:'HIGH',t12:40,t24:90,ret:'+35%',cat:'Grid-scale battery storage; IRA credits + 20%+ rev growth'},{t:'FSLR',n:'First Solar',cv:'★★★★☆',r:'MED',t12:20,t24:42,ret:'+18%',cat:'US-made thin-film solar; IRA manufacturing credits'},{t:'STEM',n:'Stem Inc.',cv:'★★★☆☆',r:'HIGH',t12:30,t24:75,ret:'+20%',cat:'Athena AI energy mgmt; 500K+ devices 50+ countries'},{t:'ITRI',n:'Itron Inc.',cv:'★★★★☆',r:'MED',t12:20,t24:40,ret:'+22%',cat:'Smart meters + AI grid mgmt; Microsoft Copilot integration'},{t:'RUN',n:'Sunrun',cv:'★★★☆☆',r:'HIGH',t12:28,t24:65,ret:'+25%',cat:'Residential solar + AI storage VPP; sells to AI grid'},{t:'BEPC',n:'Brookfield Renew Corp',cv:'★★★★☆',r:'LOW',t12:18,t24:36,ret:'+20%',cat:'Same Brookfield platform as BEP; C-Corp structure'}]},
+];
+
+let activeSec=null,cb1=null,cb2=null;
+function ccls(cv){const n=(cv.match(/★/g)||[]).length;return n>=5?'c5':n>=4?'c4':n>=3?'c3':n>=2?'c2':'c1';}
+function rcls(r){return r==='LOW'?'rl':r==='MED'?'rm':r==='HIGH'?'rh':'rx';}
+function openSec(idx){
+  if(activeSec===idx){closeSec();return;}
+  activeSec=idx;const s=SD[idx];
+  document.querySelectorAll('.kpi').forEach(k=>k.classList.remove('active'));
+  document.getElementById('kpi-'+idx).classList.add('active');
+  document.getElementById('sp-title').textContent=s.nm;
+  document.getElementById('sp-title').style.color=s.col;
+  ['sb1','sb2','sb3'].forEach((id,i)=>{
+    const el=document.getElementById(id);el.textContent=[s.b1,s.b2,s.b3][i];
+    el.style.cssText=`background:${s.col}18;color:${s.col};border:1px solid ${s.col}44;border-radius:4px;padding:3px 10px;`;
+  });
+  const tb=document.getElementById('sptb');tb.innerHTML='';
+  s.cos.forEach(c=>{
+    const rcl=c.ret.startsWith('+')?'up':c.ret.startsWith('-')?'dn':'up';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="tsym" onclick="openStock('${c.t}')">${c.t} ↗</span></td><td class="tnm">${c.n}</td><td><span class="cvb ${ccls(c.cv)}">${c.cv}</span></td><td><span class="tag ${rcls(c.r)}">${c.r}</span></td><td class="tg12">+${c.t12}%</td><td class="tg24">+${c.t24}%</td><td><span class="tag ${rcl}">${c.ret}</span></td><td class="tcat">${c.cat}</td>`;
+    tb.appendChild(tr);
+  });
+  if(cb1){cb1.destroy();cb1=null;}if(cb2){cb2.destroy();cb2=null;}
+  const labels=s.cos.map(c=>c.t);
+  cb1=new Chart(document.getElementById('cb1').getContext('2d'),{type:'bar',data:{labels,datasets:[{data:s.cos.map(c=>c.t12),backgroundColor:s.col+'bb',borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`+${c.raw}%`},backgroundColor:'#060e1c'}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:'rgba(0,200,255,0.05)'},ticks:{callback:v=>`+${v}%`,font:{size:9}}}}}});
+  cb2=new Chart(document.getElementById('cb2').getContext('2d'),{type:'bar',data:{labels,datasets:[{data:s.cos.map(c=>c.t24),backgroundColor:s.col+'77',borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`+${c.raw}%`},backgroundColor:'#060e1c'}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:'rgba(0,200,255,0.05)'},ticks:{callback:v=>`+${v}%`,font:{size:9}}}}}});
+  const spEl=document.getElementById('sp');spEl.classList.add('on');
+  setTimeout(()=>spEl.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+function closeSec(){activeSec=null;document.querySelectorAll('.kpi').forEach(k=>k.classList.remove('active'));document.getElementById('sp').classList.remove('on');}
+
+// TABS
+function swTab(n,btn){
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('act'));
+  document.getElementById('tab-'+n).classList.add('act');
+  btn.classList.add('act');
+  if(n==='al') initAlloc();
+}
+
+// IPO DATA
+const IPOS=[
+  {co:'OpenAI',sect:'AI Foundation Model',val:'$500B–$1T',when:'H2 2026',prob:'60%',desc:'ChatGPT creator targeting largest tech IPO in history. 800M+ weekly active users. $500B Stargate JV with Microsoft. Profitability through enterprise + ads.',col:'#00d4ff',e:'🔥'},
+  {co:'SpaceX',sect:'Space / AI Infra',val:'$800B–$1.5T',when:'Mid-2026',prob:'50%',desc:"Musk confirmed IPO preparations. 70% revenue from Starlink broadband. Plans for data centers in orbit to bypass Earth's energy constraints.",col:'#b94dff',e:'🚀'},
+  {co:'Databricks',sect:'AI/ML Data Platform',val:'$134B',when:'Q2–Q3 2026',prob:'80%',desc:'$4B+ annualized revenue, cash-flow positive. CEO calls IPO the "natural outcome." Powers the modern AI data stack for thousands of enterprises.',col:'#00ffb3',e:'⭐'},
+  {co:'Anthropic',sect:'AI Foundation Model',val:'$350B–$500B',when:'Late 2026',prob:'45%',desc:"Claude maker. Safety-first enterprise AI. Amazon-backed with $8B+. $70B ARR forecast by 2028. Hired Wilson Sonsini for IPO readiness.",col:'#ffc832',e:'🤖'},
+  {co:'Quantinuum',sect:'Quantum Computing',val:'$10B',when:'2026–2027',prob:'65%',desc:'Honeywell spin-out. $600M NVDA-backed Series B. 12 logical qubits with Microsoft. BMW, JPMorgan, Amgen partnerships. IPO publicly confirmed.',col:'#ff6b35',e:'⚛️'},
+  {co:'Crusoe Energy',sect:'AI Energy Infra',val:'$10B+',when:'2026',prob:'70%',desc:'"AI Factory" model converting energy to compute. $1.4B Series E late 2025. Large-scale GPU deployments tied to major AI workloads.',col:'#8fff5a',e:'⚡'},
+  {co:'Canva',sect:'AI Design Platform',val:'$42B',when:'Late 2026',prob:'72%',desc:"260M monthly users. $3.3B annualized revenue. Challenging Adobe across design. Co-founder says IPO 'probably imminent in the next couple of years.'",col:'#3cf0ff',e:'🎨'},
+  {co:'Fervo Energy',sect:'Geothermal Energy',val:'$2–4B',when:'2026',prob:'65%',desc:'Next-gen geothermal using horizontal drilling from oil/gas. Zero-carbon clean baseload for AI data centers. IPO confirmed for 2026.',col:'#ff3fa0',e:'🌋'},
+  {co:'Stripe',sect:'AI Payments',val:'$120B',when:'2026–2027',prob:'40%',desc:'Leader in "agentic commerce" — AI-to-AI payments. $120B+ valuation. Profitable. Largest potential fintech IPO in years.',col:'#ffc832',e:'💳'},
+  {co:'Cerebras',sect:'AI Chips',val:'$8–10B',when:'2026',prob:'55%',desc:'Wafer-Scale Engine — largest chip ever built, designed for massive AI compute. $1.1B Fidelity-led round after withdrawing 2024 IPO filing.',col:'#b94dff',e:'💻'},
+  {co:'Cohere',sect:'Enterprise AI',val:'$5B',when:'2026–2027',prob:'45%',desc:'Enterprise-focused LLM platform competing with OpenAI in B2B. Focused on private, regulated deployments for finance, healthcare, and government.',col:'#00d4ff',e:'🏢'},
+  {co:'xAI (Grok)',sect:'AI Foundation Model',val:'$230B',when:'2026–2027',prob:'35%',desc:"Elon Musk's AI lab. Grok gaining traction. Acquired SpaceX's AI infra. Could IPO alongside or separately from SpaceX.",col:'#ff6b35',e:'⚡'},
+];
+const ig=document.getElementById('ipogrid');
+IPOS.forEach(ip=>{
+  ig.innerHTML+=`<div class="icard" style="--ic:${ip.col}"><div class="ihype">${ip.e}</div><div class="ico">${ip.co}</div><div class="isect">${ip.sect}</div><div class="ival">${ip.val}</div><div class="ilvl">EST. VALUATION</div><div class="irow"><span class="iwhen">${ip.when}</span><span class="iprob">IPO Prob: ${ip.prob}</span></div><div class="idesc">${ip.desc}</div></div>`;
+});
+
+// OVERVIEW CHARTS
+const yrs=['2024','2025','2026E','2027E','2028E'];
+new Chart(document.getElementById('lc').getContext('2d'),{type:'line',data:{labels:yrs,datasets:[
+  {label:'AI Infra',data:[100,178,265,385,535],borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,0.04)',borderWidth:2,tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#00d4ff'},
+  {label:'Nuclear Energy',data:[100,195,285,378,462],borderColor:'#00ffb3',backgroundColor:'rgba(0,255,179,0.04)',borderWidth:2,tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#00ffb3'},
+  {label:'Semiconductors',data:[100,162,218,298,390],borderColor:'#b94dff',backgroundColor:'rgba(185,77,255,0.04)',borderWidth:2,tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#b94dff'},
+  {label:'Quantum (spec.)',data:[100,228,408,690,1120],borderColor:'#ffc832',borderWidth:2.5,tension:0.4,borderDash:[6,3],pointRadius:4,pointBackgroundColor:'#ffc832'},
+  {label:'Cybersecurity',data:[100,140,188,246,318],borderColor:'#ff6b35',backgroundColor:'rgba(255,107,53,0.03)',borderWidth:2,tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#ff6b35'},
+  {label:'Robotics',data:[100,148,205,282,388],borderColor:'#ff3fa0',backgroundColor:'rgba(255,63,160,0.03)',borderWidth:2,tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#ff3fa0'},
+  {label:'Clean Energy',data:[100,128,162,205,260],borderColor:'#8fff5a',backgroundColor:'rgba(143,255,90,0.03)',borderWidth:2,tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#8fff5a'},
+]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',labels:{boxWidth:10,padding:14,color:'#6a90aa',font:{size:10}}},tooltip:{backgroundColor:'#060e1c',borderColor:'rgba(0,212,255,0.3)',borderWidth:1}},scales:{x:{grid:{color:'rgba(0,200,255,0.05)'}},y:{grid:{color:'rgba(0,200,255,0.05)'},title:{display:true,text:'Index (2024=100)',color:'#3d6080',font:{size:9}}}}}});
+
+new Chart(document.getElementById('bc').getContext('2d'),{type:'bar',data:{labels:['NNE','BE','QBTS','OKLO','IONQ','GEV','PLTR','AVGO','CEG','IREN'],datasets:[{data:[310,291,280,210,155,99,80,72,45,145],backgroundColor:['#ff3d5a','#00ffb3','#ffc832','#ff3d5a','#ffc832','#00d4ff','#b94dff','#b94dff','#00d4ff','#ff6b35'],borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`+${c.raw}%`},backgroundColor:'#060e1c'}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:'rgba(0,200,255,0.05)'},ticks:{callback:v=>`+${v}%`,font:{size:9}}}}}});
+
+new Chart(document.getElementById('pc').getContext('2d'),{type:'doughnut',data:{labels:['AI Infra','Nuclear','Semis','Cybersec','Quantum','Robotics','Biotech','Clean Grid'],datasets:[{data:[22,20,18,12,8,8,7,5],backgroundColor:['#00d4ff','#00ffb3','#b94dff','#ff6b35','#ffc832','#ff3fa0','#3cf0ff','#8fff5a'],borderColor:'#020810',borderWidth:3,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{boxWidth:8,padding:7,font:{size:9},color:'#6a90aa'}},tooltip:{backgroundColor:'#060e1c',callbacks:{label:c=>` ${c.label}: ${c.raw}%`}}}}});
+
+new Chart(document.getElementById('sc').getContext('2d'),{type:'bubble',data:{datasets:[
+  {label:'NVDA',data:[{x:28,y:170,r:13}],backgroundColor:'rgba(0,212,255,0.8)'},{label:'CEG',data:[{x:20,y:45,r:10}],backgroundColor:'rgba(0,255,179,0.8)'},{label:'GEV',data:[{x:33,y:99,r:9}],backgroundColor:'rgba(0,255,179,0.6)'},{label:'BE',data:[{x:60,y:291,r:9}],backgroundColor:'rgba(255,107,53,0.8)'},{label:'PLTR',data:[{x:45,y:80,r:8}],backgroundColor:'rgba(185,77,255,0.8)'},{label:'AVGO',data:[{x:22,y:72,r:9}],backgroundColor:'rgba(0,212,255,0.6)'},{label:'IONQ',data:[{x:88,y:155,r:7}],backgroundColor:'rgba(255,200,50,0.8)'},{label:'NBIS',data:[{x:92,y:88,r:6}],backgroundColor:'rgba(255,61,90,0.8)'},{label:'NEE',data:[{x:16,y:18,r:10}],backgroundColor:'rgba(143,255,90,0.8)'},{label:'CRWD',data:[{x:42,y:68,r:8}],backgroundColor:'rgba(255,63,160,0.8)'},
+]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: Risk ${c.raw.x}, +${c.raw.y}%`},backgroundColor:'#060e1c'}},scales:{x:{title:{display:true,text:'Risk →',color:'#3d6080',font:{size:9}},min:0,max:100,grid:{color:'rgba(0,200,255,0.05)'}},y:{title:{display:true,text:'2025 Return % →',color:'#3d6080',font:{size:9}},min:0,grid:{color:'rgba(0,200,255,0.05)'}}}}});
+
+// ALLOCATION
+const AD=[
+  {n:'AI Infrastructure & Cloud',p:22,c:'#00d4ff'},{n:'Nuclear & AI Energy',p:20,c:'#00ffb3'},
+  {n:'Semiconductors',p:18,c:'#b94dff'},{n:'Cybersecurity',p:12,c:'#ff6b35'},
+  {n:'Quantum Computing',p:8,c:'#ffc832'},{n:'Robotics & Automation',p:8,c:'#ff3fa0'},
+  {n:'Biotech / AI Health',p:7,c:'#3cf0ff'},{n:'Clean Energy & Grid',p:5,c:'#8fff5a'},
+];
+let adone=false;
+function initAlloc(){
+  if(adone) return; adone=true;
+  const c=document.getElementById('albars');
+  AD.forEach(d=>{
+    const r=document.createElement('div');r.className='abr';
+    r.innerHTML=`<div class="abt"><span class="abnm">${d.n}</span><span class="abpct">${d.p}%</span></div><div class="abtr"><div class="abfill" style="background:${d.c}" data-p="${d.p}"></div></div>`;
+    c.appendChild(r);
+  });
+  setTimeout(()=>document.querySelectorAll('.abfill').forEach((el,i)=>setTimeout(()=>el.style.width=el.dataset.p+'%',i*80)),60);
+  new Chart(document.getElementById('dc').getContext('2d'),{type:'doughnut',data:{labels:AD.map(d=>d.n),datasets:[{data:AD.map(d=>d.p),backgroundColor:AD.map(d=>d.c),borderColor:'#020810',borderWidth:3,hoverOffset:10}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#060e1c',callbacks:{label:c=>` ${c.label}: ${c.raw}%`}}}}});
+}
+</script>
+</body>
+</html>
