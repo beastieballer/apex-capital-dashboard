@@ -269,6 +269,27 @@ tr:hover td{background:rgba(0,200,255,0.03);}
 .disc{border-top:1px solid var(--b1);padding-top:16px;font-family:'DM Mono',monospace;font-size:10px;color:var(--m1);line-height:1.9;}
 ::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--m1);border-radius:3px;}::-webkit-scrollbar-thumb:hover{background:var(--a1);}
 
+/* KPI CARD SHIMMER ON HOVER */
+@keyframes kshimmer{0%{left:-80%}100%{left:200%}}
+.kpi::before{content:'';position:absolute;top:0;left:-80%;width:45%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent);pointer-events:none;z-index:2;border-radius:inherit;}
+.kpi:hover::before{animation:kshimmer 0.65s ease forwards;}
+
+/* MODAL NAV ARROWS */
+.modal-nav{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.modal-nav button{background:none;border:1px solid var(--b1);color:var(--m2);font-size:14px;width:30px;height:30px;border-radius:6px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+.modal-nav button:hover{border-color:var(--a1);color:var(--a1);}
+.modal-nav button:disabled{opacity:0.25;cursor:default;}
+#m-pos{font-family:'DM Mono',monospace;font-size:9px;color:var(--m1);letter-spacing:1px;white-space:nowrap;}
+
+/* PRESET BUTTONS */
+.preset-btn{background:none;border:1px solid var(--b1);color:var(--m2);font-family:'DM Mono',monospace;font-size:9px;padding:4px 10px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;}
+.preset-btn:hover{border-color:var(--a1);color:var(--a1);}
+.preset-btn.pb-growth:hover{border-color:var(--a2);color:var(--a2);}
+.preset-btn.pb-cons:hover{border-color:var(--gold);color:var(--gold);}
+
+/* LAST UPDATED BADGE */
+#updBadge{font-family:'DM Mono',monospace;font-size:10px;padding:4px 12px;border-radius:5px;border:1px solid var(--b1);transition:color 0.5s,border-color 0.5s;}
+
 @media(max-width:1300px){.kpi-row{grid-template-columns:repeat(4,1fr);}.sp-body{grid-template-columns:1fr;}.sp-charts{border-left:none;border-top:1px solid var(--b1);}.ovrow{grid-template-columns:1fr 1fr;}.tr-kpis{grid-template-columns:repeat(3,1fr);}.rank-grid{grid-template-columns:1fr 1fr;}.ipo-grid{grid-template-columns:repeat(2,1fr);}.prow{grid-template-columns:repeat(3,1fr);}.agrid{grid-template-columns:1fr;}.citgrid{grid-template-columns:1fr;}.trow{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:800px){.kpi-row{grid-template-columns:repeat(2,1fr);}.pgrid{grid-template-columns:1fr;}.rkg{grid-template-columns:repeat(2,1fr);}.alg{grid-template-columns:1fr;}.tr-kpis{grid-template-columns:repeat(2,1fr);}.rank-grid{grid-template-columns:1fr;}.ipo-grid{grid-template-columns:1fr;}.mcard{border-radius:0;}}
 /* Range slider — cross-browser desktop+mobile fix */
@@ -294,6 +315,7 @@ input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:rgba
   </div>
   <div class="hdr-r">
     <div class="live-badge"><div class="ld" id="liveDot"></div><span id="liveBadge">CONNECTING...</span></div>
+    <div class="dtag" id="updBadge">—</div>
     <div class="dtag" id="dtag"></div>
   </div>
 </header>
@@ -324,8 +346,10 @@ input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:rgba
   <div id="allocEditor" style="display:none;background:rgba(0,0,0,0.35);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:14px 16px;margin-bottom:14px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--a1);">⚙ CUSTOMIZE SECTOR ALLOCATION — $100,000 TOTAL</div>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="rbtn" onclick="equalizeAlloc()">= EQUAL WEIGHT</button>
+        <button class="preset-btn pb-growth" onclick="setAllocPreset('growth')" title="AI-heavy growth allocation">⬆ GROWTH FOCUS</button>
+        <button class="preset-btn pb-cons" onclick="setAllocPreset('cons')" title="Nuclear/clean energy conservative allocation">⬇ CONSERVATIVE</button>
         <button class="rbtn" onclick="clearAlloc()">✕ CLEAR ALL</button>
         <button class="rbtn" style="color:var(--a2);border-color:rgba(0,255,179,0.4);" onclick="applyAlloc()">✓ APPLY & RESET</button>
       </div>
@@ -458,7 +482,14 @@ input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:rgba
           <div class="mtags" id="m-tags"></div>
         </div>
       </div>
-      <button class="mcx" onclick="closeModal()">✕</button>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+        <button class="mcx" onclick="closeModal()">✕</button>
+        <div class="modal-nav">
+          <button id="m-prev" onclick="navModal(-1)" title="Previous stock">←</button>
+          <span id="m-pos"></span>
+          <button id="m-next" onclick="navModal(1)" title="Next stock">→</button>
+        </div>
+      </div>
     </div>
     <div class="mbody">
       <div class="prow" id="m-prow"></div>
@@ -629,7 +660,7 @@ async function fetchAllQuotes() {
     }));
     if (i + batchSize < syms.length) await new Promise(r => setTimeout(r, 250));
   }
-  if (gotAny) { setLiveStatus('delayed'); buildTicker(); updateTracker(); }
+  if (gotAny) { window._lastUpdate=Date.now(); setLiveStatus('delayed'); buildTicker(); updateTracker(); }
   return gotAny;
 }
 
@@ -650,6 +681,7 @@ function connectWebSocket() {
         msg.data.forEach(tr => {
           if (tr.s && tr.p > 0 && tr.s in lastPrices) lastPrices[tr.s] = tr.p;
         });
+        window._lastUpdate = Date.now();
         buildTicker(); updateTracker();
         if (mSym && document.getElementById('modal').classList.contains('open')) updateModalPrices();
       }
@@ -751,6 +783,24 @@ function buildTicker() {
   });
 }
 
+// ── Animated number counter ──
+function animateVal(el, end, prefix, suffix, decimals) {
+  prefix  = prefix  || '';
+  suffix  = suffix  || '';
+  decimals = decimals != null ? decimals : 2;
+  const startTxt = el.textContent.replace(/[^0-9.-]/g, '');
+  const start = parseFloat(startTxt) || 0;
+  if (Math.abs(end - start) < 0.01) { el.textContent = prefix + end.toFixed(decimals) + suffix; return; }
+  const dur = 900, t0 = performance.now();
+  const tick = function(t) {
+    const p = Math.min((t - t0) / dur, 1);
+    const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; // ease-in-out
+    el.textContent = prefix + (start + (end - start) * e).toFixed(decimals) + suffix;
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
 // ── Portfolio Tracker ──
 // P&L = Σ [ (sectorAlloc[i]/10) × (livePrice/basePrice) ] − totalInvested
 // basePrices locked at reset → always starts at exactly $0 P&L
@@ -773,15 +823,14 @@ function updateTracker() {
   const totalRet   = totalVal - totalInvested;
   const totalPct   = totalInvested > 0 ? (totalRet / totalInvested) * 100 : 0;
 
-  // Portfolio Value KPI
-  document.getElementById('tv').textContent =
-    '$' + totalVal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  // Portfolio Value KPI — animated counter
+  const tvEl = document.getElementById('tv');
+  animateVal(tvEl, totalVal, '$', '', 2);
 
-  // P&L KPI
+  // P&L KPI — animated counter
   const plEl = document.getElementById('tpl');
-  plEl.textContent = (totalRet >= 0 ? '+' : '') +
-    totalRet.toLocaleString('en-US', {style:'currency', currency:'USD'});
   plEl.className = 'tk-v ' + (totalRet >= 0 ? 'cg' : 'cr');
+  animateVal(plEl, Math.abs(totalRet), totalRet >= 0 ? '+$' : '-$', '', 2);
 
   // % + mode labels
   document.getElementById('tpct').textContent =
@@ -979,6 +1028,17 @@ function equalizeAlloc() {
   sectorAlloc = Array(8).fill(eq);
   buildAllocEditor();
 }
+// Preset allocations — index order: AI Infra, Nuclear, Semis, Quantum, Cyber, Robotics, Biotech, Clean Energy
+function setAllocPreset(type) {
+  if (type === 'growth') {
+    // Growth Focus: AI-heavy, high-risk tilt
+    sectorAlloc = [25000, 12000, 18000, 8000, 15000, 8000, 7000, 7000];
+  } else if (type === 'cons') {
+    // Conservative: income + stable sectors, lighter on speculative
+    sectorAlloc = [20000, 22000, 18000, 2000, 12000, 7000, 4000, 15000];
+  }
+  buildAllocEditor();
+}
 
 function clearAlloc() {
   sectorAlloc = Array(8).fill(0);
@@ -1000,6 +1060,31 @@ function applyAlloc() {
   document.getElementById('allocEditor').style.display = 'none';
   resetPortfolio();
 }
+
+// ── Last-updated badge (dynamic "Updated Xs ago") ──
+window._lastUpdate = Date.now();
+function refreshUpdBadge() {
+  const el = document.getElementById('updBadge');
+  if (!el) return;
+  const secs = Math.round((Date.now() - window._lastUpdate) / 1000);
+  let txt, color, border;
+  if (secs < 30) {
+    txt = secs <= 3 ? 'LIVE NOW' : 'UPDATED ' + secs + 's AGO';
+    color = 'var(--a2)'; border = 'rgba(0,255,179,0.3)';
+  } else if (secs < 120) {
+    txt = 'UPDATED ' + secs + 's AGO';
+    color = 'var(--gold)'; border = 'rgba(255,200,50,0.3)';
+  } else {
+    const m = Math.round(secs / 60);
+    txt = 'UPDATED ' + m + 'm AGO';
+    color = 'var(--m2)'; border = 'var(--b1)';
+  }
+  el.textContent = txt;
+  el.style.color = color;
+  el.style.borderColor = border;
+}
+setInterval(refreshUpdBadge, 5000);
+refreshUpdBadge();
 
 // Boot the price engine (handles Finnhub WS + REST + sim fallback)
 bootPriceEngine();
@@ -1058,6 +1143,106 @@ const SDATA={
     bull:['70% global foundry market share — near monopoly on advanced chips','AI chip revenue growing mid-to-high 50% CAGR through 2029','Arizona fab diversification reducing geopolitical risk premium','Every major AI chip in existence is made at TSMC'],
     bear:['Taiwan geopolitical risk remains significant overhang','US/Europe fab buildouts expensive and slow','Apple and NVDA customer concentration risk'],
     cits:[{src:'Motley Fool',desc:'TSMC controls ~70% global foundry; AI chip revenue growing mid-to-high 50% annually through 2029',url:'https://www.fool.com/investing/2026/02/18/predict-ai-stocks-momentum-amat-tsm-nvda/',dt:'Feb 2026'}]},
+  MSFT:{name:'Microsoft Corp',sector:'AI Infrastructure / Cloud',col:'#00d4ff',mktcap:'$2.9T',pe:'36x',rev:'+15%',eps:'+10%',t12:'+28%',t24:'+52%',risk:'LOW',ret25:'+28%',conv:'★★★★★',
+    outlook:"Microsoft is the most diversified AI infrastructure play in the portfolio. Azure AI Foundry hosts every major foundation model. The $30B/quarter capex buildout funds data centers that support 65%+ of Fortune 500 companies running Azure workloads. GitHub Copilot crossed 1.8M paid seats. Teams AI and M365 Copilot are embedding AI across enterprise workflows at a price point only Microsoft can sustain. The $13.75B investment in OpenAI gives it priority access to frontier models and a platform moat that no competitor can replicate in the next 3 years.",
+    bull:['Azure AI Foundry hosts every major model — default enterprise AI platform','$30B/quarter capex securing data center leadership through 2028','GitHub Copilot + M365 Copilot embedding AI into daily workflows','OpenAI partnership gives priority frontier model access'],
+    bear:['Growth decelerating from 20%+ to mid-teens as base grows large','Azure vs AWS market share battle intensifying','Regulatory risk from OpenAI stake and CMA/EU scrutiny','36x P/E limits significant multiple expansion'],
+    cits:[]},
+  GOOG:{name:'Alphabet Inc.',sector:'AI Infrastructure / Cloud',col:'#00d4ff',mktcap:'$2.0T',pe:'24x',rev:'+12%',eps:'+20%',t12:'+22%',t24:'+45%',risk:'LOW',ret25:'+22%',conv:'★★★★★',
+    outlook:"Alphabet is committing $175–185B in capex for 2026 — the largest single-year AI infrastructure investment in history. Gemini Ultra is competitive with GPT-4 across coding and reasoning benchmarks. Google Cloud grew 35%+ in Q3 2025, now at $12B+ quarterly run rate. YouTube Shorts ad revenue accelerating with AI-optimized placement. The Willow quantum chip demonstrated verified quantum advantage, placing Google years ahead of peers on the quantum roadmap. At 24x forward P/E, Alphabet is the most attractively valued Magnificent 7 stock.",
+    bull:['$175–185B capex 2026 — largest AI infra investment ever committed','Google Cloud growing 35%+ YoY, accelerating toward $50B run rate','Willow quantum chip proved real quantum advantage — first in world','24x P/E cheapest valuation among Mag-7 AI leaders'],
+    bear:['Search revenue threatened by AI-native search (Perplexity, Bing AI)','Gemini initially lagged GPT-4 — trust recovery ongoing','Antitrust exposure from DOJ search monopoly ruling','YouTube AI content moderation costs rising significantly'],
+    cits:[]},
+  AMZN:{name:'Amazon.com Inc.',sector:'AI Infrastructure / Cloud',col:'#00d4ff',mktcap:'$2.1T',pe:'38x',rev:'+10%',eps:'+75%',t12:'+26%',t24:'+50%',risk:'LOW',ret25:'+31%',conv:'★★★★★',
+    outlook:"Amazon's AI story is powered by two engines: AWS Bedrock (the enterprise AI model marketplace) and $200B in AI infrastructure capex through 2026. AWS operating income grew to $10B+ quarterly — funding the AI buildout entirely from operations. Alexa+ represents the most ambitious consumer AI product in the market. The Trainium2 custom AI chip reduces NVDA dependency and is already deployed at scale. Amazon's e-commerce flywheel generates the world's richest commercial dataset, giving its AI models a structural training advantage.",
+    bull:['AWS Bedrock = enterprise AI control plane for 200,000+ business customers','$200B AI capex through 2026 locking in data center capacity','EPS growing 75%+ as AWS operating leverage kicks in fully','Trainium2 chip reduces NVDA cost dependence at scale'],
+    bear:['Retail margins remain thin in competitive e-commerce environment','AWS growth moderating from 30%+ era to mid-teens','$38x P/E requires sustained earnings acceleration','Regulatory antitrust exposure across multiple jurisdictions'],
+    cits:[]},
+  META:{name:'Meta Platforms Inc.',sector:'AI Infrastructure / Cloud',col:'#00d4ff',mktcap:'$1.5T',pe:'28x',rev:'+21%',eps:'+50%',t12:'+30%',t24:'+55%',risk:'MED',ret25:'+45%',conv:'★★★★☆',
+    outlook:"Meta is executing the most aggressive AI-native advertising transformation in the industry. AI-optimized ad placement via Advantage+ is driving 30%+ improvements in advertiser ROAS, accelerating revenue growth to 21% YoY. The $115–135B AI capex plan for 2026 underscores management's conviction that AI is an existential priority. Llama 4 open-source leadership creates a developer ecosystem moat. Ray-Ban Meta AI glasses shipped 2M+ units in 2025 — the first successful consumer AI wearable. Threads crossed 350M monthly active users.",
+    bull:['AI-powered Advantage+ ads driving 30%+ ROAS improvement for advertisers','$115–135B AI capex 2026 — most aggressive AI buildout relative to revenue','Llama open-source leadership builds massive developer ecosystem','Ray-Ban Meta glasses proving consumer AI wearables market'],
+    bear:['Apple ATT privacy changes remain structural headwind for targeting','Reality Labs burning $18B+/year with unclear ROI on AR/VR','28x P/E demands continued 20%+ revenue growth'],
+    cits:[]},
+  ORCL:{name:'Oracle Corp',sector:'AI Infrastructure / Cloud',col:'#00d4ff',mktcap:'$480B',pe:'45x',rev:'+9%',eps:'+15%',t12:'+40%',t24:'+78%',risk:'MED',ret25:'+55%',conv:'★★★★☆',
+    outlook:"Oracle is the dark horse of AI infrastructure. Its multi-cloud database model uniquely allows workloads to run across AWS, Azure, and Google Cloud simultaneously — a strategic advantage hyperscalers cannot replicate. The $300B+ OpenAI compute deal signed in 2025 is the largest cloud contract in history. Oracle stock surged 40%+ after Q2 FY2026 earnings. Database revenue growing 24% with cloud infrastructure bookings up 52%. Larry Ellison confirmed Oracle is building 1GW+ data centers for AI workloads, with construction accelerating through 2027.",
+    bull:['$300B+ OpenAI compute deal — largest cloud contract in history','Multi-cloud database model is unique moat hyperscalers cannot replicate','Cloud infrastructure bookings up 52% — enterprise AI adoption accelerating','CEO Ellison committed to 1GW+ data center buildout by 2027'],
+    bear:['45x P/E requires continued acceleration from 9% revenue growth baseline','Legacy on-premise database transition slower than desired','AWS/Azure competing directly in database market with aggressive pricing','Debt load elevated from cloud infrastructure capex'],
+    cits:[]},
+  VST:{name:'Vistra Corp',sector:'Nuclear & Power Infrastructure',col:'#00ffb3',mktcap:'$35B',pe:'25x',rev:'+15%',eps:'+40%',t12:'+25%',t24:'+50%',risk:'MED',ret25:'+51%',conv:'★★★★☆',
+    outlook:"Vistra operates 41GW of power generation capacity — the largest competitive electricity generator in the US. The acquisition of Energy Harbor added 4 nuclear units with zero-carbon generation, positioning Vistra perfectly for AI data center power demand. Management raised EBITDA guidance to $6.8–7.6B for 2026. Texas ERCOT exposure provides price upside in peak demand periods. Nuclear power purchase agreements with hyperscalers are in active negotiation. Vistra is the highest-beta play on US AI power demand among investment-grade utilities.",
+    bull:['41GW generation capacity — largest US competitive power generator','Nuclear + natural gas + renewables mix meets 24/7 clean power demand','EBITDA guidance raised to $6.8–7.6B for 2026','Texas ERCOT peak pricing provides asymmetric upside in hot summers'],
+    bear:['Texas ERCOT market is volatile — revenue exposure to spot pricing','Elevated debt load from Energy Harbor nuclear acquisition','Regulatory risk on nuclear plant life extensions','25x P/E pricing in continued AI power demand thesis'],
+    cits:[]},
+  OKLO:{name:'Oklo Inc.',sector:'Advanced Nuclear / SMR',col:'#00ffb3',mktcap:'$4B',pe:'N/M',rev:'+200%',eps:'N/M',t12:'+80%',t24:'+200%',risk:'X-HIGH',ret25:'+210%',conv:'★★★☆☆',
+    outlook:"Oklo is the most speculative pure-play on advanced nuclear reactor deployment. Its Aurora 15MW micro-reactor uses liquid metal cooling and can run on used nuclear fuel from existing reactors. Sam Altman chairs the board. Oklo received an NRC Design Certification Application acceptance — a major regulatory milestone. First commercial deployment targeted for 2027. This is a pre-revenue venture-style position: size at 1–2% max. If Oklo delivers, the upside is explosive as AI data centers need on-site 24/7 carbon-free power at gigawatt scale.",
+    bull:['NRC Design Certification Application accepted — major regulatory milestone','Sam Altman board chair — direct AI data center demand connection','Aurora runs on nuclear waste — solving fuel cost + storage simultaneously','First-mover advantage in SMR licensing could be years-long moat'],
+    bear:['Pre-revenue — zero commercial deployments in operation','NRC licensing historically takes 10+ years — timelines routinely slip','Construction cost and schedule overruns endemic to nuclear industry','$4B market cap already pricing in significant execution'],
+    cits:[]},
+  NNE:{name:'Nano Nuclear Energy',sector:'Micro-Nuclear / Ultra-Speculative',col:'#00ffb3',mktcap:'$1B',pe:'N/M',rev:'N/M',eps:'N/M',t12:'+100%',t24:'+300%',risk:'X-HIGH',ret25:'+310%',conv:'★★☆☆☆',
+    outlook:"Nano Nuclear is the highest-risk position in the entire portfolio — cap at 1% maximum. The company is developing truly portable 1–20MW micro-reactors designed to power remote AI inference nodes, military bases, and off-grid industrial sites. No commercial revenue, no licensed design, no regulatory pathway confirmed. However, the addressable market for portable nuclear power is theoretically unlimited if the technology works and receives licensing. Think of this as a lottery ticket on the future of distributed clean energy — extraordinary upside, high probability of zero.",
+    bull:['Portable nuclear concept addresses genuinely new market (remote AI nodes)','$310% 2025 return validates speculative demand exists','If licensed, micro-reactors could power AI inference at edge globally','Zero-carbon distributed power for military/remote applications'],
+    bear:['No revenue, no licensed design, no regulatory pathway confirmed','Nano-reactor technology has never been commercially deployed anywhere','1% max position size — designed to be capped for risk management','Extremely high dilution risk as capital needs are massive'],
+    cits:[]},
+  AMD:{name:'Advanced Micro Devices',sector:'Semiconductors / AI Chips',col:'#b94dff',mktcap:'$170B',pe:'30x',rev:'+14%',eps:'+35%',t12:'+25%',t24:'+50%',risk:'MED',ret25:'+34%',conv:'★★★★☆',
+    outlook:"AMD is the only credible alternative to NVIDIA for AI accelerators. The MI300X GPU has gained significant traction in hyperscaler inference workloads, particularly at Microsoft Azure and Oracle. Arista Networks publicly cited shifting AI infrastructure purchasing from NVIDIA toward AMD. AMD Data Center revenue grew 122% in Q3 2025. Management raised Data Center GPU guidance to $5B+ for 2025. The valuation is considerably more attractive than NVDA at 30x forward P/E while offering comparable AI exposure. A key catalyst is AMD's custom AI chip business ramping with Meta and Microsoft.",
+    bull:['MI300X GPU winning hyperscaler inference workloads from NVIDIA','Data center revenue grew 122% YoY — acceleration not deceleration','30x forward P/E significantly more attractive than NVIDIA at 34x','Custom AI chip wins at Meta and Microsoft diversifying revenue'],
+    bear:['NVIDIA CUDA ecosystem creates sticky switching costs for training workloads','AMD still losing money on data center GPU margins at current scale','Intel turnaround could restrain AMD PC market share gains','14% total revenue growth slower than AI-only narrative implies'],
+    cits:[]},
+  ASML:{name:'ASML Holding N.V.',sector:'Semiconductor Equipment',col:'#b94dff',mktcap:'$320B',pe:'38x',rev:'+12%',eps:'+14%',t12:'+18%',t24:'+38%',risk:'LOW',ret25:'+25%',conv:'★★★★☆',
+    outlook:"ASML holds a global monopoly on Extreme Ultraviolet (EUV) lithography machines — the equipment required to manufacture chips at 7nm and below. No other company can produce EUV scanners, and building one requires components from 5,000+ suppliers worldwide, making the moat effectively impenetrable for 10+ years. Every advanced AI chip — from NVIDIA's Blackwell to TSMC's 2nm process — requires ASML EUV machines. The Chinese export restriction risk is real, but ASML's position in the non-restricted market provides durable growth as chipmakers invest $100B+ in leading-edge capacity.",
+    bull:['Global EUV monopoly — literally no competitor can build these machines','Every advanced AI chip in the world requires ASML EUV equipment','New High-NA EUV systems priced at $380M+ each — ASP expansion incoming','10-year order backlog provides exceptional revenue visibility'],
+    bear:['China EUV export restrictions removed ~$3B/year in potential revenue','EUV ramp timing risk — TSMC and Intel scheduling shifts impact orders','38x P/E elevated for a capital equipment company','Dutch regulatory environment adds geopolitical uncertainty'],
+    cits:[]},
+  MU:{name:'Micron Technology',sector:'Memory Semiconductors',col:'#b94dff',mktcap:'$95B',pe:'14x',rev:'+38%',eps:'+120%',t12:'+35%',t24:'+70%',risk:'MED',ret25:'+20%',conv:'★★★★☆',
+    outlook:"Micron is the highest-conviction cyclical recovery play in the semiconductor sector. HBM (High Bandwidth Memory) demand for AI accelerators is driving an unprecedented pricing recovery. Every NVIDIA H100 and Blackwell GPU requires Micron or SK Hynix HBM chips — and demand is exceeding supply through 2026. Revenue grew 38% in fiscal Q1 2026 with EPS growing 120%+. At 14x forward P/E, Micron trades at a fraction of the AI chip sector. The primary risk is memory cycle timing — DRAM and NAND have historically been volatile, and oversupply can emerge faster than expected.",
+    bull:['HBM demand for NVIDIA GPUs exceeds supply through entire 2026','Revenue +38% and EPS +120% — fastest acceleration in company history','14x forward P/E — cheapest AI chip exposure in the entire sector','Memory monopoly dynamics: only Micron, Samsung, SK Hynix can supply HBM'],
+    bear:['Memory cycles historically violent — oversupply can emerge suddenly','NAND market still recovering from 2022–2023 oversupply crash','Samsung and SK Hynix aggressive HBM capacity expansion could pressure pricing','China exposure creates geopolitical overhang'],
+    cits:[]},
+  PANW:{name:'Palo Alto Networks',sector:'Cybersecurity',col:'#ff6b35',mktcap:'$120B',pe:'55x',rev:'+14%',eps:'+50%',t12:'+22%',t24:'+45%',risk:'MED',ret25:'+24%',conv:'★★★★☆',
+    outlook:"Palo Alto Networks is executing the 'platformization' strategy — consolidating security vendors into a single AI-powered security platform. Customers that consolidate onto the PANW platform typically spend 3–5x more over time than point product buyers. AI security is the defining theme: NGFWs detecting AI-generated threats, SASE for AI-native remote workforces, and Cortex AI for autonomous threat response. Management raised guidance multiple times in 2025. Revenue growing 14% but the quality of growth is exceptional — platformization creates years of upsell expansion.",
+    bull:['Platformization strategy creating 3–5x expansion in customer lifetime value','AI-native threat detection via Cortex — competitive differentiation growing','SASE market winning from legacy VPN replacement cycle','Management credibility high after consistent guidance raises'],
+    bear:['Revenue growth at 14% appears modest vs CrowdStrike and Zscaler','55x P/E requires platformization thesis to continue converting at pace','Competition from CRWD in endpoint security intensifying','Sales force reorganization in 2024 created near-term execution friction'],
+    cits:[]},
+  ZS:{name:'Zscaler Inc.',sector:'Cybersecurity / Zero-Trust',col:'#ff6b35',mktcap:'$22B',pe:'N/M',rev:'+23%',eps:'N/M',t12:'+25%',t24:'+52%',risk:'HIGH',ret25:'+35%',conv:'★★★☆☆',
+    outlook:"Zscaler is the zero-trust security leader for enterprises moving workloads to the cloud. Its cloud-native architecture means no appliances, no VPN hardware — everything is software-defined security. AI data center expansion is a tailwind: every AI inference endpoint needs perimeter protection, and Zscaler's AI-Data security product secures AI pipeline data flows. Revenue growing 23% with improving unit economics as the business scales. The push toward profitability is real but still 18–24 months away from GAAP positive. Billings growth and remaining performance obligations are the key leading indicators to watch.",
+    bull:['Zero-trust market displacing legacy VPN/firewall with $100B+ TAM','AI-Data security product protecting AI pipeline data flows — new category','Revenue growing 23% with improving unit economics at scale','Zero hardware dependency = superior gross margins vs. appliance competitors'],
+    bear:['Not yet GAAP profitable — requires continued revenue acceleration to justify valuation','Competition from PANW and CRWD expanding into zero-trust territory','Federal budget exposure — government contracts meaningful % of revenue','Customer concentration: losing a large enterprise is materially visible'],
+    cits:[]},
+  NET:{name:'Cloudflare Inc.',sector:'Cybersecurity / AI Edge',col:'#ff6b35',mktcap:'$35B',pe:'N/M',rev:'+27%',eps:'N/M',t12:'+28%',t24:'+58%',risk:'HIGH',ret25:'+40%',conv:'★★★★☆',
+    outlook:"Cloudflare has evolved from a DDoS protection company into the AI edge security and inference platform. Workers AI allows developers to run AI inference at Cloudflare's 300+ edge PoPs globally — sub-10ms latency. Every AI agent needs a gateway, and Cloudflare is positioning AI Gateway as the control plane for AI traffic. Revenue growing 27% with large enterprise deal wins accelerating. The network effects are exceptional: as more traffic flows through Cloudflare, threat intelligence improves, enabling better security for all customers — a compounding moat.",
+    bull:['Workers AI enabling AI inference at the edge — 300+ global PoPs','AI Gateway = control plane for AI agent traffic — massive new market','Network effects: more traffic → better threat intelligence → better security','27% revenue growth with large enterprise deal momentum accelerating'],
+    bear:['Not yet GAAP profitable — significant ongoing stock-based compensation','Competing directly with AWS CloudFront, Fastly, and Akamai','CEO Matthew Prince known for ambitious product roadmap execution risk','Small-medium business exposure creates macro demand sensitivity'],
+    cits:[]},
+  QBTS:{name:'D-Wave Quantum Inc.',sector:'Quantum Computing',col:'#ffc832',mktcap:'$2B',pe:'N/M',rev:'+50%',eps:'N/M',t12:'+45%',t24:'+120%',risk:'X-HIGH',ret25:'+280%',conv:'★★★☆☆',
+    outlook:"D-Wave is the only quantum company generating meaningful commercial revenue — $18M+ in 2025 with 50%+ growth. Its annealing-based quantum approach solves optimization problems (logistics, pharma, finance) that classical computers struggle with. D-Wave demonstrated quantum computational supremacy on a real-world problem in 2025. The company is transitioning to a gate-model quantum architecture alongside its annealing systems. Up 280% in 2025 — the bar is now elevated. Size at 1–2% max as dilution risk is ongoing and commercial quantum timelines remain uncertain.",
+    bull:['Only quantum company with real commercial revenue and 50%+ growth','Demonstrated quantum computational supremacy on real-world problem in 2025','Annealing + gate-model roadmap = broadest quantum platform','$280% 2025 return proves investor appetite for quantum exposure'],
+    bear:['$2B market cap pricing in sustained revenue acceleration','Dilution risk is ongoing — capital intensive with years to profitability','Gate-model transition risks cannibalizing existing annealing customer base','IBM and Google have vastly more resources for quantum development'],
+    cits:[]},
+  RGTI:{name:'Rigetti Computing Inc.',sector:'Quantum Computing',col:'#ffc832',mktcap:'$1.5B',pe:'N/M',rev:'+40%',eps:'N/M',t12:'+20%',t24:'+80%',risk:'X-HIGH',ret25:'+195%',conv:'★★☆☆☆',
+    outlook:"Rigetti is a higher-risk quantum play than IONQ or D-Wave, with limited commercial revenue but a credible hardware roadmap. The Cepheus 108-qubit processor is targeted for 2026 launch. Rigetti's cloud-accessible quantum systems on AWS and Azure provide some distribution reach. Revenue growing 40%+ but from a very small base. Up 195% in 2025 but remains a venture-style position with high dilution risk. Maximum allocation: 0.5–1%. The bet here is that gate-based universal quantum computing achieves commercial advantage by 2028–2030, and Rigetti is still in the market when it happens.",
+    bull:['Cepheus 108-qubit processor launching 2026 — significant performance step up','Available on AWS and Azure — broad distribution reducing go-to-market cost','40%+ revenue growth from accelerating enterprise quantum trial programs','Lower valuation than IONQ provides more upside if quantum thesis plays out'],
+    bear:['Very limited commercial revenue — minimal enterprise deployments currently','Heavy dilution ongoing — share count growing to fund operations','IBM, Google, IonQ have significantly more capital and credibility','If quantum timelines slip to 2030+, stock could fall 80–90%'],
+    cits:[]},
+  ISRG:{name:'Intuitive Surgical Inc.',sector:'Robotic Surgery / AI Health',col:'#3cf0ff',mktcap:'$180B',pe:'78x',rev:'+17%',eps:'+26%',t12:'+22%',t24:'+42%',risk:'LOW',ret25:'+32%',conv:'★★★★★',
+    outlook:"Intuitive Surgical is the most durable AI robotics business in the portfolio. The da Vinci surgical robot has 10M+ procedures under its belt and 81% US market share in soft tissue robotic surgery. The business model is perfect: hospitals pay for the robot once, then buy consumable instruments (blades, cameras, sutures) for every procedure — the most powerful recurring revenue model in healthcare. AI-guided surgical assistance is being integrated into the latest da Vinci models. Revenue growing 17% with 26% EPS growth. The moat is the installed base of surgeons trained exclusively on da Vinci — a 15–20 year competitive barrier.",
+    bull:['da Vinci 81% US soft tissue robotic surgery market share — near monopoly','Consumables recurring revenue model: higher margins with every procedure','AI-guided surgical assistance integrated into latest da Vinci 5 system','15–20 year surgeon training barrier creates near-impenetrable moat'],
+    bear:['78x forward P/E demands consistent 17%+ growth for years','Competition from Medtronic Hugo and J&J Ottava entering robotic surgery','Hospital capital spending cycles create occasional softness in system placements','International expansion slower than anticipated in some markets'],
+    cits:[]},
+  PATH:{name:'UiPath Inc.',sector:'AI Automation / Robotic Process Automation',col:'#ff3fa0',mktcap:'$12B',pe:'N/M',rev:'+9%',eps:'N/M',t12:'+25%',t24:'+55%',risk:'HIGH',ret25:'+38%',conv:'★★★☆☆',
+    outlook:"UiPath pioneered Robotic Process Automation (RPA) and is now pivoting to agentic AI — giving AI agents the ability to interact with any application just as a human worker would. The Autopilot for Everyone AI agent suite launched in 2025, enabling autonomous workflow execution across 10,000+ enterprise applications. Revenue growth decelerated to 9% as the RPA market matured, but the agentic AI pivot represents a potential re-acceleration catalyst. The company turned cash-flow positive in 2025 and is on a credible path to profitability. The bear case is that Microsoft 365 Copilot could do the same tasks without a separate vendor.",
+    bull:['Agentic AI pivot could re-accelerate growth from 9% toward 20%+','Cash flow positive in 2025 — path to GAAP profitability clearer','10,000+ enterprise application integrations = deepest workflow automation moat','Low-code AI automation democratizes access beyond tech departments'],
+    bear:['9% revenue growth alarmingly slow for a SaaS company at this valuation','Microsoft 365 Copilot threatens to replicate RPA functionality natively','Enterprise software consolidation = fewer standalone tool budgets','CEO transitions in recent years created strategic uncertainty'],
+    cits:[]},
+  AMGN:{name:'Amgen Inc.',sector:'Biotechnology / AI Drug Discovery',col:'#3cf0ff',mktcap:'$145B',pe:'18x',rev:'+19%',eps:'+10%',t12:'+15%',t24:'+28%',risk:'LOW',ret25:'+15%',conv:'★★★☆☆',
+    outlook:"Amgen is the defensive AI biotech anchor in the portfolio — real revenue, real profits, real dividends. The partnership with Quantinuum (quantum computing) for drug discovery represents a forward-looking bet on quantum-AI drug design. Revenue grew 19% in 2025 driven by MariTide (next-gen GLP-1) pipeline momentum and Repatha cardiovascular growth. The GLP-1 market is the largest pharmaceutical opportunity in history, and Amgen's differentiated approach targets once-monthly dosing vs. weekly injections for Ozempic/Wegovy. At 18x forward P/E with a 3%+ dividend, Amgen is the risk management position that still provides upside.",
+    bull:['MariTide GLP-1 drug could disrupt Novo/Eli Lilly with superior dosing profile','Quantinuum partnership for AI + quantum drug discovery = long-term pipeline option','18x P/E + 3%+ dividend = rare value + growth combination in biotech','Biosimilar pipeline provides durable revenue floor as legacy drugs lose exclusivity'],
+    bear:['MariTide failed Phase 2 weight loss endpoint vs Wegovy in early data','Biosimilar competition eroding legacy product revenue faster than expected','GLP-1 competitive intensity from Novo Nordisk and Eli Lilly is ferocious','10% EPS growth modest relative to biotech sector peers'],
+    cits:[]},
+  FSLR:{name:'First Solar Inc.',sector:'Clean Energy / Solar Manufacturing',col:'#8fff5a',mktcap:'$12B',pe:'12x',rev:'+27%',eps:'+40%',t12:'+20%',t24:'+42%',risk:'MED',ret25:'+18%',conv:'★★★☆☆',
+    outlook:"First Solar is the only US-headquartered large-scale solar panel manufacturer, giving it a structural advantage from Inflation Reduction Act manufacturing credits worth $17–20/share annually. Its thin-film cadmium telluride technology has lower silicon content, reducing China supply chain dependence — a rare competitive moat in solar. Revenue growing 27% driven by 7GW+ of production capacity coming online. Utility-scale AI data center solar PPAs are creating multi-year order backlogs. At 12x forward P/E, First Solar is the most attractively priced clean energy play in the portfolio. Key risk: policy changes to IRA credits could impact manufacturing subsidies.",
+    bull:['IRA manufacturing credits worth $17–20/share annually = structural cost advantage','Only US-scale solar manufacturer — supply chain security vs Chinese panels','Thin-film tech reduces Chinese silicon input dependency','AI data center solar PPA demand creating multi-year order visibility'],
+    bear:['IRA tariff/credit policy uncertainty if political winds shift','12x P/E reflects slow-growth utility profile — needs IRA credits to sustain','Capacity additions in 2025 could create temporary supply/demand imbalance','Cadmium telluride efficiency ceiling limiting residential market penetration'],
+    cits:[]},
 };
 function getSD(sym){
   if(SDATA[sym]) return SDATA[sym];
@@ -1296,11 +1481,33 @@ function openStock(sym){
 
   document.getElementById('modal').classList.add('open');
   document.body.style.overflow='hidden';
+  // Update modal navigation arrows
+  const idx = _modalSectorStocks.indexOf(sym);
+  const prevBtn = document.getElementById('m-prev');
+  const nextBtn = document.getElementById('m-next');
+  const posEl   = document.getElementById('m-pos');
+  if (prevBtn && nextBtn && posEl) {
+    if (_modalSectorStocks.length > 1 && idx >= 0) {
+      posEl.textContent = (idx+1) + ' / ' + _modalSectorStocks.length;
+      prevBtn.disabled = (idx === 0);
+      nextBtn.disabled = (idx === _modalSectorStocks.length - 1);
+    } else {
+      posEl.textContent = '';
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+    }
+  }
   setTimeout(async ()=>{
     document.querySelectorAll('.ct').forEach(b=>b.classList.remove('act'));
     document.querySelectorAll('.ct')[0].classList.add('act');
     await renderMChart(sym, t.b, '1D');
   }, 50);
+}
+function navModal(dir) {
+  if (!mSym || !_modalSectorStocks.length) return;
+  const cur = _modalSectorStocks.indexOf(mSym);
+  const next = cur + dir;
+  if (next >= 0 && next < _modalSectorStocks.length) openStock(_modalSectorStocks[next]);
 }
 function closeModal(){
   document.getElementById('modal').classList.remove('open');
@@ -1309,7 +1516,12 @@ function closeModal(){
   if(mChart){mChart.destroy();mChart=null;}
 }
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('modal').classList.contains('open')) return;
+  if(e.key==='Escape') closeModal();
+  else if(e.key==='ArrowLeft') navModal(-1);
+  else if(e.key==='ArrowRight') navModal(1);
+});
 
 // ============================================================
 // SECTOR PANEL DATA — 80 stocks
@@ -1334,6 +1546,7 @@ const SD=[
 ];
 
 let activeSec=null,cb1=null,cb2=null;
+let _modalSectorStocks=[];  // array of ticker strings for current open sector
 function ccls(cv){const n=(cv.match(/★/g)||[]).length;return n>=5?'c5':n>=4?'c4':n>=3?'c3':n>=2?'c2':'c1';}
 function rcls(r){return r==='LOW'?'rl':r==='MED'?'rm':r==='HIGH'?'rh':'rx';}
 function openSec(idx){
@@ -1347,6 +1560,7 @@ function openSec(idx){
     const el=document.getElementById(id);el.textContent=[s.b1,s.b2,s.b3][i];
     el.style.cssText=`background:${s.col}18;color:${s.col};border:1px solid ${s.col}44;border-radius:4px;padding:3px 10px;`;
   });
+  _modalSectorStocks = s.cos.map(c=>c.t);  // track tickers for modal nav
   const tb=document.getElementById('sptb');tb.innerHTML='';
   s.cos.forEach(c=>{
     const rcl=c.ret.startsWith('+')?'up':c.ret.startsWith('-')?'dn':'up';
