@@ -847,55 +847,51 @@ async function fetchOpportunities(){
   document.getElementById('demoBanner').classList.add('hidden');
 
   const today = new Date();
-  const from = new Date(today); from.setDate(from.getDate()-180);
   const fmt = d => (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getDate().toString().padStart(2,'0') + '/' + d.getFullYear();
+  const yearAgo = new Date(today); yearAgo.setFullYear(yearAgo.getFullYear()-1);
 
-  // Sequential searches — one at a time to avoid rate limiting
-  const searchTerms = ['window film', 'window tinting', 'solar control film'];
-  const delay = ms => new Promise(r => setTimeout(r, ms));
-
-  const buildUrl = kw =>
-    'https://api.sam.gov/opportunities/v2/search?' +
+  // Correct SAM.gov Opportunities v2 params (verified from official API spec):
+  //   - base path requires /prod/
+  //   - title= for text search (no keyword= param in public API)
+  //   - postedFrom/postedTo required alongside limit
+  //   - rdlfrom=today filters to open (future-deadline) opportunities
+  //   - active field is response-only; post-filter for active:"Yes"
+  const url =
+    'https://api.sam.gov/prod/opportunities/v2/search?' +
     'api_key=' + encodeURIComponent(apiKey) +
-    '&keyword=' + encodeURIComponent(kw) +
-    '&limit=100&postedFrom=' + fmt(from) + '&postedTo=' + fmt(today) +
-    '&active=true';
+    '&title=' + encodeURIComponent('window film') +
+    '&ptype=o,p,k,r' +
+    '&postedFrom=' + fmt(yearAgo) +
+    '&postedTo=' + fmt(today) +
+    '&rdlfrom=' + fmt(today) +
+    '&limit=100&offset=0';
 
-  const seen = new Set();
-  const merged = [];
   let fetchError = null;
 
-  for(let i = 0; i < searchTerms.length; i++){
-    if(i > 0) await delay(1200); // 1.2s between requests to stay under rate limit
-    try {
-      const resp = await fetch(buildUrl(searchTerms[i]), {signal: AbortSignal.timeout(20000)});
-      if(!resp.ok){
-        throw new Error('HTTP ' + resp.status +
-          (resp.status === 401 ? ' — Invalid or inactive API key' :
-           resp.status === 403 ? ' — API key not authorized (ensure Personal API key is enabled for Opportunities at open.gsa.gov)' :
-           resp.status === 429 ? ' — Rate limit exceeded. Wait a minute and try again.' : ''));
-      }
-      const data = await resp.json();
-      for(const d of (data.opportunitiesData || [])){
-        const key = d.noticeId || d.solicitationNumber;
-        if(key && !seen.has(key)){ seen.add(key); merged.push(d); }
-      }
-    } catch(e){
-      fetchError = e.message || 'Unknown error';
-      break; // stop on first error to avoid compounding rate limit hits
+  try {
+    const resp = await fetch(url, {signal: AbortSignal.timeout(20000)});
+    if(!resp.ok){
+      throw new Error('HTTP ' + resp.status +
+        (resp.status === 401 ? ' — Invalid or inactive API key' :
+         resp.status === 403 ? ' — API key not authorized (ensure Personal API key is enabled for Opportunities at open.gsa.gov)' :
+         resp.status === 429 ? ' — Rate limit exceeded. Wait a minute and try again.' : ''));
     }
+    const data = await resp.json();
+    const results = (data.opportunitiesData || []).filter(d => d.active === 'Yes');
+    if(results.length > 0){
+      allOpportunities = results.map(parseSAMOpp);
+      isLive = true;
+      setLiveBadge(true);
+    } else {
+      showApiBanner('SAM.gov connected — no active window film opportunities at this time. Check back soon.');
+      allOpportunities = [];
+    }
+  } catch(e){
+    fetchError = e.message || 'Unknown error';
   }
 
   if(fetchError){
     showApiBanner('SAM.gov error: ' + fetchError);
-    allOpportunities = [];
-  } else if(merged.length > 0){
-    allOpportunities = merged.map(parseSAMOpp);
-    isLive = true;
-    setLiveBadge(true);
-    document.getElementById('apiBanner').classList.add('hidden');
-  } else {
-    showApiBanner('SAM.gov connected — no active window film opportunities in the last 180 days.');
     allOpportunities = [];
   }
 
