@@ -715,8 +715,8 @@ const DEFAULT_AGENCIES = [
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 
-let allOpportunities = [...SEED_OPPS];
-let filteredOpportunities = [...SEED_OPPS];
+let allOpportunities = [];
+let filteredOpportunities = [];
 let pipeline = JSON.parse(localStorage.getItem('ssswf_pipeline') || '[]');
 let credentials = JSON.parse(localStorage.getItem('ssswf_credentials') || JSON.stringify(DEFAULT_CREDENTIALS));
 let agencies = JSON.parse(localStorage.getItem('ssswf_agencies') || JSON.stringify(DEFAULT_AGENCIES));
@@ -831,89 +831,74 @@ function clearApiKey(){
 
 async function fetchOpportunities(){
   document.getElementById('oppGrid').innerHTML = '<div class="loading-spinner"><div class="spinner"></div><span>Fetching from SAM.gov...</span></div>';
+  document.getElementById('apiBanner').classList.add('hidden');
+
   if(!apiKey){
-    useSeedData();
-    filteredOpportunities = [...allOpportunities];
+    allOpportunities = [];
+    filteredOpportunities = [];
+    isLive = false;
+    setLiveBadge(false);
+    document.getElementById('demoBanner').classList.remove('hidden');
     filterOpportunities();
     updateKPIs();
     return;
   }
+
+  document.getElementById('demoBanner').classList.add('hidden');
+
   const today = new Date();
-  const from = new Date(today); from.setDate(from.getDate()-90);
+  const from = new Date(today); from.setDate(from.getDate()-180);
   const fmt = d => (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getDate().toString().padStart(2,'0') + '/' + d.getFullYear();
 
-  // Three targeted searches — one per window film category
-  const searchTerms = [
-    'window film blast mitigation security anti-shatter',
-    'window film solar control energy efficiency',
-    'window film SCIF RF shielding infrared'
-  ];
+  // Sequential searches — one at a time to avoid rate limiting
+  const searchTerms = ['window film', 'window tinting', 'solar control film'];
+  const delay = ms => new Promise(r => setTimeout(r, ms));
 
   const buildUrl = kw =>
     'https://api.sam.gov/opportunities/v2/search?' +
     'api_key=' + encodeURIComponent(apiKey) +
     '&keyword=' + encodeURIComponent(kw) +
-    '&limit=50&postedFrom=' + fmt(from) + '&postedTo=' + fmt(today) +
+    '&limit=100&postedFrom=' + fmt(from) + '&postedTo=' + fmt(today) +
     '&active=true';
 
-  const FILM_TERMS = [
-    'window film','blast mitigation film','blast film','solar control film',
-    'solar film','rf shielding film','scif film','anti-shatter film',
-    'infrared film','security window film','privacy film','window tint film',
-    'window tinting','protective film','decorative film'
-  ];
-  const isFilmRelated = d => {
-    const text = ((d.title || '') + ' ' + (d.description || '')).toLowerCase();
-    return (text.includes('film') || text.includes('tint')) && FILM_TERMS.some(t => text.includes(t));
-  };
-
+  const seen = new Set();
+  const merged = [];
   let fetchError = null;
-  let totalRaw = 0;
 
-  try {
-    const responses = await Promise.all(
-      searchTerms.map(async kw => {
-        const resp = await fetch(buildUrl(kw), {signal: AbortSignal.timeout(15000)});
-        if(!resp.ok){
-          const msg = await resp.text().catch(() => '');
-          throw new Error('HTTP ' + resp.status + (resp.status === 401 ? ' — Invalid or inactive API key' : resp.status === 403 ? ' — API key not authorized' : resp.status === 429 ? ' — Rate limit exceeded' : ''));
-        }
-        return resp.json();
-      })
-    );
-
-    // Merge and deduplicate by noticeId
-    const seen = new Set();
-    const merged = [];
-    for(const data of responses){
+  for(let i = 0; i < searchTerms.length; i++){
+    if(i > 0) await delay(1200); // 1.2s between requests to stay under rate limit
+    try {
+      const resp = await fetch(buildUrl(searchTerms[i]), {signal: AbortSignal.timeout(20000)});
+      if(!resp.ok){
+        throw new Error('HTTP ' + resp.status +
+          (resp.status === 401 ? ' — Invalid or inactive API key' :
+           resp.status === 403 ? ' — API key not authorized (ensure Personal API key is enabled for Opportunities at open.gsa.gov)' :
+           resp.status === 429 ? ' — Rate limit exceeded. Wait a minute and try again.' : ''));
+      }
+      const data = await resp.json();
       for(const d of (data.opportunitiesData || [])){
         const key = d.noticeId || d.solicitationNumber;
         if(key && !seen.has(key)){ seen.add(key); merged.push(d); }
       }
+    } catch(e){
+      fetchError = e.message || 'Unknown error';
+      break; // stop on first error to avoid compounding rate limit hits
     }
-    totalRaw = merged.length;
-
-    const relevant = merged.filter(isFilmRelated);
-
-    if(relevant.length > 0){
-      allOpportunities = relevant.map(parseSAMOpp);
-      isLive = true;
-      setLiveBadge(true);
-      document.getElementById('demoBanner').classList.add('hidden');
-      document.getElementById('apiBanner').classList.add('hidden');
-    } else if(totalRaw > 0){
-      // API worked, but no window-film results in this date range
-      showApiBanner('SAM.gov connected — no window film opportunities posted in the last 90 days. Showing demo data.');
-      useSeedData();
-    } else {
-      showApiBanner('SAM.gov returned 0 results. The API key may still be activating (allow 24–48 hrs), or try refreshing.');
-      useSeedData();
-    }
-  } catch(e){
-    fetchError = e.message || 'Unknown error';
-    showApiBanner('SAM.gov error: ' + fetchError + ' — check your API key or try again.');
-    useSeedData();
   }
+
+  if(fetchError){
+    showApiBanner('SAM.gov error: ' + fetchError);
+    allOpportunities = [];
+  } else if(merged.length > 0){
+    allOpportunities = merged.map(parseSAMOpp);
+    isLive = true;
+    setLiveBadge(true);
+    document.getElementById('apiBanner').classList.add('hidden');
+  } else {
+    showApiBanner('SAM.gov connected — no active window film opportunities in the last 180 days.');
+    allOpportunities = [];
+  }
+
   filteredOpportunities = [...allOpportunities];
   filterOpportunities();
   updateKPIs();
@@ -954,10 +939,10 @@ function parseSAMOpp(d){
 }
 
 function useSeedData(){
-  allOpportunities = [...SEED_OPPS];
+  // kept for compatibility — no longer used for fallback
+  allOpportunities = [];
   isLive = false;
   setLiveBadge(false);
-  document.getElementById('demoBanner').classList.remove('hidden');
 }
 
 function showApiBanner(msg){
@@ -1006,7 +991,12 @@ function filterOpportunities(){
 function renderOpportunityCards(opps){
   const grid = document.getElementById('oppGrid');
   if(!opps.length){
-    grid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:40px;text-align:center;grid-column:1/-1">No opportunities match your filters.</div>';
+    const msg = !apiKey
+      ? 'Add your SAM.gov API key (top right) to load live window film opportunities.'
+      : allOpportunities.length === 0
+        ? 'No active window film opportunities found on SAM.gov. Check back later or adjust your date range.'
+        : 'No opportunities match your filters.';
+    grid.innerHTML = `<div style="color:var(--text-muted);font-size:13px;padding:40px;text-align:center;grid-column:1/-1">${msg}</div>`;
     return;
   }
   grid.innerHTML = opps.map(o => oppCard(o)).join('');
