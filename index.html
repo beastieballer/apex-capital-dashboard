@@ -1146,7 +1146,7 @@ function openOppDetail(id){
 
     <div class="detail-actions">
       <a class="btn btn-primary btn-sm" href="${esc(o.samUrl)}" target="_blank" rel="noopener">View Full Listing on SAM.gov &#8599;</a>
-      <button class="btn btn-ghost btn-sm${inPipe?' added':''}" onclick="${inPipe?'':\"addToPipeline('\" + o.id + \"')\"}" ${inPipe?'disabled':''}>
+      <button class="btn btn-ghost btn-sm${inPipe?' added':''}" onclick="${inPipe ? '' : "addToPipeline('" + o.id + "')"}" ${inPipe?'disabled':''}>
         ${inPipe ? '&#10003; In Pipeline' : '+ Add to Pipeline'}
       </button>
       <button class="btn btn-ghost btn-sm" onclick="closeOppDetail()" style="margin-left:auto">Close</button>
