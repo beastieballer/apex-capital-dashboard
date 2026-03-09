@@ -37,7 +37,7 @@ a:hover{text-decoration:underline}
 .site-header{background:rgba(13,13,26,0.95);border-bottom:1px solid var(--border);padding:0 24px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
 .header-inner{max-width:1600px;margin:0 auto;display:flex;align-items:center;gap:24px;height:64px}
 .logo-block{display:flex;flex-direction:column;line-height:1}
-.logo-main{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:#1a6fff;-webkit-text-fill-color:#1a6fff;font-weight:700}
+.logo-main{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .logo-sub{font-size:9px;letter-spacing:2px;color:var(--text-muted);margin-top:2px}
 .header-divider{width:1px;height:36px;background:var(--border);flex-shrink:0}
 .nav-tabs{display:flex;gap:4px;flex:1}
@@ -911,40 +911,40 @@ function oppCard(o){
   const typeC = typeClass(o.type);
   const saTagC = setAsideTag(o.setAside);
   const valueDisplay = (o.valueMin||o.valueMax) ? formatValueRange(o.valueMin,o.valueMax) : 'TBD';
-  return \`<div class="opp-card\${inPipe?' in-pipeline':''}" id="card-\${o.id}">
+  return `<div class="opp-card${inPipe?' in-pipeline':''}" id="card-${o.id}">
     <div class="opp-header">
-      <div class="opp-title">\${esc(o.title)}</div>
-      <span class="opp-type-badge \${typeC}">\${o.type==='Pre-Solicitation'?'Pre-Sol':o.type}</span>
+      <div class="opp-title">${esc(o.title)}</div>
+      <span class="opp-type-badge ${typeC}">${o.type==='Pre-Solicitation'?'Pre-Sol':o.type}</span>
     </div>
-    <div class="opp-agency">&#127970; \${esc(o.agency)}</div>
+    <div class="opp-agency">&#127970; ${esc(o.agency)}</div>
     <div class="opp-tags">
-      <span class="tag tag-naics">NAICS \${o.naics}</span>
-      <span class="tag \${saTagC}">\${esc(o.setAside)}</span>
-      \${o.psc ? \`<span class="tag tag-naics">PSC \${o.psc}</span>\` : ''}
+      <span class="tag tag-naics">NAICS ${o.naics}</span>
+      <span class="tag ${saTagC}">${esc(o.setAside)}</span>
+      ${o.psc ? `<span class="tag tag-naics">PSC ${o.psc}</span>` : ''}
     </div>
-    <div class="opp-value">\${valueDisplay}</div>
+    <div class="opp-value">${valueDisplay}</div>
     <div class="opp-meta">
       <div class="opp-meta-item">
         <span class="label">Posted</span>
-        <span class="val">\${o.posted}</span>
+        <span class="val">${o.posted}</span>
       </div>
       <div class="opp-meta-item">
         <span class="label">Response Deadline</span>
-        <span class="val \${dClass}">\${o.deadline} &bull; \${dLabel}</span>
+        <span class="val ${dClass}">${o.deadline} &bull; ${dLabel}</span>
       </div>
-      \${o.solNum ? \`<div class="opp-meta-item" style="grid-column:1/-1">
+      ${o.solNum ? `<div class="opp-meta-item" style="grid-column:1/-1">
         <span class="label">Solicitation #</span>
-        <span class="val">\${esc(o.solNum)}</span>
-      </div>\` : ''}
+        <span class="val">${esc(o.solNum)}</span>
+      </div>` : ''}
     </div>
-    <div style="font-size:11px;color:var(--text-muted);line-height:1.5">\${esc(o.description).substring(0,160)}\${o.description.length>160?'…':''}</div>
+    <div style="font-size:11px;color:var(--text-muted);line-height:1.5">${esc(o.description).substring(0,160)}${o.description.length>160?'…':''}</div>
     <div class="opp-actions">
-      <button class="btn-add-pipeline\${inPipe?' added':''}" onclick="addToPipeline('\${o.id}')" \${inPipe?'disabled':''}>
-        \${inPipe ? '&#10003; In Pipeline' : '+ Add to Pipeline'}
+      <button class="btn-add-pipeline${inPipe?' added':''}" onclick="addToPipeline('${o.id}')" ${inPipe?'disabled':''}>
+        ${inPipe ? '&#10003; In Pipeline' : '+ Add to Pipeline'}
       </button>
-      <a class="btn-sam-link" href="\${o.samUrl}" target="_blank" rel="noopener">SAM.gov &#8599;</a>
+      <a class="btn-sam-link" href="${o.samUrl}" target="_blank" rel="noopener">SAM.gov &#8599;</a>
     </div>
-  </div>\`;
+  </div>`;
 }
 
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
