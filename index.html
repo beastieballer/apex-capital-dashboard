@@ -796,6 +796,9 @@ async function fetchOpportunities(){
   document.getElementById('oppGrid').innerHTML = '<div class="loading-spinner"><div class="spinner"></div><span>Fetching from SAM.gov...</span></div>';
   if(!apiKey){
     useSeedData();
+    filteredOpportunities = [...allOpportunities];
+    filterOpportunities();
+    updateKPIs();
     return;
   }
   const today = new Date();
