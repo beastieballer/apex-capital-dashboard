@@ -48,6 +48,8 @@ a:hover{text-decoration:underline}
 .live-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-green);animation:pulse 1.5s infinite}
 .live-badge.demo{color:var(--accent-yellow);background:rgba(255,215,0,0.08);border-color:rgba(255,215,0,0.2)}
 .live-badge.demo .dot{background:var(--accent-yellow)}
+.live-badge.badge-error{color:#ff6b6b;background:rgba(255,60,60,0.08);border-color:rgba(255,60,60,0.3)}
+.live-badge.badge-error .dot{background:#ff6b6b;animation:none}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
 
 /* API KEY MODAL */
@@ -334,7 +336,7 @@ a:hover{text-decoration:underline}
     </nav>
     <div class="live-badge demo" id="liveBadge" onclick="openApiModal()">
       <span class="dot"></span>
-      <span id="liveBadgeText">DEMO DATA</span>
+      <span id="liveBadgeText">NO API KEY</span>
     </div>
   </div>
 </header>
@@ -521,146 +523,6 @@ a:hover{text-decoration:underline}
 <script>
 'use strict';
 
-// ─── SEED DATA ──────────────────────────────────────────────────────────────
-
-const SEED_OPPS = [
-  {
-    id:'opp-001', title:'Window Film Installation - Pentagon Renovation Phase 3',
-    agency:'Department of Defense - Pentagon', naics:'238390', psc:'Z2DA',
-    setAside:'Small Business', posted:'2026-02-28', deadline:'2026-03-25',
-    valueMin:145000, valueMax:285000, type:'Solicitation',
-    solNum:'W912DR-26-R-0041',
-    description:'Installation of solar control and security window film on approximately 42,000 sq ft of exterior glazing across Buildings 3A and 3B.',
-    samUrl:'https://sam.gov/opp/W912DR-26-R-0041'
-  },
-  {
-    id:'opp-002', title:'RF Shielding Film - Sensitive Compartmented Information Facility',
-    agency:'Defense Intelligence Agency', naics:'238390', psc:'Z224',
-    setAside:'SDVOSB', posted:'2026-03-01', deadline:'2026-03-18',
-    valueMin:220000, valueMax:380000, type:'Solicitation',
-    solNum:'HHM402-26-R-0015',
-    description:'Supply and installation of infrared RF shielding film for SCIF buildout at DIA facility. Must meet ICD 705 standards.',
-    samUrl:'https://sam.gov/opp/HHM402-26-R-0015'
-  },
-  {
-    id:'opp-003', title:'Blast Mitigation Window Film - Federal Courthouse',
-    agency:'General Services Administration', naics:'238390', psc:'Z2DA',
-    setAside:'Small Business', posted:'2026-02-25', deadline:'2026-04-02',
-    valueMin:85000, valueMax:165000, type:'Solicitation',
-    solNum:'47PM0126R0022',
-    description:'Anti-shatter blast mitigation film installation on all exterior windows of the E. Barrett Prettyman Federal Courthouse in Washington DC.',
-    samUrl:'https://sam.gov/opp/47PM0126R0022'
-  },
-  {
-    id:'opp-004', title:'Sources Sought: Security Window Film - NSA Campus',
-    agency:'National Security Agency', naics:'238390', psc:'Z2DA',
-    setAside:'Unrestricted', posted:'2026-03-03', deadline:'2026-03-20',
-    valueMin:0, valueMax:0, type:'Sources Sought',
-    solNum:'NSA-26-SS-0087',
-    description:'Market research for qualified vendors to provide RF-shielding and solar control window film services across multiple Fort Meade campus buildings.',
-    samUrl:'https://sam.gov/opp/NSA-26-SS-0087'
-  },
-  {
-    id:'opp-005', title:'Window Tinting Services - FBI HQ Renovation',
-    agency:'Federal Bureau of Investigation', naics:'238390', psc:'Z2DA',
-    setAside:'Small Business', posted:'2026-02-20', deadline:'2026-03-30',
-    valueMin:55000, valueMax:120000, type:'Solicitation',
-    solNum:'DJFBI-26-R-0044',
-    description:'Solar control and privacy window film for interior partitions and exterior windows at FBI Headquarters J. Edgar Hoover Building.',
-    samUrl:'https://sam.gov/opp/DJFBI-26-R-0044'
-  },
-  {
-    id:'opp-006', title:'Pre-Sol: SCIF Window Film Treatment - Marine Corps Base Quantico',
-    agency:'Department of the Navy - Marine Corps', naics:'541330', psc:'Y1QZ',
-    setAside:'Small Business', posted:'2026-03-05', deadline:'2026-03-22',
-    valueMin:175000, valueMax:340000, type:'Pre-Solicitation',
-    solNum:'M00264-26-R-0033',
-    description:'Design-build services for SCIF window treatment including RF-shielding film and blast mitigation film for Building 2094.',
-    samUrl:'https://sam.gov/opp/M00264-26-R-0033'
-  },
-  {
-    id:'opp-007', title:'Solar Film Installation - Department of Homeland Security HQ',
-    agency:'Department of Homeland Security', naics:'238390', psc:'Z2DA',
-    setAside:'8(a)', posted:'2026-02-18', deadline:'2026-03-28',
-    valueMin:95000, valueMax:210000, type:'Solicitation',
-    solNum:'70RSAT26R00000028',
-    description:'Energy efficiency solar control window film installation for St. Elizabeths West Campus, DHS HQ complex, 28 buildings.',
-    samUrl:'https://sam.gov/opp/70RSAT26R00000028'
-  },
-  {
-    id:'opp-008', title:'Window Film Services - Walter Reed National Military Medical Center',
-    agency:'Defense Health Agency', naics:'238390', psc:'Z2DA',
-    setAside:'Small Business', posted:'2026-03-02', deadline:'2026-04-10',
-    valueMin:68000, valueMax:145000, type:'Solicitation',
-    solNum:'HT001426R0041',
-    description:'Solar control and privacy window film for patient wards and administrative buildings. Must meet HIPAA privacy requirements.',
-    samUrl:'https://sam.gov/opp/HT001426R0041'
-  },
-  {
-    id:'opp-009', title:'Security Film - CIA Campus Langley',
-    agency:'Central Intelligence Agency', naics:'238390', psc:'Z2DA',
-    setAside:'Unrestricted', posted:'2026-03-04', deadline:'2026-03-21',
-    valueMin:310000, valueMax:520000, type:'Solicitation',
-    solNum:'2026-CIA-0018-R',
-    description:'Multi-year IDIQ for security and RF-shielding window film services across the George Bush Center for Intelligence campus.',
-    samUrl:'https://sam.gov/opp/2026-CIA-0018-R'
-  },
-  {
-    id:'opp-010', title:'Window Film BPA - Fort Meade Installation',
-    agency:'Department of the Army - Fort Meade', naics:'238390', psc:'Z2DA',
-    setAside:'Small Business', posted:'2026-02-22', deadline:'2026-03-31',
-    valueMin:250000, valueMax:750000, type:'Solicitation',
-    solNum:'W911QY-26-R-0012',
-    description:'Blanket Purchase Agreement for window film installation services across Fort George G. Meade. Includes solar, security, decorative and RF-shielding film.',
-    samUrl:'https://sam.gov/opp/W911QY-26-R-0012'
-  },
-  {
-    id:'opp-011', title:'Anti-Terrorism Force Protection Film - Navy Yard',
-    agency:'Department of the Navy', naics:'238390', psc:'Z2DA',
-    setAside:'SDVOSB', posted:'2026-03-01', deadline:'2026-03-26',
-    valueMin:130000, valueMax:260000, type:'Solicitation',
-    solNum:'N00024-26-R-4412',
-    description:'Anti-shatter and blast mitigation film for Washington Navy Yard buildings in support of AT/FP requirements.',
-    samUrl:'https://sam.gov/opp/N00024-26-R-4412'
-  },
-  {
-    id:'opp-012', title:'IDIQ Window Film Services - GSA Region 11',
-    agency:'General Services Administration - National Capital Region', naics:'238390', psc:'Z2DA',
-    setAside:'Small Business', posted:'2026-02-15', deadline:'2026-04-15',
-    valueMin:500000, valueMax:2000000, type:'Solicitation',
-    solNum:'47PM0126R0031',
-    description:'Multiple Award IDIQ for window film services across GSA-managed federal buildings in the National Capital Region. 5-year base + options.',
-    samUrl:'https://sam.gov/opp/47PM0126R0031'
-  },
-  {
-    id:'opp-013', title:'Sources Sought: Decorative and Privacy Film - US Capitol Complex',
-    agency:'Architect of the Capitol', naics:'238390', psc:'Z2DA',
-    setAside:'Small Business', posted:'2026-03-06', deadline:'2026-03-24',
-    valueMin:0, valueMax:0, type:'Sources Sought',
-    solNum:'AOC-26-SS-0019',
-    description:'Market research for decorative, privacy, and solar control window film services across the US Capitol complex including the Capitol Building, Senate and House office buildings.',
-    samUrl:'https://sam.gov/opp/AOC-26-SS-0019'
-  },
-  {
-    id:'opp-014', title:'RF Window Film - Pentagon Force Protection Agency',
-    agency:'Pentagon Force Protection Agency', naics:'238390', psc:'Z2DA',
-    setAside:'Unrestricted', posted:'2026-03-07', deadline:'2026-03-28',
-    valueMin:185000, valueMax:295000, type:'Solicitation',
-    solNum:'PFPA-26-R-0022',
-    description:'RF-shielding and security window film for PFPA facilities supporting classified operations. ICD 705 compliance required.',
-    samUrl:'https://sam.gov/opp/PFPA-26-R-0022'
-  },
-  {
-    id:'opp-015', title:'Window Film Maintenance IDIQ - Air Force District of Washington',
-    agency:'Air Force District of Washington', naics:'238390', psc:'Z2DA',
-    setAside:'Small Business', posted:'2026-02-10', deadline:'2026-04-20',
-    valueMin:200000, valueMax:900000, type:'Solicitation',
-    solNum:'FA7014-26-R-0008',
-    description:'Indefinite Delivery/Indefinite Quantity contract for window film installation and maintenance at Joint Base Andrews, Joint Base Anacostia-Bolling, and Pentagon.',
-    samUrl:'https://sam.gov/opp/FA7014-26-R-0008'
-  }
-];
-
 const SEED_INTEL = [
   {contractor:'Signals Defense LLC', value:2400000, agency:'DoD / DIA', year:2024, description:'SCIF window film and RF shielding services'},
   {contractor:'Madico Inc', value:890000, agency:'GSA Region 3', year:2023, description:'Federal building solar and security window film'},
@@ -837,7 +699,7 @@ async function fetchOpportunities(){
     allOpportunities = [];
     filteredOpportunities = [];
     isLive = false;
-    setLiveBadge(false);
+    setLiveBadge('demo');
     document.getElementById('demoBanner').classList.remove('hidden');
     filterOpportunities();
     updateKPIs();
@@ -846,52 +708,76 @@ async function fetchOpportunities(){
 
   document.getElementById('demoBanner').classList.add('hidden');
 
+  // Check session cache (5-minute TTL) to avoid hammering SAM.gov
+  const cacheKey = 'ssswf_opp_cache';
+  const cached = (() => { try { return JSON.parse(sessionStorage.getItem(cacheKey)); } catch(e){ return null; } })();
+  if(cached && cached.key === apiKey && (Date.now() - cached.ts) < 300000){
+    allOpportunities = cached.data;
+    isLive = true;
+    setLiveBadge('live');
+    filteredOpportunities = [...allOpportunities];
+    filterOpportunities();
+    updateKPIs();
+    return;
+  }
+
   const today = new Date();
   const fmt = d => (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getDate().toString().padStart(2,'0') + '/' + d.getFullYear();
   const yearAgo = new Date(today); yearAgo.setFullYear(yearAgo.getFullYear()-1);
 
-  // Correct SAM.gov Opportunities v2 params (verified from official API spec):
-  //   - base path requires /prod/
-  //   - title= for text search (no keyword= param in public API)
+  // SAM.gov Opportunities v2 — minimal param set to avoid 400/429 from bad params:
+  //   - title= for text search
   //   - postedFrom/postedTo required alongside limit
-  //   - rdlfrom=today filters to open (future-deadline) opportunities
-  //   - active field is response-only; post-filter for active:"Yes"
+  //   - ptype URL-encoded (o=Solicitation, p=Presolicitation, k=Combined, r=Sources Sought)
+  //   - NO rdlfrom — omit to avoid validation errors; filter open deadlines client-side
   const url =
     'https://api.sam.gov/prod/opportunities/v2/search?' +
     'api_key=' + encodeURIComponent(apiKey) +
     '&title=' + encodeURIComponent('window film') +
-    '&ptype=o,p,k,r' +
-    '&postedFrom=' + fmt(yearAgo) +
-    '&postedTo=' + fmt(today) +
-    '&rdlfrom=' + fmt(today) +
+    '&ptype=' + encodeURIComponent('o,p,k,r') +
+    '&postedFrom=' + encodeURIComponent(fmt(yearAgo)) +
+    '&postedTo=' + encodeURIComponent(fmt(today)) +
     '&limit=100&offset=0';
 
   let fetchError = null;
 
   try {
-    const resp = await fetch(url, {signal: AbortSignal.timeout(20000)});
+    const resp = await fetch(url, {signal: AbortSignal.timeout(25000)});
     if(!resp.ok){
+      const bodyText = await resp.text().catch(() => '');
       throw new Error('HTTP ' + resp.status +
-        (resp.status === 401 ? ' — Invalid or inactive API key' :
-         resp.status === 403 ? ' — API key not authorized (ensure Personal API key is enabled for Opportunities at open.gsa.gov)' :
-         resp.status === 429 ? ' — Rate limit exceeded. Wait a minute and try again.' : ''));
+        (resp.status === 401 ? ' — Invalid or inactive API key. Keys can take 24–48 hrs to activate after registration.' :
+         resp.status === 403 ? ' — API key not authorized. Ensure you have a Personal API key with Opportunities enabled at open.gsa.gov/apis.' :
+         resp.status === 429 ? ' — SAM.gov rate limit hit. Wait a few minutes, then refresh.' :
+         resp.status === 400 ? ' — Bad request. Check that your API key is a SAM.gov Personal key (not a system account key).' :
+         (bodyText ? ': ' + bodyText.slice(0,120) : '')));
     }
     const data = await resp.json();
-    const results = (data.opportunitiesData || []).filter(d => d.active === 'Yes');
-    if(results.length > 0){
-      allOpportunities = results.map(parseSAMOpp);
-      isLive = true;
-      setLiveBadge(true);
-    } else {
-      showApiBanner('SAM.gov connected — no active window film opportunities at this time. Check back soon.');
-      allOpportunities = [];
+    // Filter: active=Yes and deadline not yet passed (client-side open-deadline filter)
+    const now = new Date();
+    const results = (data.opportunitiesData || []).filter(d => {
+      if(d.active !== 'Yes') return false;
+      if(d.responseDeadLine){
+        const dl = new Date(d.responseDeadLine);
+        if(!isNaN(dl) && dl < now) return false;
+      }
+      return true;
+    });
+    allOpportunities = results.map(parseSAMOpp);
+    isLive = true;
+    setLiveBadge('live');
+    if(results.length === 0){
+      showApiBanner('SAM.gov connected — no open window film opportunities at this time. Check back soon.');
     }
+    // Cache successful result
+    try { sessionStorage.setItem(cacheKey, JSON.stringify({key: apiKey, ts: Date.now(), data: allOpportunities})); } catch(e){}
   } catch(e){
     fetchError = e.message || 'Unknown error';
   }
 
   if(fetchError){
     showApiBanner('SAM.gov error: ' + fetchError);
+    setLiveBadge('error');
     allOpportunities = [];
   }
 
@@ -947,15 +833,18 @@ function showApiBanner(msg){
   el.classList.remove('hidden');
 }
 
-function setLiveBadge(live){
+function setLiveBadge(state){
   const badge = document.getElementById('liveBadge');
   const text = document.getElementById('liveBadgeText');
-  if(live){
-    badge.classList.remove('demo');
+  badge.classList.remove('demo','badge-error');
+  if(state === 'live'){
     text.textContent = 'SAM.GOV LIVE';
+  } else if(state === 'error'){
+    badge.classList.add('badge-error');
+    text.textContent = 'API ERROR';
   } else {
     badge.classList.add('demo');
-    text.textContent = 'DEMO DATA';
+    text.textContent = 'NO API KEY';
   }
 }
 
@@ -1150,8 +1039,7 @@ function closeOppDetail(e){
 
 function addToPipeline(oppId){
   if(isPipelined(oppId)) return;
-  const opp = allOpportunities.find(o => o.id === oppId) ||
-               SEED_OPPS.find(o => o.id === oppId);
+  const opp = allOpportunities.find(o => o.id === oppId);
   if(!opp) return;
   const entry = {
     id: generateId(),
