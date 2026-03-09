@@ -745,12 +745,33 @@ async function fetchOpportunities(){
     const resp = await fetch(url, {signal: AbortSignal.timeout(25000)});
     if(!resp.ok){
       const bodyText = await resp.text().catch(() => '');
-      throw new Error('HTTP ' + resp.status +
-        (resp.status === 401 ? ' — Invalid or inactive API key. Keys can take 24–48 hrs to activate after registration.' :
-         resp.status === 403 ? ' — API key not authorized. Ensure you have a Personal API key with Opportunities enabled at open.gsa.gov/apis.' :
-         resp.status === 429 ? ' — SAM.gov rate limit hit. Wait a few minutes, then refresh.' :
-         resp.status === 400 ? ' — Bad request. Check that your API key is a SAM.gov Personal key (not a system account key).' :
-         (bodyText ? ': ' + bodyText.slice(0,120) : '')));
+      let msg = 'HTTP ' + resp.status;
+      if(resp.status === 401){
+        msg += ' — Invalid or inactive API key. Keys can take 24–48 hrs to activate after registration.';
+      } else if(resp.status === 403){
+        msg += ' — API key not authorized. Ensure you have a Personal API key with Opportunities enabled at open.gsa.gov/apis.';
+      } else if(resp.status === 429){
+        // Parse SAM.gov quota response: {"nextAccessTime":"2026-Mar-10 00:00:00+0000 UTC", ...}
+        let quotaDetail = '';
+        try {
+          const errJson = JSON.parse(bodyText);
+          if(errJson.nextAccessTime){
+            const reset = new Date(errJson.nextAccessTime.replace(' UTC','').replace('+0000','Z').replace(/(\d{4})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2})/, (_, y, m, d) => {
+              const months = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+              return y + '-' + String(months[m]+1).padStart(2,'0') + '-' + d;
+            }));
+            if(!isNaN(reset)){
+              quotaDetail = ' Quota resets at ' + reset.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' local time.';
+            }
+          }
+        } catch(e){}
+        msg += ' — Daily API quota exceeded.' + quotaDetail;
+      } else if(resp.status === 400){
+        msg += ' — Bad request. Check that your API key is a SAM.gov Public key.';
+      } else if(bodyText){
+        msg += ': ' + bodyText.slice(0, 120);
+      }
+      throw new Error(msg);
     }
     const data = await resp.json();
     // Filter: active=Yes and deadline not yet passed (client-side open-deadline filter)
