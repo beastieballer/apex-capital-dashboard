@@ -346,6 +346,11 @@ a:hover{text-decoration:underline}
     <span class="icon">&#9888;&#65039;</span>
     <span>Using demo data &mdash; <a onclick="openApiModal()">add your free SAM.gov API key</a> to enable live opportunity fetching. Get one at <strong>open.gsa.gov/apis</strong></span>
   </div>
+  <!-- API STATUS BANNER -->
+  <div class="demo-banner hidden" id="apiBanner" style="border-color:rgba(255,100,100,0.3);background:rgba(255,60,60,0.06);color:#ff6b6b">
+    <span class="icon">&#9888;</span>
+    <span id="apiBannerText"></span>
+  </div>
 
   <!-- KPI BAR -->
   <div class="kpi-bar">
@@ -851,13 +856,30 @@ async function fetchOpportunities(){
     '&limit=50&postedFrom=' + fmt(from) + '&postedTo=' + fmt(today) +
     '&active=true';
 
+  const FILM_TERMS = [
+    'window film','blast mitigation film','blast film','solar control film',
+    'solar film','rf shielding film','scif film','anti-shatter film',
+    'infrared film','security window film','privacy film','window tint film',
+    'window tinting','protective film','decorative film'
+  ];
+  const isFilmRelated = d => {
+    const text = ((d.title || '') + ' ' + (d.description || '')).toLowerCase();
+    return (text.includes('film') || text.includes('tint')) && FILM_TERMS.some(t => text.includes(t));
+  };
+
+  let fetchError = null;
+  let totalRaw = 0;
+
   try {
     const responses = await Promise.all(
-      searchTerms.map(kw =>
-        fetch(buildUrl(kw), {signal: AbortSignal.timeout(15000)})
-          .then(r => r.ok ? r.json() : {opportunitiesData: []})
-          .catch(() => ({opportunitiesData: []}))
-      )
+      searchTerms.map(async kw => {
+        const resp = await fetch(buildUrl(kw), {signal: AbortSignal.timeout(15000)});
+        if(!resp.ok){
+          const msg = await resp.text().catch(() => '');
+          throw new Error('HTTP ' + resp.status + (resp.status === 401 ? ' — Invalid or inactive API key' : resp.status === 403 ? ' — API key not authorized' : resp.status === 429 ? ' — Rate limit exceeded' : ''));
+        }
+        return resp.json();
+      })
     );
 
     // Merge and deduplicate by noticeId
@@ -869,21 +891,8 @@ async function fetchOpportunities(){
         if(key && !seen.has(key)){ seen.add(key); merged.push(d); }
       }
     }
+    totalRaw = merged.length;
 
-    // Strict client-side filter: result MUST contain "film" and be window-film specific
-    const FILM_TERMS = [
-      'window film','blast mitigation film','blast film','solar control film',
-      'solar film','rf shielding film','scif film','anti-shatter film',
-      'infrared film','security window film','privacy film','window tint film',
-      'window tinting','protective film','decorative film'
-    ];
-    const isFilmRelated = d => {
-      const text = ((d.title || '') + ' ' + (d.description || '')).toLowerCase();
-      // Must contain the word "film" or "tint" AND match at least one specific term
-      const hasFilm = text.includes('film') || text.includes('tint');
-      const hasMatch = FILM_TERMS.some(t => text.includes(t));
-      return hasFilm && hasMatch;
-    };
     const relevant = merged.filter(isFilmRelated);
 
     if(relevant.length > 0){
@@ -891,11 +900,18 @@ async function fetchOpportunities(){
       isLive = true;
       setLiveBadge(true);
       document.getElementById('demoBanner').classList.add('hidden');
+      document.getElementById('apiBanner').classList.add('hidden');
+    } else if(totalRaw > 0){
+      // API worked, but no window-film results in this date range
+      showApiBanner('SAM.gov connected — no window film opportunities posted in the last 90 days. Showing demo data.');
+      useSeedData();
     } else {
+      showApiBanner('SAM.gov returned 0 results. The API key may still be activating (allow 24–48 hrs), or try refreshing.');
       useSeedData();
     }
   } catch(e){
-    console.warn('SAM.gov fetch failed:', e.message);
+    fetchError = e.message || 'Unknown error';
+    showApiBanner('SAM.gov error: ' + fetchError + ' — check your API key or try again.');
     useSeedData();
   }
   filteredOpportunities = [...allOpportunities];
@@ -942,6 +958,12 @@ function useSeedData(){
   isLive = false;
   setLiveBadge(false);
   document.getElementById('demoBanner').classList.remove('hidden');
+}
+
+function showApiBanner(msg){
+  const el = document.getElementById('apiBanner');
+  document.getElementById('apiBannerText').textContent = msg;
+  el.classList.remove('hidden');
 }
 
 function setLiveBadge(live){
