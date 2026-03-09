@@ -838,21 +838,24 @@ async function fetchOpportunities(){
       }
     }
 
-    // Client-side filter: keep only genuine window film opportunities
+    // Strict client-side filter: result MUST contain "film" and be window-film specific
     const FILM_TERMS = [
-      'window film','blast film','solar film','rf shielding film','scif film',
-      'anti-shatter film','infrared film','security film','solar control film',
-      'blast mitigation film','window tint','rf shielding','scif window'
+      'window film','blast mitigation film','blast film','solar control film',
+      'solar film','rf shielding film','scif film','anti-shatter film',
+      'infrared film','security window film','privacy film','window tint film',
+      'window tinting','protective film','decorative film'
     ];
     const isFilmRelated = d => {
       const text = ((d.title || '') + ' ' + (d.description || '')).toLowerCase();
-      return FILM_TERMS.some(t => text.includes(t));
+      // Must contain the word "film" or "tint" AND match at least one specific term
+      const hasFilm = text.includes('film') || text.includes('tint');
+      const hasMatch = FILM_TERMS.some(t => text.includes(t));
+      return hasFilm && hasMatch;
     };
     const relevant = merged.filter(isFilmRelated);
-    const opps = (relevant.length > 0 ? relevant : merged).map(parseSAMOpp);
 
-    if(opps.length > 0){
-      allOpportunities = opps;
+    if(relevant.length > 0){
+      allOpportunities = relevant.map(parseSAMOpp);
       isLive = true;
       setLiveBadge(true);
       document.getElementById('demoBanner').classList.add('hidden');
