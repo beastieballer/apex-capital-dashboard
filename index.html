@@ -846,14 +846,25 @@ async function fetchOpportunities(){
 
   document.getElementById('demoBanner').classList.add('hidden');
 
-  // Single request — keyword search, status=active (correct SAM.gov param), no date filter
-  // so we catch all currently-open solicitations regardless of when they were posted
+  const today = new Date();
+  const fmt = d => (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getDate().toString().padStart(2,'0') + '/' + d.getFullYear();
+  const yearAgo = new Date(today); yearAgo.setFullYear(yearAgo.getFullYear()-1);
+
+  // Correct SAM.gov Opportunities v2 params (verified from official API spec):
+  //   - base path requires /prod/
+  //   - title= for text search (no keyword= param in public API)
+  //   - postedFrom/postedTo required alongside limit
+  //   - rdlfrom=today filters to open (future-deadline) opportunities
+  //   - active field is response-only; post-filter for active:"Yes"
   const url =
-    'https://api.sam.gov/opportunities/v2/search?' +
+    'https://api.sam.gov/prod/opportunities/v2/search?' +
     'api_key=' + encodeURIComponent(apiKey) +
-    '&keyword=' + encodeURIComponent('window film') +
-    '&status=active' +
-    '&limit=100';
+    '&title=' + encodeURIComponent('window film') +
+    '&ptype=o,p,k,r' +
+    '&postedFrom=' + fmt(yearAgo) +
+    '&postedTo=' + fmt(today) +
+    '&rdlfrom=' + fmt(today) +
+    '&limit=100&offset=0';
 
   let fetchError = null;
 
@@ -866,7 +877,7 @@ async function fetchOpportunities(){
          resp.status === 429 ? ' — Rate limit exceeded. Wait a minute and try again.' : ''));
     }
     const data = await resp.json();
-    const results = (data.opportunitiesData || []);
+    const results = (data.opportunitiesData || []).filter(d => d.active === 'Yes');
     if(results.length > 0){
       allOpportunities = results.map(parseSAMOpp);
       isLive = true;
