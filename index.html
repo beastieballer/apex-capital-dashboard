@@ -802,19 +802,55 @@ async function fetchOpportunities(){
     return;
   }
   const today = new Date();
-  const from = new Date(today); from.setDate(from.getDate()-30);
+  const from = new Date(today); from.setDate(from.getDate()-90);
   const fmt = d => (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getDate().toString().padStart(2,'0') + '/' + d.getFullYear();
-  const keywords = 'window film SCIF RF shielding blast film solar film infrared film window tint';
-  const url = 'https://api.sam.gov/opportunities/v2/search?' +
+
+  // Three targeted searches — one per window film category
+  const searchTerms = [
+    'window film blast mitigation security anti-shatter',
+    'window film solar control energy efficiency',
+    'window film SCIF RF shielding infrared'
+  ];
+
+  const buildUrl = kw =>
+    'https://api.sam.gov/opportunities/v2/search?' +
     'api_key=' + encodeURIComponent(apiKey) +
-    '&keyword=' + encodeURIComponent(keywords) +
-    '&limit=25&postedFrom=' + fmt(from) + '&postedTo=' + fmt(today) +
-    '&ptype=o&active=true';
+    '&keyword=' + encodeURIComponent(kw) +
+    '&limit=50&postedFrom=' + fmt(from) + '&postedTo=' + fmt(today) +
+    '&active=true';
+
   try {
-    const resp = await fetch(url, {signal: AbortSignal.timeout(10000)});
-    if(!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
-    const opps = (data.opportunitiesData || []).map(parseSAMOpp);
+    const responses = await Promise.all(
+      searchTerms.map(kw =>
+        fetch(buildUrl(kw), {signal: AbortSignal.timeout(15000)})
+          .then(r => r.ok ? r.json() : {opportunitiesData: []})
+          .catch(() => ({opportunitiesData: []}))
+      )
+    );
+
+    // Merge and deduplicate by noticeId
+    const seen = new Set();
+    const merged = [];
+    for(const data of responses){
+      for(const d of (data.opportunitiesData || [])){
+        const key = d.noticeId || d.solicitationNumber;
+        if(key && !seen.has(key)){ seen.add(key); merged.push(d); }
+      }
+    }
+
+    // Client-side filter: keep only genuine window film opportunities
+    const FILM_TERMS = [
+      'window film','blast film','solar film','rf shielding film','scif film',
+      'anti-shatter film','infrared film','security film','solar control film',
+      'blast mitigation film','window tint','rf shielding','scif window'
+    ];
+    const isFilmRelated = d => {
+      const text = ((d.title || '') + ' ' + (d.description || '')).toLowerCase();
+      return FILM_TERMS.some(t => text.includes(t));
+    };
+    const relevant = merged.filter(isFilmRelated);
+    const opps = (relevant.length > 0 ? relevant : merged).map(parseSAMOpp);
+
     if(opps.length > 0){
       allOpportunities = opps;
       isLive = true;
