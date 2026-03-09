@@ -731,7 +731,7 @@ async function fetchOpportunities(){
   //   - ptype URL-encoded (o=Solicitation, p=Presolicitation, k=Combined, r=Sources Sought)
   //   - NO rdlfrom — omit to avoid validation errors; filter open deadlines client-side
   const url =
-    'https://api.sam.gov/prod/opportunities/v2/search?' +
+    'https://api.sam.gov/opportunities/v2/search?' +
     'api_key=' + encodeURIComponent(apiKey) +
     '&title=' + encodeURIComponent('window film') +
     '&ptype=' + encodeURIComponent('o,p,k,r') +
