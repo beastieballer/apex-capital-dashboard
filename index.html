@@ -846,17 +846,14 @@ async function fetchOpportunities(){
 
   document.getElementById('demoBanner').classList.add('hidden');
 
-  const today = new Date();
-  const from = new Date(today); from.setDate(from.getDate()-180);
-  const fmt = d => (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getDate().toString().padStart(2,'0') + '/' + d.getFullYear();
-
-  // Single request — "window film" is specific enough; multiple calls trigger 429
+  // Single request — keyword search, status=active (correct SAM.gov param), no date filter
+  // so we catch all currently-open solicitations regardless of when they were posted
   const url =
     'https://api.sam.gov/opportunities/v2/search?' +
     'api_key=' + encodeURIComponent(apiKey) +
     '&keyword=' + encodeURIComponent('window film') +
-    '&limit=100&postedFrom=' + fmt(from) + '&postedTo=' + fmt(today) +
-    '&active=true';
+    '&status=active' +
+    '&limit=100';
 
   let fetchError = null;
 
@@ -875,7 +872,7 @@ async function fetchOpportunities(){
       isLive = true;
       setLiveBadge(true);
     } else {
-      showApiBanner('SAM.gov connected — no active window film opportunities in the last 180 days.');
+      showApiBanner('SAM.gov connected — no active window film opportunities at this time. Check back soon.');
       allOpportunities = [];
     }
   } catch(e){
