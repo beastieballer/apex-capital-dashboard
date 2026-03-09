@@ -68,6 +68,31 @@ a:hover{text-decoration:underline}
 .btn-green:hover{background:#00d975}
 .btn-sm{padding:5px 12px;font-size:11px;border-radius:6px}
 
+/* OPP DETAIL MODAL */
+.opp-detail-box{width:680px;max-width:94vw;max-height:88vh;overflow-y:auto;padding:32px}
+.opp-detail-box::-webkit-scrollbar{width:4px}.opp-detail-box::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:4px}
+.detail-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px}
+.detail-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.5px;color:var(--text-primary);line-height:1.2;flex:1}
+.detail-close{background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;padding:0;line-height:1;flex-shrink:0}
+.detail-close:hover{color:var(--text-primary)}
+.detail-agency{font-size:13px;color:var(--accent-cyan);margin-bottom:16px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;margin-bottom:20px}
+.detail-field{display:flex;flex-direction:column;gap:3px}
+.detail-field .lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px}
+.detail-field .val{font-size:13px;color:var(--text-primary);font-family:'DM Mono',monospace}
+.detail-section{margin-bottom:18px}
+.detail-section-title{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.detail-description{font-size:13px;color:var(--text-secondary);line-height:1.7;white-space:pre-wrap}
+.detail-contact{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px}
+.detail-contact-name{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:4px}
+.detail-contact-role{font-size:11px;color:var(--text-muted);margin-bottom:6px}
+.detail-contact-row{font-size:12px;color:var(--text-secondary);margin-bottom:2px}
+.detail-contact-row a{color:var(--accent-cyan);text-decoration:none}
+.detail-contact-row a:hover{text-decoration:underline}
+.detail-actions{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.opp-card{cursor:pointer}
+.opp-card:hover{border-color:var(--accent-cyan);box-shadow:0 0 0 1px var(--accent-cyan)}
+
 /* MAIN LAYOUT */
 .main{max-width:1600px;margin:0 auto;padding:24px}
 
@@ -285,6 +310,13 @@ a:hover{text-decoration:underline}
   </div>
 </div>
 
+<!-- OPPORTUNITY DETAIL MODAL -->
+<div class="modal-overlay" id="oppDetailModal" onclick="closeOppDetail(event)">
+  <div class="modal-box opp-detail-box" id="oppDetailBox">
+    <div id="oppDetailContent"></div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <header class="site-header">
   <div class="header-inner">
@@ -313,6 +345,11 @@ a:hover{text-decoration:underline}
   <div class="demo-banner" id="demoBanner">
     <span class="icon">&#9888;&#65039;</span>
     <span>Using demo data &mdash; <a onclick="openApiModal()">add your free SAM.gov API key</a> to enable live opportunity fetching. Get one at <strong>open.gsa.gov/apis</strong></span>
+  </div>
+  <!-- API STATUS BANNER -->
+  <div class="demo-banner hidden" id="apiBanner" style="border-color:rgba(255,100,100,0.3);background:rgba(255,60,60,0.06);color:#ff6b6b">
+    <span class="icon">&#9888;</span>
+    <span id="apiBannerText"></span>
   </div>
 
   <!-- KPI BAR -->
@@ -819,13 +856,30 @@ async function fetchOpportunities(){
     '&limit=50&postedFrom=' + fmt(from) + '&postedTo=' + fmt(today) +
     '&active=true';
 
+  const FILM_TERMS = [
+    'window film','blast mitigation film','blast film','solar control film',
+    'solar film','rf shielding film','scif film','anti-shatter film',
+    'infrared film','security window film','privacy film','window tint film',
+    'window tinting','protective film','decorative film'
+  ];
+  const isFilmRelated = d => {
+    const text = ((d.title || '') + ' ' + (d.description || '')).toLowerCase();
+    return (text.includes('film') || text.includes('tint')) && FILM_TERMS.some(t => text.includes(t));
+  };
+
+  let fetchError = null;
+  let totalRaw = 0;
+
   try {
     const responses = await Promise.all(
-      searchTerms.map(kw =>
-        fetch(buildUrl(kw), {signal: AbortSignal.timeout(15000)})
-          .then(r => r.ok ? r.json() : {opportunitiesData: []})
-          .catch(() => ({opportunitiesData: []}))
-      )
+      searchTerms.map(async kw => {
+        const resp = await fetch(buildUrl(kw), {signal: AbortSignal.timeout(15000)});
+        if(!resp.ok){
+          const msg = await resp.text().catch(() => '');
+          throw new Error('HTTP ' + resp.status + (resp.status === 401 ? ' — Invalid or inactive API key' : resp.status === 403 ? ' — API key not authorized' : resp.status === 429 ? ' — Rate limit exceeded' : ''));
+        }
+        return resp.json();
+      })
     );
 
     // Merge and deduplicate by noticeId
@@ -837,30 +891,27 @@ async function fetchOpportunities(){
         if(key && !seen.has(key)){ seen.add(key); merged.push(d); }
       }
     }
+    totalRaw = merged.length;
 
-    // Client-side filter: keep only genuine window film opportunities
-    const FILM_TERMS = [
-      'window film','blast film','solar film','rf shielding film','scif film',
-      'anti-shatter film','infrared film','security film','solar control film',
-      'blast mitigation film','window tint','rf shielding','scif window'
-    ];
-    const isFilmRelated = d => {
-      const text = ((d.title || '') + ' ' + (d.description || '')).toLowerCase();
-      return FILM_TERMS.some(t => text.includes(t));
-    };
     const relevant = merged.filter(isFilmRelated);
-    const opps = (relevant.length > 0 ? relevant : merged).map(parseSAMOpp);
 
-    if(opps.length > 0){
-      allOpportunities = opps;
+    if(relevant.length > 0){
+      allOpportunities = relevant.map(parseSAMOpp);
       isLive = true;
       setLiveBadge(true);
       document.getElementById('demoBanner').classList.add('hidden');
+      document.getElementById('apiBanner').classList.add('hidden');
+    } else if(totalRaw > 0){
+      // API worked, but no window-film results in this date range
+      showApiBanner('SAM.gov connected — no window film opportunities posted in the last 90 days. Showing demo data.');
+      useSeedData();
     } else {
+      showApiBanner('SAM.gov returned 0 results. The API key may still be activating (allow 24–48 hrs), or try refreshing.');
       useSeedData();
     }
   } catch(e){
-    console.warn('SAM.gov fetch failed:', e.message);
+    fetchError = e.message || 'Unknown error';
+    showApiBanner('SAM.gov error: ' + fetchError + ' — check your API key or try again.');
     useSeedData();
   }
   filteredOpportunities = [...allOpportunities];
@@ -869,8 +920,20 @@ async function fetchOpportunities(){
 }
 
 function parseSAMOpp(d){
+  const contacts = (d.pointOfContact || []).map(c => ({
+    name: c.fullName || '',
+    title: c.title || '',
+    email: c.email || '',
+    phone: c.phone || '',
+    type: c.type || ''
+  }));
+  const pop = d.placeOfPerformance || {};
+  const popStr = [pop.city?.name, pop.state?.name, pop.zip].filter(Boolean).join(', ');
+  const office = d.officeAddress || {};
+  const officeStr = [office.city, office.state, office.zipcode].filter(Boolean).join(', ');
+  const noticeId = d.noticeId || '';
   return {
-    id: d.noticeId || ('sam-' + Math.random().toString(36).slice(2)),
+    id: noticeId || ('sam-' + Math.random().toString(36).slice(2)),
     title: d.title || 'Untitled',
     agency: (d.fullParentPathName || d.organizationHierarchy?.[0]?.name || 'Unknown Agency'),
     naics: d.naicsCode || '238390',
@@ -882,7 +945,11 @@ function parseSAMOpp(d){
     type: d.type === 'Presolicitation' ? 'Pre-Solicitation' : (d.type === 'Sources Sought' ? 'Sources Sought' : 'Solicitation'),
     solNum: d.solicitationNumber || '',
     description: d.description || '',
-    samUrl: 'https://sam.gov/opp/' + (d.noticeId || '')
+    contacts,
+    placeOfPerformance: popStr,
+    officeAddress: officeStr,
+    resourceLinks: d.resourceLinks || [],
+    samUrl: d.uiLink || ('https://sam.gov/opp/' + noticeId + '/view')
   };
 }
 
@@ -891,6 +958,12 @@ function useSeedData(){
   isLive = false;
   setLiveBadge(false);
   document.getElementById('demoBanner').classList.remove('hidden');
+}
+
+function showApiBanner(msg){
+  const el = document.getElementById('apiBanner');
+  document.getElementById('apiBannerText').textContent = msg;
+  el.classList.remove('hidden');
 }
 
 function setLiveBadge(live){
@@ -947,7 +1020,7 @@ function oppCard(o){
   const typeC = typeClass(o.type);
   const saTagC = setAsideTag(o.setAside);
   const valueDisplay = (o.valueMin||o.valueMax) ? formatValueRange(o.valueMin,o.valueMax) : 'TBD';
-  return `<div class="opp-card${inPipe?' in-pipeline':''}" id="card-${o.id}">
+  return `<div class="opp-card${inPipe?' in-pipeline':''}" id="card-${o.id}" onclick="openOppDetail('${o.id}')">
     <div class="opp-header">
       <div class="opp-title">${esc(o.title)}</div>
       <span class="opp-type-badge ${typeC}">${o.type==='Pre-Solicitation'?'Pre-Sol':o.type}</span>
@@ -975,15 +1048,117 @@ function oppCard(o){
     </div>
     <div style="font-size:11px;color:var(--text-muted);line-height:1.5">${esc(o.description).substring(0,160)}${o.description.length>160?'…':''}</div>
     <div class="opp-actions">
-      <button class="btn-add-pipeline${inPipe?' added':''}" onclick="addToPipeline('${o.id}')" ${inPipe?'disabled':''}>
+      <button class="btn-add-pipeline${inPipe?' added':''}" onclick="event.stopPropagation();addToPipeline('${o.id}')" ${inPipe?'disabled':''}>
         ${inPipe ? '&#10003; In Pipeline' : '+ Add to Pipeline'}
       </button>
-      <a class="btn-sam-link" href="${o.samUrl}" target="_blank" rel="noopener">SAM.gov &#8599;</a>
+      <a class="btn-sam-link" href="${o.samUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()">SAM.gov &#8599;</a>
     </div>
   </div>`;
 }
 
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── OPPORTUNITY DETAIL MODAL ─────────────────────────────────────────────────
+
+function openOppDetail(id){
+  const o = allOpportunities.find(x => x.id === id);
+  if(!o) return;
+  const days = daysUntil(o.deadline);
+  const dClass = deadlineClass(days);
+  const dLabel = deadlineLabel(o.deadline);
+  const valueDisplay = (o.valueMin||o.valueMax) ? formatValueRange(o.valueMin,o.valueMax) : 'TBD';
+  const inPipe = isPipelined(o.id);
+
+  const contactsHtml = (o.contacts && o.contacts.length)
+    ? o.contacts.map(c => `
+        <div class="detail-contact">
+          ${c.name ? `<div class="detail-contact-name">${esc(c.name)}</div>` : ''}
+          ${c.title ? `<div class="detail-contact-role">${esc(c.title)}${c.type ? ' &bull; ' + esc(c.type) : ''}</div>` : ''}
+          ${c.email ? `<div class="detail-contact-row">&#9993; <a href="mailto:${esc(c.email)}">${esc(c.email)}</a></div>` : ''}
+          ${c.phone ? `<div class="detail-contact-row">&#9742; <a href="tel:${esc(c.phone)}">${esc(c.phone)}</a></div>` : ''}
+        </div>`).join('')
+    : '<div style="font-size:13px;color:var(--text-muted)">Contact information not published — check SAM.gov for updates.</div>';
+
+  const resourcesHtml = (o.resourceLinks && o.resourceLinks.length)
+    ? o.resourceLinks.map(r => `<div style="margin-bottom:4px"><a href="${esc(r)}" target="_blank" rel="noopener" style="color:var(--accent-cyan);font-size:12px">${esc(r)}</a></div>`).join('')
+    : '';
+
+  document.getElementById('oppDetailContent').innerHTML = `
+    <div class="detail-header">
+      <div class="detail-title">${esc(o.title)}</div>
+      <button class="detail-close" onclick="closeOppDetail()">&#10005;</button>
+    </div>
+    <div class="detail-agency">&#127970; ${esc(o.agency)}</div>
+
+    <div class="detail-grid">
+      <div class="detail-field">
+        <span class="lbl">Type</span>
+        <span class="val">${esc(o.type)}</span>
+      </div>
+      <div class="detail-field">
+        <span class="lbl">Set-Aside</span>
+        <span class="val">${esc(o.setAside)}</span>
+      </div>
+      <div class="detail-field">
+        <span class="lbl">Solicitation #</span>
+        <span class="val">${esc(o.solNum) || '—'}</span>
+      </div>
+      <div class="detail-field">
+        <span class="lbl">NAICS / PSC</span>
+        <span class="val">${esc(o.naics)}${o.psc ? ' / ' + esc(o.psc) : ''}</span>
+      </div>
+      <div class="detail-field">
+        <span class="lbl">Posted</span>
+        <span class="val">${o.posted || '—'}</span>
+      </div>
+      <div class="detail-field">
+        <span class="lbl">Response Deadline</span>
+        <span class="val ${dClass}">${o.deadline ? o.deadline + ' (' + dLabel + ')' : '—'}</span>
+      </div>
+      <div class="detail-field">
+        <span class="lbl">Estimated Value</span>
+        <span class="val">${valueDisplay}</span>
+      </div>
+      ${o.placeOfPerformance ? `<div class="detail-field">
+        <span class="lbl">Place of Performance</span>
+        <span class="val">${esc(o.placeOfPerformance)}</span>
+      </div>` : ''}
+      ${o.officeAddress ? `<div class="detail-field">
+        <span class="lbl">Contracting Office</span>
+        <span class="val">${esc(o.officeAddress)}</span>
+      </div>` : ''}
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Description</div>
+      <div class="detail-description">${esc(o.description) || 'No description available.'}</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Point of Contact</div>
+      ${contactsHtml}
+    </div>
+
+    ${resourcesHtml ? `<div class="detail-section">
+      <div class="detail-section-title">Attachments & Links</div>
+      ${resourcesHtml}
+    </div>` : ''}
+
+    <div class="detail-actions">
+      <a class="btn btn-primary btn-sm" href="${esc(o.samUrl)}" target="_blank" rel="noopener">View Full Listing on SAM.gov &#8599;</a>
+      <button class="btn btn-ghost btn-sm${inPipe?' added':''}" onclick="${inPipe ? '' : "addToPipeline('" + o.id + "')"}" ${inPipe?'disabled':''}>
+        ${inPipe ? '&#10003; In Pipeline' : '+ Add to Pipeline'}
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="closeOppDetail()" style="margin-left:auto">Close</button>
+    </div>
+  `;
+  document.getElementById('oppDetailModal').classList.add('open');
+}
+
+function closeOppDetail(e){
+  if(e && e.target !== document.getElementById('oppDetailModal')) return;
+  document.getElementById('oppDetailModal').classList.remove('open');
+}
 
 // ─── PIPELINE ─────────────────────────────────────────────────────────────────
 
