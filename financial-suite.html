@@ -1,4 +1,1226 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX CAPITAL — Financial Intelligence Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#020810;--p1:#060e1c;--p2:#0a1428;--p3:#0e1c35;
+  --text:#d8eeff;--muted:#3d6080;--muted2:#6a90aa;
+  --b1:rgba(0,200,255,0.08);--b2:rgba(0,200,255,0.18);
+  --font-head:'Bebas Neue',sans-serif;--font-mono:'DM Mono',monospace;
+  --gold:#ffc832;--red:#ff3d5a;--green:#00ff88;--cyan:#00d4ff;--purple:#b94dff;--orange:#ff6b35;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;overflow-x:hidden;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,0.02) 1px,transparent 1px);background-size:54px 54px;pointer-events:none;z-index:0;}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:100;background:rgba(2,8,16,0.97);border-bottom:1px solid var(--b2);backdrop-filter:blur(14px);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--cyan),var(--green));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#000;font-weight:700;}
+.logo-text{font-family:var(--font-head);font-size:22px;letter-spacing:4px;background:linear-gradient(90deg,var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-sub{font-family:var(--font-mono);font-size:8px;color:var(--muted);letter-spacing:3px;margin-top:1px;}
+.hdr-right{display:flex;align-items:center;gap:12px;}
+.back-link{font-family:var(--font-mono);font-size:9px;color:var(--muted2);border:1px solid var(--b2);padding:5px 12px;border-radius:5px;text-decoration:none;letter-spacing:1px;transition:all 0.2s;}
+.back-link:hover{color:var(--cyan);border-color:rgba(0,212,255,0.3);}
+
+/* MODULE TABS */
+.mod-tabs{display:flex;gap:4px;padding:12px 24px;overflow-x:auto;background:rgba(6,14,28,0.8);border-bottom:1px solid var(--b1);scrollbar-width:none;}
+.mod-tabs::-webkit-scrollbar{display:none;}
+.mod-tab{flex-shrink:0;font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--muted2);cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.mod-tab:hover{border-color:rgba(255,255,255,0.15);color:var(--text);}
+.mod-tab.active{background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.4);color:var(--cyan);}
+
+/* LAYOUT */
+.wrap{position:relative;z-index:1;max-width:1600px;margin:0 auto;padding:20px 22px 60px;}
+.module-panel{display:none;}
+.module-panel.active{display:block;}
+
+/* MODULE HEADER CARD */
+.mod-header{border-radius:14px;padding:20px 24px;margin-bottom:18px;border:1px solid;position:relative;overflow:hidden;}
+.mod-header::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:2px 0 0 2px;}
+.mod-inst{font-family:var(--font-head);font-size:28px;letter-spacing:4px;margin-bottom:2px;}
+.mod-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+.mod-desc{font-size:11px;color:var(--muted2);line-height:1.6;}
+
+/* FORM */
+.form-card{background:var(--p1);border:1px solid var(--b1);border-radius:12px;padding:20px;margin-bottom:16px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:16px;}
+.form-grid-wide{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:16px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg-full{grid-column:1/-1;}
+.fl{font-family:var(--font-mono);font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.fi{background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:8px 11px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;width:100%;transition:border-color 0.2s;}
+.fi:focus{border-color:rgba(0,212,255,0.4);}
+.fs{background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:8px 11px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:100%;cursor:pointer;}
+.slider-row{display:flex;align-items:center;gap:10px;}
+.slider-val{font-family:var(--font-mono);font-size:12px;color:var(--text);min-width:36px;text-align:right;}
+.form-slider{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;outline:none;cursor:pointer;background:linear-gradient(to right,var(--thumb-color,var(--cyan)) var(--val,50%),rgba(255,255,255,0.1) var(--val,50%));}
+.form-slider::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--thumb-color,var(--cyan));cursor:pointer;border:2px solid rgba(0,0,0,0.4);transition:transform 0.1s;}
+.form-slider::-webkit-slider-thumb:hover{transform:scale(1.2);}
+.run-btn{background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(0,255,136,0.12));border:1px solid rgba(0,212,255,0.4);color:var(--cyan);font-family:var(--font-mono);font-size:10px;letter-spacing:2px;padding:10px 24px;border-radius:8px;cursor:pointer;transition:all 0.2s;width:100%;}
+.run-btn:hover{background:linear-gradient(135deg,rgba(0,212,255,0.3),rgba(0,255,136,0.2));border-color:rgba(0,212,255,0.6);}
+
+/* GLASS CARD */
+.glass-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px;backdrop-filter:blur(4px);margin-bottom:14px;}
+
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px;}
+.kpi-card{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;}
+.kpi-label{font-family:var(--font-mono);font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+.kpi-value{font-family:var(--font-head);font-size:22px;line-height:1;}
+
+/* VERDICT BADGES */
+.verdict-badge{font-family:var(--font-mono);font-size:10px;letter-spacing:2px;padding:5px 14px;border-radius:6px;display:inline-block;}
+.badge-strong-buy{background:rgba(0,255,136,0.15);color:#00ff88;border:1px solid rgba(0,255,136,0.4);}
+.badge-buy{background:rgba(0,212,255,0.12);color:#00d4ff;border:1px solid rgba(0,212,255,0.4);}
+.badge-hold{background:rgba(255,200,50,0.12);color:#ffc832;border:1px solid rgba(255,200,50,0.4);}
+.badge-underperform{background:rgba(255,107,53,0.12);color:#ff6b35;border:1px solid rgba(255,107,53,0.4);}
+.badge-sell{background:rgba(255,61,90,0.12);color:#ff3d5a;border:1px solid rgba(255,61,90,0.4);}
+.badge-undervalued{background:rgba(0,255,136,0.12);color:#00ff88;border:1px solid rgba(0,255,136,0.3);}
+.badge-overvalued{background:rgba(255,61,90,0.12);color:#ff3d5a;border:1px solid rgba(255,61,90,0.3);}
+.badge-fairly{background:rgba(255,200,50,0.12);color:#ffc832;border:1px solid rgba(255,200,50,0.3);}
+
+/* DATA SOURCE BADGES */
+.data-source-live{background:rgba(0,255,136,0.12);color:#00ff88;border:1px solid rgba(0,255,136,0.3);border-radius:4px;padding:2px 7px;font-family:var(--font-mono);font-size:8px;letter-spacing:1px;}
+.data-source-manual{background:rgba(255,200,50,0.12);color:#ffc832;border:1px solid rgba(255,200,50,0.3);border-radius:4px;padding:2px 7px;font-family:var(--font-mono);font-size:8px;letter-spacing:1px;}
+
+/* TABLES */
+.data-table{width:100%;border-collapse:collapse;font-size:12px;}
+.data-table th{font-family:var(--font-mono);font-size:8px;letter-spacing:1.5px;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.data-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.03);}
+.data-table tr:hover{background:rgba(255,255,255,0.02);}
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--b1);}
+
+/* SENSITIVITY TABLE */
+.sensitivity-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:11px;}
+.sensitivity-table th{padding:6px 8px;font-size:8px;letter-spacing:1px;color:var(--muted);background:rgba(0,0,0,0.2);}
+.sensitivity-table td{padding:6px 8px;text-align:center;}
+.sens-low{background:rgba(0,255,136,0.18);color:#00ff88;}
+.sens-mid{background:rgba(255,200,50,0.14);color:#ffc832;}
+.sens-high{background:rgba(255,61,90,0.18);color:#ff3d5a;}
+
+/* HEATMAP */
+.heatmap-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:10px;}
+.heatmap-th{padding:4px 6px;font-size:8px;color:var(--muted);text-align:center;}
+.heatmap-cell{padding:5px 7px;text-align:center;font-size:10px;border:1px solid rgba(0,0,0,0.2);}
+
+/* CHARTS */
+.chart-wrap{position:relative;height:220px;width:100%;}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.chart-box{background:rgba(0,0,0,0.2);border:1px solid var(--b1);border-radius:10px;padding:14px;}
+.chart-lbl{font-family:var(--font-mono);font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;}
+
+/* SPINNER */
+.spinner{display:none;align-items:center;justify-content:center;gap:12px;padding:40px;color:var(--muted2);font-family:var(--font-mono);font-size:10px;letter-spacing:2px;}
+.spin{width:22px;height:22px;border:2px solid rgba(255,255,255,0.08);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.75s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* OUTPUT */
+.output-section{display:none;}
+.out-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06);}
+.out-title{font-family:var(--font-head);font-size:18px;letter-spacing:3px;}
+.report-meta{font-family:var(--font-mono);font-size:9px;color:var(--muted2);display:flex;gap:16px;}
+.section-label{font-family:var(--font-mono);font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.04);}
+
+/* POSITION ROWS (BW) */
+.position-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
+.pos-ticker{width:80px;}
+.pos-alloc{width:65px;}
+.pos-sector{flex:1;min-width:130px;}
+.btn-remove{background:rgba(255,61,90,0.1);border:1px solid rgba(255,61,90,0.3);color:#ff3d5a;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;transition:all 0.2s;}
+.btn-remove:hover{background:rgba(255,61,90,0.2);}
+.btn-add{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);color:var(--cyan);padding:7px 16px;border-radius:7px;cursor:pointer;font-family:var(--font-mono);font-size:9px;letter-spacing:1px;transition:all 0.2s;}
+.btn-add:hover{background:rgba(0,212,255,0.18);}
+.bw-total{font-family:var(--font-mono);font-size:11px;color:var(--muted2);margin-top:8px;}
+
+/* BADGES */
+.safe-badge{background:rgba(0,255,136,0.12);color:#00ff88;border:1px solid rgba(0,255,136,0.3);border-radius:4px;padding:2px 8px;font-family:var(--font-mono);font-size:10px;}
+.unsafe-badge{background:rgba(255,200,50,0.12);color:#ffc832;border:1px solid rgba(255,200,50,0.3);border-radius:4px;padding:2px 8px;font-family:var(--font-mono);font-size:10px;}
+
+/* BAIN COMPONENTS */
+.best-pick-card{background:rgba(255,61,90,0.06);border-radius:12px;padding:20px;border:1px solid rgba(255,61,90,0.15);}
+.best-pick-ticker{font-family:var(--font-head);font-size:36px;letter-spacing:5px;margin-bottom:4px;}
+.best-pick-name{font-size:15px;font-weight:600;margin-bottom:10px;}
+.best-pick-rationale{font-size:12px;color:rgba(255,255,255,0.72);line-height:1.8;}
+.moat-dots{display:flex;gap:4px;align-items:center;}
+.moat-dot{width:8px;height:8px;border-radius:50%;}
+.moat-dot.filled{box-shadow:0 0 5px currentColor;}
+.moat-dot.empty{background:rgba(255,255,255,0.08);}
+
+/* SWOT */
+.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.swot-cell{border-radius:9px;padding:13px;}
+.swot-s{background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.18);}
+.swot-w{background:rgba(255,61,90,0.05);border:1px solid rgba(255,61,90,0.18);}
+.swot-o{background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.18);}
+.swot-t{background:rgba(255,200,50,0.05);border:1px solid rgba(255,200,50,0.18);}
+.swot-label{font-family:var(--font-mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.swot-items{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.swot-items li{font-size:11px;color:rgba(255,255,255,0.72);padding-left:12px;position:relative;}
+.swot-items li::before{content:'▸';position:absolute;left:0;color:var(--muted2);}
+
+/* SECTOR TILES (MKY) */
+.sector-tiles-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.sector-tile{background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:12px;position:relative;overflow:hidden;padding-bottom:16px;}
+.sector-tile-name{font-family:var(--font-mono);font-size:8px;letter-spacing:1px;color:var(--muted2);text-transform:uppercase;margin-bottom:5px;}
+.sector-tile-score{font-family:var(--font-head);font-size:24px;line-height:1;}
+.sector-tile-bar{position:absolute;bottom:0;left:0;height:3px;transition:width 0.6s ease;}
+
+/* ACTION ITEMS (MKY) */
+.action-list{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.action-item{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;background:rgba(0,180,216,0.05);border:1px solid rgba(0,180,216,0.15);border-radius:9px;}
+.action-num{font-family:var(--font-head);font-size:18px;line-height:1;min-width:22px;}
+.action-text{font-size:12px;color:rgba(255,255,255,0.8);line-height:1.7;}
+
+/* TIMELINE */
+.tl-item{display:flex;align-items:flex-start;gap:13px;margin-bottom:13px;padding-left:8px;position:relative;}
+.tl-item::before{content:'';position:absolute;left:3px;top:16px;bottom:-13px;width:1px;background:rgba(0,180,216,0.2);}
+.tl-item:last-child::before{display:none;}
+.tl-dot{width:8px;height:8px;border-radius:50%;border:2px solid #00b4d8;background:var(--bg);flex-shrink:0;margin-top:3px;}
+.tl-date{font-family:var(--font-mono);font-size:10px;color:#00b4d8;margin-bottom:3px;}
+.tl-text{font-size:12px;color:rgba(255,255,255,0.72);line-height:1.6;}
+
+/* JPM SCENARIOS */
+.bull-card,.bear-card{border-radius:11px;padding:15px 17px;margin-bottom:11px;}
+.bull-card{background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.18);}
+.bear-card{background:rgba(255,61,90,0.05);border:1px solid rgba(255,61,90,0.18);}
+.scenario-label{font-family:var(--font-mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.bull-label{color:#00ff88;}.bear-label{color:#ff3d5a;}
+.scenario-pct{font-family:var(--font-head);font-size:28px;margin-bottom:5px;}
+.scenario-desc{font-size:11px;color:rgba(255,255,255,0.62);line-height:1.7;}
+
+/* MKY SCENARIO BUTTONS */
+.mky-scenario-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--muted2);padding:8px 18px;border-radius:8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;letter-spacing:1px;transition:all 0.2s;}
+.mky-scenario-btn.active{background:rgba(0,180,216,0.15);border-color:rgba(0,180,216,0.4);color:#00b4d8;}
+.mky-scenario-btn:hover{background:rgba(0,180,216,0.08);color:#00b4d8;}
+
+/* MKY SLIDER LABELS */
+.mky-slider-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.mky-slider-name{font-family:var(--font-mono);font-size:8px;letter-spacing:1.5px;color:var(--muted2);display:flex;justify-content:space-between;}
+</style>
+</head>
+<body>
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">◆</div>
+    <div>
+      <div class="logo-text">APEX CAPITAL</div>
+      <div class="logo-sub">FINANCIAL INTELLIGENCE SUITE · 10 INSTITUTIONAL FRAMEWORKS</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <a href="index.html" class="back-link">← DASHBOARD</a>
+  </div>
+</header>
+
+<!-- MODULE TABS -->
+<nav class="mod-tabs" id="modTabs">
+  <button class="mod-tab active" onclick="showMod(1)">01 · GS SCREENER</button>
+  <button class="mod-tab" onclick="showMod(2)">02 · MS DCF</button>
+  <button class="mod-tab" onclick="showMod(3)">03 · BW RISK</button>
+  <button class="mod-tab" onclick="showMod(4)">04 · JPM EARNINGS</button>
+  <button class="mod-tab" onclick="showMod(5)">05 · BLK PORTFOLIO</button>
+  <button class="mod-tab" onclick="showMod(6)">06 · CITADEL TECH</button>
+  <button class="mod-tab" onclick="showMod(7)">07 · HMC DIVIDEND</button>
+  <button class="mod-tab" onclick="showMod(8)">08 · BAIN COMPETITIVE</button>
+  <button class="mod-tab" onclick="showMod(9)">09 · REN PATTERNS</button>
+  <button class="mod-tab" onclick="showMod(10)">10 · MKY MACRO</button>
+</nav>
+
+<div class="wrap">
+
+<!-- ====================================================== -->
+<!-- MODULE 1: GOLDMAN SACHS EQUITY SCREENER               -->
+<!-- ====================================================== -->
+<div id="module-1" class="module-panel active" style="--inst-color:#c9a227;">
+  <div class="mod-header" style="background:rgba(201,162,39,0.06);border-color:rgba(201,162,39,0.2);">
+    <div class="mod-inst" style="color:#c9a227;">GOLDMAN SACHS</div>
+    <div class="mod-title">Equity Screener & Conviction Matrix</div>
+    <div class="mod-desc">Multi-factor proprietary scoring using GS Conviction List methodology — value, growth, quality, momentum, risk-adjusted return, and income signals across sectors.</div>
+  </div>
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="fg fg-full">
+        <label class="fl">Tickers (comma-separated, max 5)</label>
+        <input class="fi" id="gs-tickers" placeholder="AAPL, MSFT, NVDA, GOOGL, AMZN" value="AAPL, MSFT, NVDA">
+      </div>
+      <div class="fg">
+        <label class="fl">Risk Profile</label>
+        <select class="fs" id="gs-risk">
+          <option value="conservative">Conservative</option>
+          <option value="moderate" selected>Moderate</option>
+          <option value="aggressive">Aggressive</option>
+          <option value="speculative">Speculative</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Investment Horizon</label>
+        <select class="fs" id="gs-horizon">
+          <option value="short-term">Short-term (3-6M)</option>
+          <option value="medium-term" selected>Medium-term (6-18M)</option>
+          <option value="long-term">Long-term (18M+)</option>
+        </select>
+      </div>
+    </div>
+    <button class="run-btn" onclick="runGSScreener()" style="border-color:rgba(201,162,39,0.5);color:#c9a227;background:rgba(201,162,39,0.1);">▶ RUN GS CONVICTION SCREENER</button>
+  </div>
+  <div class="spinner" id="gs-spinner"><div class="spin"></div>ANALYZING WITH GS FRAMEWORK...</div>
+  <div class="output-section" id="gs-output">
+    <div class="out-hdr">
+      <div class="out-title" style="color:#c9a227;">GS CONVICTION ANALYSIS</div>
+      <div class="report-meta" id="gs-report-meta"></div>
+    </div>
+    <!-- Stock Cards -->
+    <div id="gs-cards-container"></div>
+    <!-- Charts -->
+    <div class="chart-row">
+      <div class="chart-box">
+        <div class="chart-lbl">COMPOSITE SCORE BY TICKER</div>
+        <div class="chart-wrap"><canvas id="gs-bar-chart"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-lbl">MULTI-FACTOR RADAR</div>
+        <div class="chart-wrap"><canvas id="gs-radar-chart"></canvas></div>
+      </div>
+    </div>
+    <!-- Summary Table -->
+    <div class="tbl-wrap">
+      <table class="data-table">
+        <thead><tr><th>TICKER</th><th>PRICE</th><th>GS SCORE</th><th>BULL TARGET</th><th>BEAR TARGET</th><th>ENTRY RANGE</th><th>STOP LOSS</th><th>VERDICT</th></tr></thead>
+        <tbody id="gs-summary-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- MODULE 2: MORGAN STANLEY DCF VALUATION                -->
+<!-- ====================================================== -->
+<div id="module-2" class="module-panel" style="--inst-color:#2d6cdf;">
+  <div class="mod-header" style="background:rgba(45,108,223,0.06);border-color:rgba(45,108,223,0.2);">
+    <div class="mod-inst" style="color:#2d6cdf;">MORGAN STANLEY</div>
+    <div class="mod-title">Discounted Cash Flow Valuation Engine</div>
+    <div class="mod-desc">3-scenario DCF model with WACC calibration by sector, terminal value via exit multiple and Gordon Growth methods, sensitivity analysis, and intrinsic value vs. market price comparison.</div>
+  </div>
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="fg"><label class="fl">Ticker</label><input class="fi" id="ms-ticker" placeholder="AAPL" value="AAPL"></div>
+      <div class="fg"><label class="fl">Current Price (auto-fetch if blank)</label><input class="fi" id="ms-price" type="number" placeholder="Live fetch..." step="0.01"></div>
+      <div class="fg"><label class="fl">Revenue ($B, TTM)</label><input class="fi" id="ms-revenue" type="number" value="395" step="0.1"></div>
+      <div class="fg"><label class="fl">EPS (TTM)</label><input class="fi" id="ms-eps" type="number" value="6.45" step="0.01"></div>
+      <div class="fg"><label class="fl">Shares Outstanding (B)</label><input class="fi" id="ms-shares" type="number" value="15.4" step="0.1"></div>
+      <div class="fg">
+        <label class="fl">Sector (WACC Reference)</label>
+        <select class="fs" id="ms-sector">
+          <option>Technology</option><option>Healthcare</option><option>Financials</option>
+          <option>Energy</option><option>Utilities</option><option>ConsumerStaples</option>
+          <option>ConsumerDisc</option><option>Industrials</option><option>Materials</option><option>RealEstate</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="fg fg-full"><label class="fl">FCF Margin (%) — <span id="ms-margin-val">20</span>%</label>
+        <div class="slider-row"><input class="form-slider" id="ms-margin" type="range" min="2" max="50" value="20" oninput="updateSlider('ms-margin','ms-margin-val','%')"></div>
+      </div>
+      <div class="fg"><label class="fl">Yr 1 Revenue Growth — <span id="ms-g1-val">15</span>%</label><div class="slider-row"><input class="form-slider" id="ms-g1" type="range" min="0" max="40" value="15" oninput="updateSlider('ms-g1','ms-g1-val','%')"></div></div>
+      <div class="fg"><label class="fl">Yr 2 Growth — <span id="ms-g2-val">12</span>%</label><div class="slider-row"><input class="form-slider" id="ms-g2" type="range" min="0" max="40" value="12" oninput="updateSlider('ms-g2','ms-g2-val','%')"></div></div>
+      <div class="fg"><label class="fl">Yr 3 Growth — <span id="ms-g3-val">10</span>%</label><div class="slider-row"><input class="form-slider" id="ms-g3" type="range" min="0" max="40" value="10" oninput="updateSlider('ms-g3','ms-g3-val','%')"></div></div>
+      <div class="fg"><label class="fl">Yr 4 Growth — <span id="ms-g4-val">8</span>%</label><div class="slider-row"><input class="form-slider" id="ms-g4" type="range" min="0" max="40" value="8" oninput="updateSlider('ms-g4','ms-g4-val','%')"></div></div>
+      <div class="fg"><label class="fl">Yr 5 Growth — <span id="ms-g5-val">6</span>%</label><div class="slider-row"><input class="form-slider" id="ms-g5" type="range" min="0" max="40" value="6" oninput="updateSlider('ms-g5','ms-g5-val','%')"></div></div>
+    </div>
+    <button class="run-btn" onclick="runMSDCF()" style="border-color:rgba(45,108,223,0.5);color:#2d6cdf;background:rgba(45,108,223,0.1);">▶ RUN MS DCF VALUATION</button>
+  </div>
+  <div class="spinner" id="ms-spinner"><div class="spin" style="border-top-color:#2d6cdf;"></div>RUNNING DISCOUNTED CASH FLOW MODEL...</div>
+  <div class="output-section" id="ms-output">
+    <div class="out-hdr">
+      <div class="out-title" style="color:#2d6cdf;">DCF VALUATION REPORT</div>
+      <div class="report-meta" id="ms-report-meta"></div>
+    </div>
+    <div class="kpi-grid" id="ms-kpis"></div>
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:18px;flex-wrap:wrap;">
+      <div id="ms-verdict-badge"></div>
+      <div style="font-family:var(--font-mono);font-size:12px;">Intrinsic Value: <span id="ms-intrinsic" style="color:#00ff88;font-size:16px;"></span> &nbsp;|&nbsp; Market Price: <span id="ms-current-price-display" style="color:var(--text);"></span></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-box"><div class="chart-lbl">BASE CASE FCF PROJECTION ($B)</div><div class="chart-wrap"><canvas id="ms-fcf-chart"></canvas></div></div>
+      <div class="chart-box"><div class="chart-lbl">REVENUE SCENARIOS — BEAR / BASE / BULL</div><div class="chart-wrap"><canvas id="ms-rev-chart"></canvas></div></div>
+    </div>
+    <div class="tbl-wrap" style="margin-bottom:14px;" id="ms-fcf-table-wrap"></div>
+    <div class="section-label">WACC / TERMINAL GROWTH SENSITIVITY (Intrinsic Value Per Share)</div>
+    <div class="tbl-wrap" id="ms-sensitivity-wrap"></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- MODULE 3: BRIDGEWATER RISK ASSESSMENT                 -->
+<!-- ====================================================== -->
+<div id="module-3" class="module-panel" style="--inst-color:#00d4ff;">
+  <div class="mod-header" style="background:rgba(0,212,255,0.05);border-color:rgba(0,212,255,0.2);">
+    <div class="mod-inst" style="color:#00d4ff;">BRIDGEWATER</div>
+    <div class="mod-title">All Weather Portfolio Risk Assessment</div>
+    <div class="mod-desc">Ray Dalio's risk parity framework — sector concentration, recession sensitivity, rate sensitivity, correlation matrix, and stress-test across historical crisis scenarios.</div>
+  </div>
+  <div class="form-card">
+    <div class="section-label" style="margin-bottom:12px;">PORTFOLIO POSITIONS</div>
+    <div id="bw-positions-list">
+      <div class="position-row">
+        <input class="fi pos-ticker" placeholder="AAPL" value="AAPL">
+        <input class="fi pos-alloc" type="number" placeholder="%" value="30" oninput="calcBWTotal()">
+        <select class="fs pos-sector"><option>Technology</option><option>Healthcare</option><option>Financials</option><option>Energy</option><option>Utilities</option><option>ConsumerStaples</option><option>ConsumerDisc</option><option>Industrials</option><option>Materials</option><option>RealEstate</option></select>
+        <button class="btn-remove" onclick="this.closest('.position-row').remove();calcBWTotal();">✕</button>
+      </div>
+      <div class="position-row">
+        <input class="fi pos-ticker" placeholder="MSFT" value="MSFT">
+        <input class="fi pos-alloc" type="number" placeholder="%" value="25" oninput="calcBWTotal()">
+        <select class="fs pos-sector"><option>Technology</option><option>Healthcare</option><option>Financials</option><option>Energy</option><option>Utilities</option><option>ConsumerStaples</option><option>ConsumerDisc</option><option>Industrials</option><option>Materials</option><option>RealEstate</option></select>
+        <button class="btn-remove" onclick="this.closest('.position-row').remove();calcBWTotal();">✕</button>
+      </div>
+      <div class="position-row">
+        <input class="fi pos-ticker" placeholder="JNJ" value="JNJ">
+        <input class="fi pos-alloc" type="number" placeholder="%" value="20" oninput="calcBWTotal()">
+        <select class="fs pos-sector"><option>Technology</option><option selected>Healthcare</option><option>Financials</option><option>Energy</option><option>Utilities</option><option>ConsumerStaples</option><option>ConsumerDisc</option><option>Industrials</option><option>Materials</option><option>RealEstate</option></select>
+        <button class="btn-remove" onclick="this.closest('.position-row').remove();calcBWTotal();">✕</button>
+      </div>
+      <div class="position-row">
+        <input class="fi pos-ticker" placeholder="JPM" value="JPM">
+        <input class="fi pos-alloc" type="number" placeholder="%" value="25" oninput="calcBWTotal()">
+        <select class="fs pos-sector"><option>Technology</option><option>Healthcare</option><option selected>Financials</option><option>Energy</option><option>Utilities</option><option>ConsumerStaples</option><option>ConsumerDisc</option><option>Industrials</option><option>Materials</option><option>RealEstate</option></select>
+        <button class="btn-remove" onclick="this.closest('.position-row').remove();calcBWTotal();">✕</button>
+      </div>
+    </div>
+    <div class="bw-total">Total Allocation: <span id="bw-total-display" style="color:var(--cyan);">100%</span></div>
+    <div style="display:flex;gap:10px;margin-top:12px;">
+      <button class="btn-add" onclick="addBWPosition()">+ ADD POSITION</button>
+      <button class="run-btn" onclick="runBWRisk()" style="border-color:rgba(0,212,255,0.5);color:#00d4ff;background:rgba(0,212,255,0.1);">▶ RUN BW RISK ANALYSIS</button>
+    </div>
+  </div>
+  <div class="spinner" id="bw-spinner"><div class="spin"></div>RUNNING BRIDGEWATER RISK MODEL...</div>
+  <div class="output-section" id="bw-output">
+    <div class="out-hdr">
+      <div class="out-title" style="color:#00d4ff;">BRIDGEWATER RISK REPORT</div>
+      <div class="report-meta" id="bw-report-meta"></div>
+    </div>
+    <div class="kpi-grid" id="bw-kpis"></div>
+    <div class="chart-row">
+      <div class="chart-box"><div class="chart-lbl">SECTOR CONCENTRATION</div><div class="chart-wrap"><canvas id="bw-sector-chart"></canvas></div></div>
+      <div class="chart-box"><div class="chart-lbl">GEOGRAPHIC EXPOSURE</div><div class="chart-wrap"><canvas id="bw-geo-chart"></canvas></div></div>
+    </div>
+    <div class="section-label">SECTOR CORRELATION MATRIX</div>
+    <div class="tbl-wrap" style="margin-bottom:14px;" id="bw-correlation-wrap"></div>
+    <div class="section-label">HISTORICAL STRESS TEST</div>
+    <div class="tbl-wrap" style="margin-bottom:14px;" id="bw-stress-wrap"></div>
+    <div class="section-label">BRIDGEWATER HEDGING RECOMMENDATIONS</div>
+    <div id="bw-hedging"></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- MODULE 4: JPMORGAN EARNINGS ANALYZER                  -->
+<!-- ====================================================== -->
+<div id="module-4" class="module-panel" style="--inst-color:#4d8fd4;">
+  <div class="mod-header" style="background:rgba(77,143,212,0.06);border-color:rgba(77,143,212,0.2);">
+    <div class="mod-inst" style="color:#4d8fd4;">JPMORGAN</div>
+    <div class="mod-title">Earnings Surprise Analyzer & Options Strategy</div>
+    <div class="mod-desc">Beat/miss probability modeling using historical EPS track record, implied move analysis, bull/bear scenario pricing, and JPMorgan's sector-specific key earnings metrics framework.</div>
+  </div>
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="fg"><label class="fl">Company Name</label><input class="fi" id="jpm-company" placeholder="Apple Inc." value="Apple Inc."></div>
+      <div class="fg"><label class="fl">Ticker</label><input class="fi" id="jpm-ticker" placeholder="AAPL" value="AAPL"></div>
+      <div class="fg">
+        <label class="fl">Sector</label>
+        <select class="fs" id="jpm-sector">
+          <option>Technology</option><option>Healthcare</option><option>Financials</option>
+          <option>Energy</option><option>ConsumerDisc</option><option>ConsumerStaples</option><option>Industrials</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Consensus EPS Estimate</label><input class="fi" id="jpm-eps-est" type="number" value="2.10" step="0.01"></div>
+      <div class="fg"><label class="fl">Consensus Revenue Est. ($B)</label><input class="fi" id="jpm-rev-est" type="number" value="124.3" step="0.1"></div>
+      <div class="fg"><label class="fl">Current Price (auto-fetch if blank)</label><input class="fi" id="jpm-price" type="number" placeholder="Live fetch..." step="0.01"></div>
+    </div>
+    <div class="section-label" style="margin-bottom:12px;">HISTORICAL EPS TRACK RECORD</div>
+    <div style="overflow-x:auto;">
+      <table class="data-table" style="margin-bottom:14px;">
+        <thead><tr><th>QUARTER</th><th>ACTUAL EPS</th><th>ESTIMATED EPS</th><th>RESULT</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family:var(--font-mono);color:var(--muted2);">Q1 2025</td><td><input class="fi" id="jpm-q1-act" type="number" value="2.15" step="0.01" style="width:80px;padding:4px 8px;"></td><td><input class="fi" id="jpm-q1-est" type="number" value="2.05" step="0.01" style="width:80px;padding:4px 8px;"></td><td id="jpm-q1-result"></td></tr>
+          <tr><td style="font-family:var(--font-mono);color:var(--muted2);">Q4 2024</td><td><input class="fi" id="jpm-q2-act" type="number" value="2.41" step="0.01" style="width:80px;padding:4px 8px;"></td><td><input class="fi" id="jpm-q2-est" type="number" value="2.35" step="0.01" style="width:80px;padding:4px 8px;"></td><td id="jpm-q2-result"></td></tr>
+          <tr><td style="font-family:var(--font-mono);color:var(--muted2);">Q3 2024</td><td><input class="fi" id="jpm-q3-act" type="number" value="1.64" step="0.01" style="width:80px;padding:4px 8px;"></td><td><input class="fi" id="jpm-q3-est" type="number" value="1.60" step="0.01" style="width:80px;padding:4px 8px;"></td><td id="jpm-q3-result"></td></tr>
+          <tr><td style="font-family:var(--font-mono);color:var(--muted2);">Q2 2024</td><td><input class="fi" id="jpm-q4-act" type="number" value="1.40" step="0.01" style="width:80px;padding:4px 8px;"></td><td><input class="fi" id="jpm-q4-est" type="number" value="1.35" step="0.01" style="width:80px;padding:4px 8px;"></td><td id="jpm-q4-result"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <button class="run-btn" onclick="runJPMEarnings()" style="border-color:rgba(77,143,212,0.5);color:#4d8fd4;background:rgba(77,143,212,0.1);">▶ RUN JPM EARNINGS ANALYSIS</button>
+  </div>
+  <div class="spinner" id="jpm-spinner"><div class="spin" style="border-top-color:#4d8fd4;"></div>MODELING EARNINGS SCENARIOS...</div>
+  <div class="output-section" id="jpm-output">
+    <div class="out-hdr">
+      <div class="out-title" style="color:#4d8fd4;">EARNINGS INTELLIGENCE REPORT</div>
+    </div>
+    <div id="jpm-recommended-play" style="margin-bottom:14px;"></div>
+    <div class="kpi-grid" id="jpm-kpis"></div>
+    <div id="jpm-scenarios"></div>
+    <div class="chart-box" style="margin-bottom:14px;"><div class="chart-lbl">EPS BEAT/MISS HISTORY</div><div class="chart-wrap"><canvas id="jpm-history-chart"></canvas></div></div>
+    <div class="section-label">JPM KEY METRICS TO WATCH</div>
+    <div id="jpm-key-metrics"></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- MODULE 5: BLACKROCK PORTFOLIO BUILDER                 -->
+<!-- ====================================================== -->
+<div id="module-5" class="module-panel" style="--inst-color:#ff6b35;">
+  <div class="mod-header" style="background:rgba(255,107,53,0.06);border-color:rgba(255,107,53,0.2);">
+    <div class="mod-inst" style="color:#ff6b35;">BLACKROCK</div>
+    <div class="mod-title">Personalized Portfolio Construction Engine</div>
+    <div class="mod-desc">Aladdin-inspired asset allocation using age, risk tolerance, horizon, and account type inputs — generating an IPS, ETF recommendations, 10-year DCA projection, and tax optimization strategy.</div>
+  </div>
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="fg">
+        <label class="fl">Age — <span id="blk-age-val">35</span> yrs</label>
+        <div class="slider-row"><input class="form-slider" id="blk-age" type="range" min="18" max="80" value="35" oninput="updateSlider('blk-age','blk-age-val',' yrs')"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Risk Tolerance (1–10) — <span id="blk-risk-val">6</span></label>
+        <div class="slider-row"><input class="form-slider" id="blk-risk" type="range" min="1" max="10" value="6" oninput="updateSlider('blk-risk','blk-risk-val','')"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Investment Horizon</label>
+        <select class="fs" id="blk-horizon">
+          <option value="short">Short (&lt;3 yrs)</option>
+          <option value="mid">Medium (3–7 yrs)</option>
+          <option value="long" selected>Long (7–15 yrs)</option>
+          <option value="vlong">Very Long (15+ yrs)</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Initial Investment ($)</label><input class="fi" id="blk-invest" type="number" value="50000" step="1000"></div>
+      <div class="fg"><label class="fl">Monthly DCA ($)</label><input class="fi" id="blk-monthly" type="number" value="1000" step="100"></div>
+      <div class="fg">
+        <label class="fl">Account Type</label>
+        <select class="fs" id="blk-account">
+          <option value="taxable">Taxable Brokerage</option>
+          <option value="ira">Traditional IRA</option>
+          <option value="roth">Roth IRA</option>
+          <option value="401k">401(k)</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Tax Bracket</label>
+        <select class="fs" id="blk-tax">
+          <option value="10">10%</option>
+          <option value="12">12%</option>
+          <option value="22">22%</option>
+          <option value="24" selected>24%</option>
+          <option value="32">32%</option>
+          <option value="35">35%</option>
+          <option value="37">37%</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Annual Income ($)</label><input class="fi" id="blk-income" type="number" value="100000" step="5000"></div>
+    </div>
+    <button class="run-btn" onclick="runBLKPortfolio()" style="border-color:rgba(255,107,53,0.5);color:#ff6b35;background:rgba(255,107,53,0.1);">▶ BUILD BLACKROCK PORTFOLIO</button>
+  </div>
+  <div class="spinner" id="blk-spinner"><div class="spin" style="border-top-color:#ff6b35;"></div>CONSTRUCTING OPTIMAL PORTFOLIO...</div>
+  <div class="output-section" id="blk-output">
+    <div class="out-hdr">
+      <div class="out-title" style="color:#ff6b35;">PORTFOLIO CONSTRUCTION REPORT</div>
+      <div class="report-meta" id="blk-report-meta"></div>
+    </div>
+    <div class="kpi-grid" id="blk-kpis"></div>
+    <div class="chart-row">
+      <div class="chart-box"><div class="chart-lbl">ASSET ALLOCATION</div><div class="chart-wrap"><canvas id="blk-alloc-chart"></canvas></div></div>
+      <div class="chart-box"><div class="chart-lbl">10-YEAR DCA GROWTH PROJECTION</div><div class="chart-wrap"><canvas id="blk-growth-chart"></canvas></div></div>
+    </div>
+    <div class="section-label">ETF RECOMMENDATIONS</div>
+    <div class="tbl-wrap" style="margin-bottom:14px;" id="blk-etf-table-wrap"></div>
+    <div class="section-label">INVESTMENT POLICY STATEMENT</div>
+    <div class="glass-card" id="blk-ips"></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- MODULE 6: CITADEL TECHNICAL ANALYSIS                  -->
+<!-- ====================================================== -->
+<div id="module-6" class="module-panel" style="--inst-color:#00ff88;">
+  <div class="mod-header" style="background:rgba(0,255,136,0.04);border-color:rgba(0,255,136,0.18);">
+    <div class="mod-inst" style="color:#00ff88;">CITADEL</div>
+    <div class="mod-title">Technical Analysis & Quant Signal Engine</div>
+    <div class="mod-desc">Fibonacci retracement levels, moving average crossovers, RSI momentum, MACD signals, Bollinger Band positioning, and complete trade plan with entry/stop/target levels.</div>
+  </div>
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="fg"><label class="fl">Ticker</label><input class="fi" id="cit-ticker" placeholder="AAPL" value="AAPL"></div>
+      <div class="fg"><label class="fl">Price (auto-fetch if blank)</label><input class="fi" id="cit-price" type="number" placeholder="Live fetch..." step="0.01"></div>
+      <div class="fg"><label class="fl">52-Week High</label><input class="fi" id="cit-52h" type="number" value="260" step="0.01"></div>
+      <div class="fg"><label class="fl">52-Week Low</label><input class="fi" id="cit-52l" type="number" value="164" step="0.01"></div>
+      <div class="fg"><label class="fl">50-Day MA</label><input class="fi" id="cit-ma50" type="number" value="230" step="0.01"></div>
+      <div class="fg"><label class="fl">100-Day MA</label><input class="fi" id="cit-ma100" type="number" value="218" step="0.01"></div>
+      <div class="fg"><label class="fl">200-Day MA</label><input class="fi" id="cit-ma200" type="number" value="200" step="0.01"></div>
+      <div class="fg"><label class="fl">RSI (14)</label><input class="fi" id="cit-rsi" type="number" value="58" step="0.1"></div>
+      <div class="fg"><label class="fl">MACD</label><input class="fi" id="cit-macd" type="number" value="1.8" step="0.01"></div>
+      <div class="fg"><label class="fl">MACD Signal</label><input class="fi" id="cit-signal" type="number" value="1.2" step="0.01"></div>
+      <div class="fg"><label class="fl">Bollinger Upper</label><input class="fi" id="cit-bb-upper" type="number" value="258" step="0.01"></div>
+      <div class="fg"><label class="fl">Bollinger Lower</label><input class="fi" id="cit-bb-lower" type="number" value="198" step="0.01"></div>
+    </div>
+    <button class="run-btn" onclick="runCitadelTech()" style="border-color:rgba(0,255,136,0.4);color:#00ff88;background:rgba(0,255,136,0.08);">▶ RUN CITADEL TECHNICAL ANALYSIS</button>
+  </div>
+  <div class="spinner" id="cit-spinner"><div class="spin" style="border-top-color:#00ff88;"></div>SCANNING TECHNICAL SIGNALS...</div>
+  <div class="output-section" id="cit-output">
+    <div class="out-hdr">
+      <div class="out-title" style="color:#00ff88;">TECHNICAL ANALYSIS REPORT</div>
+    </div>
+    <div style="margin-bottom:16px;" id="cit-confidence-badge"></div>
+    <div class="kpi-grid" id="cit-kpis"></div>
+    <div class="chart-box" style="margin-bottom:14px;"><div class="chart-lbl">PRICE LEVELS WITH BOLLINGER BANDS & 200-DAY MA</div><div class="chart-wrap"><canvas id="cit-ma-chart"></canvas></div></div>
+    <div class="chart-row" style="grid-template-columns:1fr 1fr;">
+      <div>
+        <div class="section-label">FIBONACCI RETRACEMENT LEVELS</div>
+        <div class="tbl-wrap" id="cit-fib-table"></div>
+      </div>
+      <div>
+        <div class="section-label">TRADE PLAN</div>
+        <div class="glass-card" id="cit-trade-plan"></div>
+      </div>
+    </div>
+    <div class="section-label">INDICATORS SUMMARY</div>
+    <div class="tbl-wrap" id="cit-indicators-table"></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- MODULE 7: HARVARD DIVIDEND STRATEGY                   -->
+<!-- ====================================================== -->
+<div id="module-7" class="module-panel" style="--inst-color:#c41e3a;">
+  <div class="mod-header" style="background:rgba(196,30,58,0.06);border-color:rgba(196,30,58,0.2);">
+    <div class="mod-inst" style="color:#c41e3a;">HARVARD ENDOWMENT</div>
+    <div class="mod-title">Dividend Income & DRIP Strategy Builder</div>
+    <div class="mod-desc">Dividend Aristocrat and Champion screening using Harvard Management Company yield, safety, and growth criteria — with 10-year DRIP projection, tax-optimized account strategy, and income maximization.</div>
+  </div>
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="fg"><label class="fl">Portfolio Size ($)</label><input class="fi" id="hmc-invest" type="number" value="100000" step="5000"></div>
+      <div class="fg">
+        <label class="fl">Strategy Focus</label>
+        <select class="fs" id="hmc-risk-pref">
+          <option value="balanced" selected>Balanced (Safety + Yield)</option>
+          <option value="safety">Safety First (Aristocrats)</option>
+          <option value="yield">Maximum Yield</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Account Type</label>
+        <select class="fs" id="hmc-account">
+          <option value="taxable">Taxable</option>
+          <option value="ira">Traditional IRA</option>
+          <option value="roth" selected>Roth IRA</option>
+          <option value="401k">401(k)</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Tax Bracket (Div. Income)</label>
+        <select class="fs" id="hmc-tax">
+          <option value="0">0%</option>
+          <option value="15" selected>15%</option>
+          <option value="20">20%</option>
+        </select>
+      </div>
+    </div>
+    <button class="run-btn" onclick="runHMCDividend()" style="border-color:rgba(196,30,58,0.5);color:#c41e3a;background:rgba(196,30,58,0.08);">▶ BUILD DIVIDEND PORTFOLIO</button>
+  </div>
+  <div class="spinner" id="hmc-spinner"><div class="spin" style="border-top-color:#c41e3a;"></div>SCREENING DIVIDEND ARISTOCRATS...</div>
+  <div class="output-section" id="hmc-output">
+    <div class="out-hdr">
+      <div class="out-title" style="color:#c41e3a;">DIVIDEND INCOME REPORT</div>
+      <div class="report-meta" id="hmc-report-meta"></div>
+    </div>
+    <div class="kpi-grid" id="hmc-kpis"></div>
+    <div class="section-label">SELECTED HOLDINGS</div>
+    <div class="tbl-wrap" style="margin-bottom:14px;" id="hmc-stocks-table"></div>
+    <div class="chart-row">
+      <div class="chart-box"><div class="chart-lbl">MONTHLY INCOME BY HOLDING</div><div class="chart-wrap"><canvas id="hmc-income-chart"></canvas></div></div>
+      <div class="chart-box"><div class="chart-lbl">SECTOR DIVERSIFICATION</div><div class="chart-wrap"><canvas id="hmc-sector-chart"></canvas></div></div>
+    </div>
+    <div class="section-label">10-YEAR DRIP PROJECTION</div>
+    <div id="hmc-drip-table" style="margin-bottom:14px;"></div>
+    <div class="section-label">TAX STRATEGY BY ACCOUNT TYPE</div>
+    <div id="hmc-tax-analysis"></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- MODULE 8: BAIN COMPETITIVE ANALYSIS                   -->
+<!-- ====================================================== -->
+<div id="module-8" class="module-panel" style="--inst-color:#ff3d5a;">
+  <div class="mod-header" style="background:rgba(255,61,90,0.05);border-color:rgba(255,61,90,0.18);">
+    <div class="mod-inst" style="color:#ff3d5a;">BAIN & COMPANY</div>
+    <div class="mod-title">Competitive Landscape & Moat Analysis</div>
+    <div class="mod-desc">Porter's Five Forces meets quantitative moat scoring — brand, cost, network, and switching advantages mapped across sector leaders with SWOT analysis, radar chart, and 12-month catalyst framework.</div>
+  </div>
+  <div class="form-card">
+    <div class="fg">
+      <label class="fl">Select Sector</label>
+      <select class="fs" id="bain-sector" style="max-width:300px;">
+        <option>Technology</option>
+        <option>Healthcare</option>
+        <option>Financials</option>
+        <option>Energy</option>
+        <option>Retail</option>
+        <option>Automotive</option>
+        <option>Telecom</option>
+        <option>Media</option>
+      </select>
+    </div>
+    <br>
+    <button class="run-btn" onclick="runBainAnalysis()" style="border-color:rgba(255,61,90,0.4);color:#ff3d5a;background:rgba(255,61,90,0.08);">▶ RUN BAIN COMPETITIVE ANALYSIS</button>
+  </div>
+  <div class="spinner" id="bain-spinner"><div class="spin" style="border-top-color:#ff3d5a;"></div>ANALYZING COMPETITIVE DYNAMICS...</div>
+  <div class="output-section" id="bain-output">
+    <div class="out-hdr">
+      <div class="out-title" style="color:#ff3d5a;">COMPETITIVE INTELLIGENCE REPORT</div>
+      <div class="report-meta" id="bain-report-meta"></div>
+    </div>
+    <div id="bain-best-pick"></div>
+    <div class="section-label">SECTOR LEADERS COMPARISON</div>
+    <div class="tbl-wrap" style="margin-bottom:14px;" id="bain-competitors-table"></div>
+    <div class="chart-box" style="margin-bottom:14px;"><div class="chart-lbl">COMPETITIVE RADAR — TOP 5 PLAYERS</div><div class="chart-wrap" style="height:280px;"><canvas id="bain-radar-chart"></canvas></div></div>
+    <div class="section-label">ECONOMIC MOAT SCORING</div>
+    <div class="tbl-wrap" style="margin-bottom:14px;" id="bain-moat-table"></div>
+    <div class="section-label">SWOT ANALYSIS — TOP 2 PICKS</div>
+    <div id="bain-swot" style="margin-bottom:14px;"></div>
+    <div class="section-label">KEY SECTOR THREATS</div>
+    <div id="bain-threats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;"></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- MODULE 9: RENAISSANCE TECHNOLOGIES PATTERN FINDER     -->
+<!-- ====================================================== -->
+<div id="module-9" class="module-panel" style="--inst-color:#b94dff;">
+  <div class="mod-header" style="background:rgba(185,77,255,0.05);border-color:rgba(185,77,255,0.2);">
+    <div class="mod-inst" style="color:#b94dff;">RENAISSANCE TECHNOLOGIES</div>
+    <div class="mod-title">Statistical Pattern & Seasonal Edge Finder</div>
+    <div class="mod-desc">Medallion Fund-inspired quantitative edge framework — seasonal patterns, day-of-week effects, short squeeze scoring, institutional ownership analysis, and earnings pre-run historical drift.</div>
+  </div>
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="fg"><label class="fl">Ticker</label><input class="fi" id="ren-ticker" placeholder="NVDA" value="NVDA"></div>
+      <div class="fg">
+        <label class="fl">Sector</label>
+        <select class="fs" id="ren-sector">
+          <option>Technology</option><option>Healthcare</option><option>Financials</option>
+          <option>Energy</option><option>ConsumerStaples</option><option>ConsumerDisc</option><option>Industrials</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Short % of Float</label><input class="fi" id="ren-short" type="number" value="5" step="0.1" min="0" max="100"></div>
+      <div class="fg"><label class="fl">Institutional Ownership %</label><input class="fi" id="ren-inst-own" type="number" value="65" step="0.1" min="0" max="100"></div>
+      <div class="fg"><label class="fl">Days to Cover (Short Ratio)</label><input class="fi" id="ren-dtc" type="number" value="2" step="0.1" min="0"></div>
+    </div>
+    <button class="run-btn" onclick="runRenPatterns()" style="border-color:rgba(185,77,255,0.4);color:#b94dff;background:rgba(185,77,255,0.08);">▶ FIND STATISTICAL PATTERNS</button>
+  </div>
+  <div class="spinner" id="ren-spinner"><div class="spin" style="border-top-color:#b94dff;"></div>ANALYZING QUANTITATIVE PATTERNS...</div>
+  <div class="output-section" id="ren-output">
+    <div class="out-hdr">
+      <div class="out-title" style="color:#b94dff;">RENAISSANCE PATTERN REPORT</div>
+      <div class="report-meta" id="ren-report-meta"></div>
+    </div>
+    <div class="kpi-grid" id="ren-kpis"></div>
+    <div class="chart-row">
+      <div class="chart-box"><div class="chart-lbl">SEASONAL MONTHLY PATTERN (%)</div><div class="chart-wrap"><canvas id="ren-seasonal-chart"></canvas></div></div>
+      <div class="chart-box"><div class="chart-lbl">DAY-OF-WEEK EDGE (%)</div><div class="chart-wrap"><canvas id="ren-dow-chart"></canvas></div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-box"><div class="chart-lbl">EARNINGS PRE-RUN DRIFT (5 DAYS BEFORE)</div><div class="chart-wrap"><canvas id="ren-prerun-chart"></canvas></div></div>
+      <div class="chart-box">
+        <div class="section-label">SHORT INTEREST ANALYSIS</div>
+        <div id="ren-short-analysis"></div>
+      </div>
+    </div>
+    <div class="section-label">STATISTICAL EDGE SYNTHESIS</div>
+    <div class="glass-card" id="ren-edge-summary"></div>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- MODULE 10: McKINSEY MACRO ECONOMIC IMPACT             -->
+<!-- ====================================================== -->
+<div id="module-10" class="module-panel" style="--inst-color:#00b4d8;">
+  <div class="mod-header" style="background:rgba(0,180,216,0.05);border-color:rgba(0,180,216,0.2);">
+    <div class="mod-inst" style="color:#00b4d8;">McKINSEY GLOBAL INSTITUTE</div>
+    <div class="mod-title">Macro Scenario & Portfolio Impact Analysis</div>
+    <div class="mod-desc">3-scenario macro framework (Soft Landing / Hard Landing / Stagflation) mapping Fed policy, GDP, inflation, and USD to sector favorability scores with portfolio positioning recommendations.</div>
+  </div>
+  <div class="form-card">
+    <div class="section-label" style="margin-bottom:12px;">SELECT MACRO SCENARIO</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+      <button class="mky-scenario-btn active" data-scenario="Soft Landing" onclick="setMKYScenario('Soft Landing')">🟢 SOFT LANDING</button>
+      <button class="mky-scenario-btn" data-scenario="Hard Landing" onclick="setMKYScenario('Hard Landing')">🔴 HARD LANDING</button>
+      <button class="mky-scenario-btn" data-scenario="Stagflation" onclick="setMKYScenario('Stagflation')">🟠 STAGFLATION</button>
+    </div>
+    <div class="section-label" style="margin-bottom:12px;">YOUR PORTFOLIO SECTOR WEIGHTS (%)</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:16px;">
+      <div class="fg"><label class="fl">Technology — <span id="mky-s1-val">15</span>%</label><div class="slider-row"><input class="form-slider" id="mky-s1" type="range" min="0" max="50" value="15" oninput="this.style.setProperty('--val',((this.value-this.min)/(this.max-this.min)*100)+'%');document.getElementById('mky-s1-val').textContent=this.value;"></div></div>
+      <div class="fg"><label class="fl">Healthcare — <span id="mky-s2-val">12</span>%</label><div class="slider-row"><input class="form-slider" id="mky-s2" type="range" min="0" max="50" value="12" oninput="this.style.setProperty('--val',((this.value-this.min)/(this.max-this.min)*100)+'%');document.getElementById('mky-s2-val').textContent=this.value;"></div></div>
+      <div class="fg"><label class="fl">Financials — <span id="mky-s3-val">12</span>%</label><div class="slider-row"><input class="form-slider" id="mky-s3" type="range" min="0" max="50" value="12" oninput="this.style.setProperty('--val',((this.value-this.min)/(this.max-this.min)*100)+'%');document.getElementById('mky-s3-val').textContent=this.value;"></div></div>
+      <div class="fg"><label class="fl">Energy — <span id="mky-s4-val">8</span>%</label><div class="slider-row"><input class="form-slider" id="mky-s4" type="range" min="0" max="50" value="8" oninput="this.style.setProperty('--val',((this.value-this.min)/(this.max-this.min)*100)+'%');document.getElementById('mky-s4-val').textContent=this.value;"></div></div>
+      <div class="fg"><label class="fl">Utilities — <span id="mky-s5-val">8</span>%</label><div class="slider-row"><input class="form-slider" id="mky-s5" type="range" min="0" max="50" value="8" oninput="this.style.setProperty('--val',((this.value-this.min)/(this.max-this.min)*100)+'%');document.getElementById('mky-s5-val').textContent=this.value;"></div></div>
+      <div class="fg"><label class="fl">Consumer Staples — <span id="mky-s6-val">10</span>%</label><div class="slider-row"><input class="form-slider" id="mky-s6" type="range" min="0" max="50" value="10" oninput="this.style.setProperty('--val',((this.value-this.min)/(this.max-this.min)*100)+'%');document.getElementById('mky-s6-val').textContent=this.value;"></div></div>
+      <div class="fg"><label class="fl">Consumer Disc. — <span id="mky-s7-val">10</span>%</label><div class="slider-row"><input class="form-slider" id="mky-s7" type="range" min="0" max="50" value="10" oninput="this.style.setProperty('--val',((this.value-this.min)/(this.max-this.min)*100)+'%');document.getElementById('mky-s7-val').textContent=this.value;"></div></div>
+      <div class="fg"><label class="fl">Industrials — <span id="mky-s8-val">10</span>%</label><div class="slider-row"><input class="form-slider" id="mky-s8" type="range" min="0" max="50" value="10" oninput="this.style.setProperty('--val',((this.value-this.min)/(this.max-this.min)*100)+'%');document.getElementById('mky-s8-val').textContent=this.value;"></div></div>
+    </div>
+    <button class="run-btn" onclick="runMKYMacro()" style="border-color:rgba(0,180,216,0.4);color:#00b4d8;background:rgba(0,180,216,0.08);">▶ RUN McKINSEY MACRO ANALYSIS</button>
+  </div>
+  <div class="spinner" id="mky-spinner"><div class="spin" style="border-top-color:#00b4d8;"></div>MODELING MACRO SCENARIOS...</div>
+  <div class="output-section" id="mky-output">
+    <div class="out-hdr">
+      <div class="out-title" style="color:#00b4d8;">MACRO ECONOMIC IMPACT REPORT</div>
+    </div>
+    <div id="mky-scenario-badge" style="margin-bottom:16px;"></div>
+    <div class="section-label">MACRO ENVIRONMENT INDICATORS</div>
+    <div class="kpi-grid" id="mky-macro-cards"></div>
+    <div class="section-label">SECTOR FAVORABILITY UNDER THIS SCENARIO</div>
+    <div class="sector-tiles-grid" id="mky-sector-tiles"></div>
+    <div class="glass-card" style="margin-bottom:14px;" id="mky-portfolio-verdict"></div>
+    <div class="chart-box" style="margin-bottom:14px;"><div class="chart-lbl">SECTOR FAVORABILITY RADAR</div><div class="chart-wrap" style="height:260px;"><canvas id="mky-radar-chart"></canvas></div></div>
+    <div class="section-label">McKINSEY RECOMMENDED ACTIONS</div>
+    <ul class="action-list" id="mky-actions" style="margin-bottom:16px;"></ul>
+    <div class="section-label">FED POLICY & MACRO TIMELINE</div>
+    <div id="mky-timeline"></div>
+  </div>
+</div>
+
+</div><!-- end .wrap -->
+<script>
+// ============================================================
+// DATA CONSTANTS
+// ============================================================
+
+const GS_SECTOR_DATA = {
+  Technology:     {avgPE:28,avgRevGrowth:18},
+  Healthcare:     {avgPE:22,avgRevGrowth:10},
+  Financials:     {avgPE:14,avgRevGrowth:8},
+  Energy:         {avgPE:12,avgRevGrowth:5},
+  'Consumer Disc':{avgPE:24,avgRevGrowth:12},
+  'Consumer Staples':{avgPE:20,avgRevGrowth:5},
+  Industrials:    {avgPE:18,avgRevGrowth:8},
+  default:        {avgPE:18,avgRevGrowth:10}
+};
+
+const MS_WACC = {
+  Technology:     {beta:1.3},  Healthcare:     {beta:0.85},
+  Financials:     {beta:1.1},  Energy:         {beta:1.15},
+  Utilities:      {beta:0.45}, ConsumerStaples:{beta:0.65},
+  ConsumerDisc:   {beta:1.05}, Industrials:    {beta:1.0},
+  Materials:      {beta:1.05}, RealEstate:     {beta:0.75},
+  default:        {beta:1.0}
+};
+
+const BW_RECESSION = {
+  Technology:0.35, Healthcare:0.18, Financials:0.45, Energy:0.42,
+  Utilities:0.08,  ConsumerStaples:0.12, ConsumerDisc:0.33, Industrials:0.28,
+  Materials:0.30,  RealEstate:0.38, default:0.25
+};
+
+const BW_RATE_SENS = {
+  Technology:0.75, Healthcare:0.35, Financials:-0.25, Energy:0.28,
+  Utilities:0.92,  ConsumerStaples:0.48, ConsumerDisc:0.58, Industrials:0.42,
+  Materials:0.32,  RealEstate:0.98, default:0.50
+};
+
+const BW_CORR = {
+  Technology:     {Technology:1.0,Healthcare:0.3,Financials:0.5,Energy:0.2,Utilities:0.1,ConsumerStaples:0.2,ConsumerDisc:0.7,Industrials:0.5},
+  Healthcare:     {Technology:0.3,Healthcare:1.0,Financials:0.2,Energy:0.1,Utilities:0.2,ConsumerStaples:0.3,ConsumerDisc:0.2,Industrials:0.3},
+  Financials:     {Technology:0.5,Healthcare:0.2,Financials:1.0,Energy:0.4,Utilities:0.2,ConsumerStaples:0.3,ConsumerDisc:0.5,Industrials:0.6},
+  Energy:         {Technology:0.2,Healthcare:0.1,Financials:0.4,Energy:1.0,Utilities:0.5,ConsumerStaples:0.2,ConsumerDisc:0.3,Industrials:0.5},
+  Utilities:      {Technology:0.1,Healthcare:0.2,Financials:0.2,Energy:0.5,Utilities:1.0,ConsumerStaples:0.4,ConsumerDisc:0.1,Industrials:0.3},
+  ConsumerStaples:{Technology:0.2,Healthcare:0.3,Financials:0.3,Energy:0.2,Utilities:0.4,ConsumerStaples:1.0,ConsumerDisc:0.5,Industrials:0.4},
+  ConsumerDisc:   {Technology:0.7,Healthcare:0.2,Financials:0.5,Energy:0.3,Utilities:0.1,ConsumerStaples:0.5,ConsumerDisc:1.0,Industrials:0.6},
+  Industrials:    {Technology:0.5,Healthcare:0.3,Financials:0.6,Energy:0.5,Utilities:0.3,ConsumerStaples:0.4,ConsumerDisc:0.6,Industrials:1.0}
+};
+
+const JPM_IMPLIED = {
+  Technology: {large:0.07,mid:0.11,small:0.15},
+  Healthcare: {large:0.05,mid:0.09,small:0.14},
+  Financials: {large:0.04,mid:0.07,small:0.10},
+  Energy:     {large:0.06,mid:0.10,small:0.14},
+  ConsumerDisc:{large:0.06,mid:0.09,small:0.13},
+  ConsumerStaples:{large:0.04,mid:0.07,small:0.10},
+  Industrials:{large:0.05,mid:0.08,small:0.12},
+  default:    {large:0.06,mid:0.09,small:0.13}
+};
+
+const JPM_KEY_METRICS = {
+  Technology:['EPS beat/miss vs FactSet consensus estimate','Cloud / recurring revenue growth YoY%','Operating margin expansion or compression','AI and next-gen product revenue attribution','Forward guidance relative to street estimates'],
+  Healthcare:['Drug pipeline FDA approval / rejection status','Revenue per approved drug product','R&D expense as % of revenue (sustainability)','Patent cliff exposure timeline 2025-2030','Clinical trial phase transitions in pipeline'],
+  Financials:['Net interest margin (NIM) compression or expansion','Loan loss provisions vs prior quarter','Trading and advisory revenue beat / miss','CET1 capital ratio vs regulatory minimum','Deposit inflows / outflows and funding costs'],
+  Energy:['Production volumes vs guidance (Mboe/day)','Realized oil and gas prices vs hedges','Free cash flow yield and shareholder returns','Reserve replacement ratio and finding costs','CAPEX discipline vs budget'],
+  ConsumerDisc:['Same-store sales growth vs estimate','E-commerce penetration and channel mix','Inventory levels and shrink commentary','Consumer spending outlook and macro sensitivity','Margin recovery from freight / labor costs'],
+  default:['EPS surprise vs consensus estimate','Revenue beat or miss percentage','Forward guidance vs street estimates','Gross and operating margin trajectory','Capital allocation — buybacks, dividends, M&A']
+};
+
+const HMC_STOCKS = [
+  {ticker:'JNJ', name:'Johnson & Johnson',     yield:3.1,safety:9,yrs:61,payout:43,sector:'Healthcare',    cagr:6},
+  {ticker:'PG',  name:'Procter & Gamble',      yield:2.4,safety:9,yrs:67,payout:57,sector:'ConsumerStaples',cagr:7},
+  {ticker:'KO',  name:'Coca-Cola',             yield:3.1,safety:8,yrs:61,payout:70,sector:'ConsumerStaples',cagr:5},
+  {ticker:'MCD', name:"McDonald's",            yield:2.3,safety:8,yrs:47,payout:55,sector:'ConsumerDisc',  cagr:8},
+  {ticker:'MMM', name:'3M Company',            yield:6.5,safety:5,yrs:65,payout:72,sector:'Industrials',   cagr:3},
+  {ticker:'T',   name:'AT&T',                  yield:6.8,safety:5,yrs:35,payout:55,sector:'Telecom',       cagr:2},
+  {ticker:'VZ',  name:'Verizon',               yield:6.5,safety:6,yrs:17,payout:52,sector:'Telecom',       cagr:3},
+  {ticker:'ABBV',name:'AbbVie',                yield:4.3,safety:7,yrs:11,payout:41,sector:'Healthcare',    cagr:12},
+  {ticker:'O',   name:'Realty Income',         yield:5.8,safety:7,yrs:29,payout:75,sector:'RealEstate',    cagr:4},
+  {ticker:'EMR', name:'Emerson Electric',      yield:2.0,safety:8,yrs:47,payout:42,sector:'Industrials',   cagr:5},
+  {ticker:'CLX', name:'Clorox',                yield:3.4,safety:7,yrs:46,payout:63,sector:'ConsumerStaples',cagr:4},
+  {ticker:'GD',  name:'General Dynamics',      yield:2.1,safety:8,yrs:32,payout:35,sector:'Industrials',   cagr:7},
+  {ticker:'MDT', name:'Medtronic',             yield:3.3,safety:8,yrs:46,payout:52,sector:'Healthcare',    cagr:5},
+  {ticker:'BDX', name:'Becton Dickinson',      yield:1.7,safety:8,yrs:52,payout:33,sector:'Healthcare',    cagr:6},
+  {ticker:'NUE', name:'Nucor Corp',            yield:1.6,safety:7,yrs:50,payout:15,sector:'Materials',     cagr:15},
+  {ticker:'ITW', name:'Illinois Tool Works',   yield:2.2,safety:8,yrs:49,payout:59,sector:'Industrials',   cagr:8},
+  {ticker:'AFL', name:'Aflac',                 yield:2.4,safety:8,yrs:40,payout:24,sector:'Financials',    cagr:10},
+  {ticker:'WMT', name:'Walmart',               yield:1.3,safety:8,yrs:50,payout:33,sector:'ConsumerStaples',cagr:6},
+  {ticker:'TGT', name:'Target',                yield:3.3,safety:7,yrs:55,payout:47,sector:'ConsumerDisc',  cagr:7},
+  {ticker:'LOW', name:"Lowe's",                yield:2.0,safety:7,yrs:59,payout:33,sector:'ConsumerDisc',  cagr:12}
+];
+
+const BAIN_SECTORS = {
+  Technology:{
+    leaders:[
+      {ticker:'AAPL',company:'Apple',          mcap:'$3.5T',rev:'$395B',gm:46,nm:26,rd:3, share:28,quality:9,moat:{brand:5,cost:3,network:5,switching:4}},
+      {ticker:'MSFT',company:'Microsoft',      mcap:'$3.1T',rev:'$245B',gm:71,nm:37,rd:13,share:22,quality:9,moat:{brand:5,cost:4,network:4,switching:5}},
+      {ticker:'GOOGL',company:'Alphabet',      mcap:'$2.0T',rev:'$307B',gm:57,nm:24,rd:14,share:18,quality:8,moat:{brand:4,cost:5,network:5,switching:3}},
+      {ticker:'META',company:'Meta Platforms', mcap:'$1.3T',rev:'$135B',gm:82,nm:32,rd:27,share:12,quality:8,moat:{brand:4,cost:3,network:5,switching:2}},
+      {ticker:'NVDA',company:'NVIDIA',         mcap:'$2.2T',rev:'$130B',gm:74,nm:53,rd:16,share:88,quality:9,moat:{brand:5,cost:3,network:4,switching:5}}
+    ],
+    bestPick:'NVDA',
+    bestPickRationale:"NVIDIA's dominance in AI accelerators creates a near-monopoly in the fastest-growing compute segment. H100/H200/B200 GPU architecture advantages, CUDA software moat, and enterprise data center expansion support premium valuation.",
+    catalysts:['AI spending acceleration across cloud providers','Next-gen Blackwell architecture ramp','Enterprise software AI integration','Data center electrification buildout'],
+    threats:['China market access restrictions (chip act)','AMD and Intel GPU competition scaling','Custom ASIC development by hyperscalers (TPUs, Trainium)','Valuation multiple compression if AI growth disappoints']
+  },
+  Healthcare:{
+    leaders:[
+      {ticker:'LLY', company:'Eli Lilly',      mcap:'$800B',rev:'$34B', gm:78,nm:26,rd:22,share:18,quality:9,moat:{brand:5,cost:2,network:2,switching:4}},
+      {ticker:'JNJ', company:'J&J',            mcap:'$380B',rev:'$88B', gm:68,nm:14,rd:13,share:12,quality:9,moat:{brand:5,cost:3,network:3,switching:4}},
+      {ticker:'UNH', company:'UnitedHealth',   mcap:'$500B',rev:'$372B',gm:23,nm:6, rd:1, share:27,quality:8,moat:{brand:4,cost:4,network:5,switching:4}},
+      {ticker:'ABBV',company:'AbbVie',         mcap:'$320B',rev:'$55B', gm:71,nm:20,rd:16,share:9, quality:7,moat:{brand:4,cost:2,network:2,switching:3}},
+      {ticker:'MRK', company:'Merck',          mcap:'$280B',rev:'$60B', gm:74,nm:24,rd:16,share:7, quality:8,moat:{brand:4,cost:3,network:2,switching:3}}
+    ],
+    bestPick:'LLY',
+    bestPickRationale:"Eli Lilly leads the GLP-1/incretin revolution with Mounjaro and Zepbound. Obesity drug TAM exceeds $100B annually. Tirzepatide's superior efficacy (20%+ weight loss) and manufacturing scale-up create durable competitive advantage.",
+    catalysts:['GLP-1 obesity drug demand surge globally','Alzheimer pipeline (donanemab) approval potential','Manufacturing capacity expansion to meet demand','International market penetration in Europe and Asia'],
+    threats:['Patent cliff exposure 2026-2030','Government drug pricing negotiations under IRA','Generic and biosimilar competition timelines','Clinical trial failures in late-stage pipeline']
+  },
+  Financials:{
+    leaders:[
+      {ticker:'JPM',   company:'JPMorgan Chase',    mcap:'$600B',rev:'$162B',gm:55,nm:30,rd:1,share:14,quality:9,moat:{brand:5,cost:4,network:4,switching:4}},
+      {ticker:'BAC',   company:'Bank of America',   mcap:'$310B',rev:'$98B', gm:42,nm:23,rd:1,share:11,quality:7,moat:{brand:4,cost:3,network:4,switching:3}},
+      {ticker:'GS',    company:'Goldman Sachs',     mcap:'$155B',rev:'$55B', gm:45,nm:25,rd:2,share:6, quality:8,moat:{brand:5,cost:3,network:4,switching:3}},
+      {ticker:'MS',    company:'Morgan Stanley',    mcap:'$148B',rev:'$61B', gm:40,nm:16,rd:2,share:5, quality:8,moat:{brand:5,cost:3,network:4,switching:3}},
+      {ticker:'BRK.B', company:'Berkshire Hathaway',mcap:'$900B',rev:'$364B',gm:20,nm:12,rd:0,share:8, quality:10,moat:{brand:5,cost:5,network:3,switching:4}}
+    ],
+    bestPick:'JPM',
+    bestPickRationale:"JPMorgan Chase combines the premier consumer banking franchise with top-tier investment banking. CEO Dimon's track record and fortress balance sheet provide asymmetric downside protection with upside from rate normalization.",
+    catalysts:['Rate cycle normalization boosting NIM','Investment banking fee recovery','Consumer loan growth resumption','Wealth management AUM expansion'],
+    threats:['Regulatory capital requirements (Basel III endgame)','Commercial real estate loan losses','Recession-driven credit deterioration','Fintech disruption in consumer banking segments']
+  },
+  Energy:{
+    leaders:[
+      {ticker:'XOM',company:'ExxonMobil',     mcap:'$480B',rev:'$398B',gm:28,nm:9, rd:0,share:5, quality:8,moat:{brand:4,cost:5,network:3,switching:3}},
+      {ticker:'CVX',company:'Chevron',        mcap:'$280B',rev:'$200B',gm:26,nm:10,rd:0,share:4, quality:8,moat:{brand:4,cost:5,network:3,switching:3}},
+      {ticker:'COP',company:'ConocoPhillips', mcap:'$135B',rev:'$56B', gm:60,nm:20,rd:0,share:2, quality:8,moat:{brand:3,cost:4,network:3,switching:3}},
+      {ticker:'SLB',company:'Schlumberger',   mcap:'$65B', rev:'$36B', gm:23,nm:11,rd:3,share:22,quality:7,moat:{brand:4,cost:4,network:4,switching:4}},
+      {ticker:'EOG',company:'EOG Resources',  mcap:'$70B', rev:'$24B', gm:70,nm:25,rd:0,share:2, quality:8,moat:{brand:3,cost:5,network:2,switching:3}}
+    ],
+    bestPick:'XOM',
+    bestPickRationale:"ExxonMobil's Pioneer acquisition creates the premier US shale operator with 16B barrels of low-cost Permian inventory. Integrated model provides natural hedge; $20B+ buyback signals FCF confidence.",
+    catalysts:['Permian Basin production growth post-Pioneer acquisition','Chemical business expansion in Asia-Pacific','Global LNG demand growth (Europe energy transition)','Carbon capture and storage monetization'],
+    threats:['Energy transition and declining long-term demand outlook','OPEC production policy surprises','Carbon pricing regulatory risk','Oil price volatility from geopolitical shocks']
+  },
+  Retail:{
+    leaders:[
+      {ticker:'AMZN',company:'Amazon',    mcap:'$2.1T',rev:'$575B',gm:49,nm:7, rd:12,share:38,quality:9,moat:{brand:5,cost:5,network:5,switching:4}},
+      {ticker:'WMT', company:'Walmart',   mcap:'$700B',rev:'$648B',gm:25,nm:3, rd:1, share:10,quality:8,moat:{brand:4,cost:5,network:3,switching:2}},
+      {ticker:'COST',company:'Costco',    mcap:'$380B',rev:'$238B',gm:13,nm:3, rd:0, share:7, quality:9,moat:{brand:5,cost:5,network:3,switching:4}},
+      {ticker:'TGT', company:'Target',    mcap:'$63B', rev:'$110B',gm:29,nm:4, rd:0, share:4, quality:7,moat:{brand:4,cost:3,network:2,switching:2}},
+      {ticker:'HD',  company:'Home Depot',mcap:'$365B',rev:'$153B',gm:33,nm:12,rd:0, share:17,quality:8,moat:{brand:4,cost:4,network:3,switching:3}}
+    ],
+    bestPick:'COST',
+    bestPickRationale:"Costco's membership model creates recurring revenue rare in retail. 92.5%+ renewal rates, pricing power in consumer staples, and international expansion support premium valuation. 40-year best-in-class execution.",
+    catalysts:['Membership fee increase (massive NPV impact)','International expansion (Korea, China, India)','E-commerce penetration growth trajectory','Kirkland private label brand expansion'],
+    threats:['Consumer spending slowdown in recession','Amazon Prime membership cannibalization','Membership fee price sensitivity in downturn','Shrink and loss prevention cost pressure']
+  },
+  Automotive:{
+    leaders:[
+      {ticker:'TSLA',company:'Tesla',   mcap:'$700B',rev:'$97B', gm:18,nm:5,  rd:5, share:18,quality:7,moat:{brand:4,cost:4,network:4,switching:3}},
+      {ticker:'TM',  company:'Toyota',  mcap:'$250B',rev:'$280B',gm:20,nm:8,  rd:4, share:12,quality:8,moat:{brand:4,cost:5,network:3,switching:3}},
+      {ticker:'F',   company:'Ford',    mcap:'$48B', rev:'$185B',gm:15,nm:2,  rd:4, share:7, quality:6,moat:{brand:3,cost:3,network:2,switching:2}},
+      {ticker:'GM',  company:'Gen.Motors',mcap:'$55B',rev:'$187B',gm:15,nm:5, rd:5, share:8, quality:6,moat:{brand:3,cost:3,network:2,switching:2}},
+      {ticker:'RIVN',company:'Rivian',  mcap:'$13B', rev:'$5B',  gm:-14,nm:-52,rd:15,share:1,quality:5,moat:{brand:3,cost:1,network:2,switching:2}}
+    ],
+    bestPick:'TM',
+    bestPickRationale:"Toyota's hybrid dominance positions it uniquely for the EV transition era. Manufacturing efficiency (TPS), hydrogen optionality, and disciplined capital allocation provide downside protection while EV investments accelerate.",
+    catalysts:['Solid-state battery commercialization 2027-28','Hydrogen vehicle adoption in Japan/Korea','Hybrid demand surge as EV adoption pace moderates','Supply chain normalization cost benefits'],
+    threats:['EV transition pace uncertainty','Chinese OEM global expansion (BYD)','Autonomous vehicle disruption timeline','Raw material cost volatility (lithium, cobalt, nickel)']
+  },
+  Telecom:{
+    leaders:[
+      {ticker:'VZ',   company:'Verizon',   mcap:'$165B',rev:'$134B',gm:55,nm:10,rd:1,share:30,quality:7,moat:{brand:4,cost:3,network:5,switching:4}},
+      {ticker:'T',    company:'AT&T',      mcap:'$130B',rev:'$122B',gm:57,nm:9, rd:1,share:28,quality:6,moat:{brand:3,cost:3,network:4,switching:4}},
+      {ticker:'TMUS', company:'T-Mobile',  mcap:'$215B',rev:'$80B', gm:64,nm:13,rd:1,share:27,quality:8,moat:{brand:4,cost:3,network:5,switching:4}},
+      {ticker:'CHTR', company:'Charter',   mcap:'$40B', rev:'$54B', gm:43,nm:5, rd:1,share:8, quality:6,moat:{brand:3,cost:3,network:4,switching:4}},
+      {ticker:'CMCSA',company:'Comcast',   mcap:'$155B',rev:'$121B',gm:55,nm:11,rd:1,share:10,quality:7,moat:{brand:4,cost:3,network:4,switching:4}}
+    ],
+    bestPick:'TMUS',
+    bestPickRationale:"T-Mobile's 5G superiority, continued postpaid subscriber gains, and expanding Home Internet business create multi-year growth. Post-Sprint integration synergies still flowing to margins.",
+    catalysts:['5G fixed wireless access subscriber acceleration','Enterprise 5G private network wins','Home internet market share gains','Rural coverage expansion via spectrum advantage'],
+    threats:['Spectrum auction capital requirements','Satellite internet competition (Starlink)','MVNO market share erosion','Regulatory spectrum policy uncertainty']
+  },
+  Media:{
+    leaders:[
+      {ticker:'NFLX',company:'Netflix',  mcap:'$280B',rev:'$36B', gm:45,nm:16,rd:1,share:29,quality:8,moat:{brand:5,cost:3,network:3,switching:3}},
+      {ticker:'DIS', company:'Disney',   mcap:'$190B',rev:'$88B', gm:38,nm:5, rd:1,share:15,quality:7,moat:{brand:5,cost:3,network:4,switching:3}},
+      {ticker:'PARA',company:'Paramount',mcap:'$8B',  rev:'$29B', gm:32,nm:-8,rd:1,share:5, quality:5,moat:{brand:3,cost:2,network:2,switching:2}},
+      {ticker:'WBD', company:'WB Discovery',mcap:'$19B',rev:'$43B',gm:40,nm:-5,rd:1,share:8, quality:5,moat:{brand:4,cost:2,network:3,switching:2}},
+      {ticker:'SPOT',company:'Spotify',  mcap:'$60B', rev:'$15B', gm:28,nm:3, rd:4,share:31,quality:7,moat:{brand:4,cost:2,network:4,switching:3}}
+    ],
+    bestPick:'NFLX',
+    bestPickRationale:"Netflix has definitively won the streaming wars with 270M+ subscribers and accelerating ad-supported tier. Password sharing crackdown drove unexpected subscriber surge; advertising revenue is a $10B+ incremental opportunity.",
+    catalysts:['Ad-supported tier monetization scaling','Live sports content (NFL, WWE) subscriber acquisition','Games division monetization','International emerging market penetration'],
+    threats:['Content cost inflation and IP acquisition wars','Disney+ and HBO Max competitive pressure','Economic downturn subscriber churn sensitivity','Password sharing crackdown growth plateau']
+  }
+};
+
+const REN_SEASONAL = {
+  Technology:     [1.2,0.8,2.1,1.5,-0.8,0.3,1.8,2.5,-1.2,3.1,2.8,1.9],
+  Healthcare:     [2.1,1.3,0.5,0.8,1.2,0.4,0.9,1.1,0.7,1.5,1.8,0.6],
+  Financials:     [1.5,0.9,1.8,1.2,0.6,-0.3,0.8,1.4,-0.9,2.1,2.3,1.6],
+  Energy:         [-0.8,0.5,2.3,2.8,1.9,1.2,0.3,-0.5,1.4,0.8,-0.9,-1.2],
+  ConsumerStaples:[1.8,1.2,0.6,0.3,0.9,0.4,1.1,0.7,0.5,0.8,1.4,1.9],
+  ConsumerDisc:   [1.2,1.8,2.3,1.5,-0.5,0.8,1.2,0.9,-0.7,1.8,3.2,4.1],
+  Industrials:    [1.4,0.8,2.1,1.8,1.2,0.5,0.9,1.1,-0.4,2.3,1.9,1.3],
+  default:        [0.8,0.6,1.5,1.2,0.5,0.3,0.9,1.1,-0.5,1.6,1.8,1.1]
+};
+
+const REN_DOW = {
+  Technology:     [-0.1,0.3,0.2,0.4,0.1],
+  Healthcare:     [0.1,0.2,0.1,0.3,0.0],
+  Financials:     [0.0,0.2,0.3,0.2,0.1],
+  Energy:         [0.2,0.1,0.0,-0.1,0.3],
+  ConsumerStaples:[0.1,0.1,0.2,0.1,0.0],
+  ConsumerDisc:   [-0.1,0.2,0.3,0.3,0.2],
+  Industrials:    [0.1,0.2,0.1,0.2,0.1],
+  default:        [0.0,0.2,0.1,0.2,0.1]
+};
+
+const REN_PRERUN = {
+  Technology:     [0.3,0.5,0.9,1.2,1.8,0.4],
+  Healthcare:     [0.2,0.4,0.7,0.9,1.2,0.3],
+  Financials:     [0.1,0.3,0.5,0.7,0.9,0.2],
+  Energy:         [0.2,0.3,0.4,0.5,0.8,0.1],
+  ConsumerStaples:[0.1,0.2,0.3,0.4,0.6,0.1],
+  ConsumerDisc:   [0.2,0.5,0.8,1.1,1.5,0.3],
+  Industrials:    [0.2,0.3,0.5,0.7,1.0,0.2],
+  default:        [0.2,0.4,0.6,0.9,1.3,0.3]
+};
+
+const MKY_MACRO = {
+  'Soft Landing':{
+    rateEnv:    {text:'Fed cutting 50-75bps over 12 months. 10Y yield declines to 3.8-4.0%.',arrow:'down'},
+    inflation:  {text:'Core PCE at 2.3-2.5%, approaching Fed 2% target. Services sticky but declining.',arrow:'down'},
+    gdpGrowth:  {text:'GDP growth 2.0-2.5%. Labor market resilient with unemployment at 4.2%.',arrow:'up'},
+    usd:        {text:'USD weakening 3-5% as rate differentials compress. DXY at 99-101.',arrow:'down'},
+    employment: {text:'Unemployment stable 4.0-4.3%. Wage growth moderating to 3.5% YoY.',arrow:'neutral'},
+    sectorScores:{Technology:8,Healthcare:7,Financials:6,Energy:5,Utilities:7,ConsumerStaples:6,ConsumerDisc:8,Industrials:8},
+    rotation:'Rotate into growth (Tech, Consumer Disc) and rate-sensitive (Utilities, REITs). Reduce Financials and Energy.',
+    fedOutlook:'Federal Reserve on gradual easing path. 2-3 cuts of 25bps expected over 6-12 months. Balance sheet runoff continuing. Data-dependent approach — employment data critical. Markets pricing terminal rate 3.5-3.75%.',
+    events:[
+      {date:'Q2 2025',text:'FOMC expected to cut rates 25bps if inflation continues declining',impact:'high'},
+      {date:'Q3 2025',text:'GDP revision — above 2.5% may pause cuts, below 1.5% may accelerate easing',impact:'high'},
+      {date:'Q4 2025',text:'Policy uncertainty — tariff and tax changes impact corporate earnings',impact:'medium'},
+      {date:'Q1 2026',text:'Fed reaches neutral rate — pause and assess forward path',impact:'medium'}
+    ],
+    actions:[
+      'Overweight Technology: Growth revival + multiple expansion as rates fall. Target 25-30% portfolio weight',
+      'Add Consumer Discretionary: Housing recovery drives home improvement, furnishing, and auto spending',
+      'Build Utilities position: Rate-sensitive sector with 4-6% yield + capital appreciation potential',
+      'Reduce Financials: NIM compression as rates fall. Keep quality names but trim regional banks',
+      'International exposure: Weak USD benefits EAFE markets. Add 15-20% via VXUS or EFA',
+      'Duration extension: Lock in 4%+ yields in intermediate Treasuries before rates fall further'
+    ]
+  },
+  'Hard Landing':{
+    rateEnv:    {text:'Fed forced to cut aggressively 150-200bps. Emergency cuts possible. 10Y below 3.5%.',arrow:'down'},
+    inflation:  {text:'Deflation risk emerging. CPI may dip below 2%. Fed worried about deflationary spiral.',arrow:'down'},
+    gdpGrowth:  {text:'Recession confirmed. GDP -1% to -2%. Two consecutive quarters of contraction.',arrow:'down'},
+    usd:        {text:'USD safe-haven bid — DXY spikes to 108-112 initially, then weakens on rate cuts.',arrow:'up'},
+    employment: {text:'Unemployment rising to 5.5-6.5%. Job losses accelerating in cyclicals and tech.',arrow:'down'},
+    sectorScores:{Technology:4,Healthcare:8,Financials:3,Energy:3,Utilities:9,ConsumerStaples:9,ConsumerDisc:2,Industrials:3},
+    rotation:'Massive defensive rotation. Shift to Healthcare, Consumer Staples, Utilities, Treasuries. Reduce all cyclicals immediately.',
+    fedOutlook:'Federal Reserve in crisis mode — emergency rate cuts, potential QE restart. Fed funds targeting 1.0-1.5% by year end. Historical precedent (2008, 2001) suggests coordinated global response. Credit spreads widen — investment grade preferred over high yield.',
+    events:[
+      {date:'Immediate',text:'Emergency FOMC meeting — 50bps emergency cut likely if data deteriorates sharply',impact:'high'},
+      {date:'Month 1-3',text:'S&P 500 drawdown of 25-35% — typical recession peak-to-trough decline',impact:'high'},
+      {date:'Month 3-6',text:'Credit market stress — high yield spreads widen 400-600bps over treasuries',impact:'high'},
+      {date:'Month 6-12',text:'Fed balance sheet expansion — QE4 possible if financial conditions tighten severely',impact:'medium'}
+    ],
+    actions:[
+      'Maximize defensive allocation: 40%+ in Healthcare (UNH, JNJ) and Consumer Staples (PG, KO)',
+      'Treasuries and TIPS: Target 30%+ allocation. 10Y Treasury outperforms in deflation/recession',
+      'Cut Financials completely: Banks face NIM compression AND credit losses. Sell regionals immediately',
+      'Gold allocation 10-15%: Safe haven demand + Fed QE currency debasement hedge',
+      'Technology: Keep only profitable mega-cap (AAPL, MSFT). Sell unprofitable growth immediately',
+      'Cash position 15-20%: Dry powder for buying opportunities during maximum fear phase'
+    ]
+  },
+  'Stagflation':{
+    rateEnv:    {text:'Fed paralyzed — inflation too high to cut, economy too weak to hike. Rates range-bound 4.5-5%.',arrow:'neutral'},
+    inflation:  {text:'CPI re-accelerating to 5-7%. Supply shocks (energy, food) combined with wage spiral.',arrow:'up'},
+    gdpGrowth:  {text:'Stagflation trap — sluggish 0-1% growth with elevated prices. Worst of both worlds.',arrow:'neutral'},
+    usd:        {text:'USD uncertain — inflation pressures weaken it, rate hold supports it. Highly volatile.',arrow:'neutral'},
+    employment: {text:'Unemployment rising to 5% but wage inflation persists — worst of both worlds scenario.',arrow:'down'},
+    sectorScores:{Technology:5,Healthcare:6,Financials:5,Energy:9,Utilities:6,ConsumerStaples:8,ConsumerDisc:4,Industrials:6},
+    rotation:'Commodity exposure critical. Energy, Gold, TIPS, inflation-resistant Consumer Staples. Avoid all long-duration assets.',
+    fedOutlook:'Federal Reserve paralyzed by stagflation dilemma. Historical precedent: 1970s required Volcker hiking to 20% to break inflation. Short-term bonds preferred over long-duration. TIPS offering real yield protection against inflation erosion.',
+    events:[
+      {date:'Near-term',text:'Energy supply shock — oil above $100/barrel triggers inflation re-acceleration cycle',impact:'high'},
+      {date:'Month 1-6',text:'Fed policy error risk — hiking into weakness or cutting with inflation still elevated',impact:'high'},
+      {date:'Month 3-9',text:'Consumer spending collapse as real wages eroded by persistent inflation',impact:'medium'},
+      {date:'Ongoing',text:'Supply chain re-shock — geopolitical events disrupting global trade flows',impact:'medium'}
+    ],
+    actions:[
+      'Maximize Energy exposure: XOM, CVX, COP benefit from oil price surge. 20-25% allocation target',
+      'Real assets: Gold (GLD), Silver (SLV), Commodity ETF (PDBC) — critical inflation hedges',
+      'TIPS over nominal Treasuries: Real yield protection when inflation destroys nominal bond returns',
+      'Consumer Staples with pricing power: PG, KO, WMT can pass through inflation to consumers',
+      'Avoid Technology: Long-duration growth stocks destroyed by high rates and low growth combination',
+      'Short-duration bonds only: 2-year Treasuries maximum — avoid 10Y+ until inflation definitively breaks'
+    ]
+  }
+};
+
+const CHART_DEFAULTS = {
+  responsive:true,
+  maintainAspectRatio:false,
+  plugins:{legend:{labels:{color:'#6b8599',font:{family:'DM Mono',size:9}}}},
+  scales:{
+    x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a6a80',font:{family:'DM Mono',size:9}}},
+    y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a6a80',font:{family:'DM Mono',size:9}}}
+  }
+};
+
+// ============================================================
+// UTILITY FUNCTIONS
+// ============================================================
+
+let mkyScenario = 'Soft Landing';
+const _charts = {};
+
+function clamp(v,mn,mx){return Math.min(Math.max(v,mn),mx);}
+
+function fmt$(val){
+  const n=parseFloat(val);
+  if(isNaN(n))return '$0';
+  if(Math.abs(n)>=1e12)return '$'+(n/1e12).toFixed(2)+'T';
+  if(Math.abs(n)>=1e9) return '$'+(n/1e9).toFixed(1)+'B';
+  if(Math.abs(n)>=1e6) return '$'+(n/1e6).toFixed(1)+'M';
+  if(Math.abs(n)>=1000)return '$'+n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+  return '$'+parseFloat(n).toFixed(2);
+}
+
+function fmtPct(val){
+  const n=parseFloat(val);
+  return (n>=0?'+':'')+n.toFixed(1)+'%';
+}
+
+function fmtK(val){
+  const n=parseFloat(val);
+  if(n>=1e6)return '$'+(n/1e6).toFixed(1)+'M';
+  if(n>=1000)return '$'+(n/1000).toFixed(0)+'K';
+  return '$'+Math.round(n);
+}
+
+async function fetchPrice(ticker){
+  try{
+    const url='https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range=1d';
+    const r=await fetch(url,{signal:AbortSignal.timeout(4000)});
+    if(!r.ok)return null;
+    const d=await r.json();
+    const price=d?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    return price?{price}:null;
+  }catch(e){return null;}
+}
+
+function showSpinner(id){
+  const el=document.getElementById(id);
+  if(el){el.style.display='flex';}
+}
+
+function hideSpinner(id){
+  const el=document.getElementById(id);
+  if(el){el.style.display='none';}
+}
+
+function showOutput(id){
+  const el=document.getElementById(id);
+  if(el){el.style.display='block';setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100);}
+}
+
+function mkChart(id,type,labels,datasets,options){
+  if(_charts[id]){_charts[id].destroy();delete _charts[id];}
+  const canvas=document.getElementById(id);
+  if(!canvas)return;
+  _charts[id]=new Chart(canvas.getContext('2d'),{type,data:{labels,datasets},options:options||{}});
+}
+
+function updateSlider(id,valId,suffix=''){
+  const el=document.getElementById(id);
+  const vEl=document.getElementById(valId);
+  if(el&&vEl){
+    const pct=((el.value-el.min)/(el.max-el.min))*100;
+    el.style.setProperty('--val',pct+'%');
+    vEl.textContent=el.value+suffix;
+  }
+}
+
+function calcBWTotal(){
+  const rows=document.querySelectorAll('#bw-positions-list .position-row');
+  let total=0;
+  rows.forEach(row=>{const ins=row.querySelectorAll('input');total+=parseFloat(ins[1]?.value)||0;});
+  const el=document.getElementById('bw-total-display');
+  if(el){const ok=Math.abs(total-100)<0.1;el.textContent=total.toFixed(1)+'%';el.style.color=ok?'#00ff88':total>100?'#ff3d5a':'#ffc832';}
+}
+
+function addBWPosition(){
+  const list=document.getElementById('bw-positions-list');
+  const div=document.createElement('div');
+  div.className='position-row';
+  div.innerHTML=`<input class="fi pos-ticker" placeholder="TICKER"><input class="fi pos-alloc" type="number" placeholder="%" step="0.1" min="0" max="100" oninput="calcBWTotal()"><select class="fs pos-sector"><option>Technology</option><option>Healthcare</option><option>Financials</option><option>Energy</option><option>Utilities</option><option>ConsumerStaples</option><option>ConsumerDisc</option><option>Industrials</option><option>Materials</option><option>RealEstate</option></select><button class="btn-remove" onclick="this.closest('.position-row').remove();calcBWTotal();">✕</button>`;
+  list.appendChild(div);
+}
+
+function setMKYScenario(s){
+  mkyScenario=s;
+  document.querySelectorAll('.mky-scenario-btn').forEach(b=>{b.classList.toggle('active',b.dataset.scenario===s);});
+}
+
+function updateMKYSlider(){
+  ['mky-s1','mky-s2','mky-s3','mky-s4','mky-s5','mky-s6','mky-s7','mky-s8'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){const pct=((el.value-el.min)/(el.max-el.min))*100;el.style.setProperty('--val',pct+'%');}
+  });
+}
+
+function showMod(n){
+  document.querySelectorAll('.module-panel').forEach((p,i)=>{p.classList.toggle('active',i+1===n);});
+  document.querySelectorAll('.mod-tab').forEach((b,i)=>{b.classList.toggle('active',i+1===n);});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
 
 <script>
 // ============================================================
