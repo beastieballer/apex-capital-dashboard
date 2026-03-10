@@ -255,6 +255,24 @@ a:hover{text-decoration:underline}
 .target-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);cursor:pointer}
 .target-toggle input[type=checkbox]{accent-color:var(--accent-cyan);width:14px;height:14px}
 
+/* AWARDED TAB */
+.awarded-table-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.awarded-table{width:100%;border-collapse:collapse;font-size:13px}
+.awarded-table thead th{background:rgba(255,255,255,0.04);padding:12px 16px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap}
+.awarded-table tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+.awarded-table tbody tr:hover{background:rgba(255,255,255,0.03)}
+.awarded-table tbody tr:last-child{border-bottom:none}
+.awarded-table td{padding:12px 16px;vertical-align:top}
+.awarded-table td.title-cell{max-width:340px}
+.awarded-table td.title-cell .t{font-weight:600;color:var(--text-primary);margin-bottom:3px}
+.awarded-table td.title-cell .sol{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace}
+.awarded-awardee{font-weight:600;color:var(--accent-green)}
+.awarded-value{font-family:'DM Mono',monospace;color:var(--accent-yellow);white-space:nowrap}
+.awarded-agency{color:var(--text-secondary);font-size:12px}
+.awarded-date{font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted);white-space:nowrap}
+.awarded-link{font-size:11px;color:var(--accent-cyan)}
+.awarded-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;background:rgba(0,255,136,0.1);color:var(--accent-green);border:1px solid rgba(0,255,136,0.2)}
+
 /* INTEL TAB */
 .intel-layout{display:grid;grid-template-columns:1fr 380px;gap:20px}
 .intel-table-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
@@ -333,6 +351,7 @@ a:hover{text-decoration:underline}
       <button class="nav-tab" onclick="showTab('credentials')">&#9989; Credentials</button>
       <button class="nav-tab" onclick="showTab('agencies')">&#127970; Agencies</button>
       <button class="nav-tab" onclick="showTab('intel')">&#129302; Competitive Intel</button>
+      <button class="nav-tab" onclick="showTab('awarded')">&#127942; Awarded</button>
     </nav>
     <div class="live-badge demo" id="liveBadge" onclick="openApiModal()">
       <span class="dot"></span>
@@ -518,6 +537,26 @@ a:hover{text-decoration:underline}
     </div>
   </div>
 
+  <!-- ===== AWARDED CONTRACTS TAB ===== -->
+  <div class="tab-panel" id="tab-awarded">
+    <div class="section-header">
+      <span class="section-title">Awarded Window Film Contracts</span>
+      <span class="section-badge badge-orange" id="awardedCountBadge">--</span>
+      <span style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="fetchAwardedContracts()">&#8635; Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="openApiModal()">&#128273; API Key</button>
+      </span>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;max-width:760px;line-height:1.6">
+      Closed and awarded window film contracts from SAM.gov in the past 12 months — showing the awardee, awarding agency, and award amount.
+    </p>
+    <div id="awardedBanner" class="demo-banner hidden" style="border-color:rgba(255,100,100,0.3);background:rgba(255,60,60,0.06);color:#ff6b6b;margin-bottom:16px">
+      <span class="icon">&#9888;</span>
+      <span id="awardedBannerText"></span>
+    </div>
+    <div id="awardedGrid"></div>
+  </div>
+
 </main>
 
 <script>
@@ -661,13 +700,14 @@ function showTab(name){
   document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   const tabs = document.querySelectorAll('.nav-tab');
-  const names = ['opportunities','pipeline','credentials','agencies','intel'];
+  const names = ['opportunities','pipeline','credentials','agencies','intel','awarded'];
   const idx = names.indexOf(name);
   if(idx >= 0) tabs[idx].classList.add('active');
   if(name==='pipeline') renderPipeline();
   if(name==='credentials') renderCredentials();
   if(name==='agencies') renderAgencies();
   if(name==='intel') renderIntel();
+  if(name==='awarded') fetchAwardedContracts();
 }
 
 // ─── API KEY MODAL ───────────────────────────────────────────────────────────
@@ -839,6 +879,156 @@ function parseSAMOpp(d){
     resourceLinks: d.resourceLinks || [],
     samUrl: d.uiLink || ('https://sam.gov/opp/' + noticeId + '/view')
   };
+}
+
+// ─── AWARDED CONTRACTS FETCH ─────────────────────────────────────────────────
+
+let allAwarded = [];
+
+async function fetchAwardedContracts(){
+  const grid = document.getElementById('awardedGrid');
+  const banner = document.getElementById('awardedBanner');
+  const badge = document.getElementById('awardedCountBadge');
+  grid.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><span>Fetching awarded contracts from SAM.gov...</span></div>';
+  banner.classList.add('hidden');
+
+  if(!apiKey){
+    grid.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:24px">Add your SAM.gov API key (top right) to load awarded window film contracts.</p>';
+    badge.textContent = '--';
+    return;
+  }
+
+  // Session cache (5-min TTL)
+  const cacheKey = 'ssswf_awarded_cache';
+  const cached = (() => { try { return JSON.parse(sessionStorage.getItem(cacheKey)); } catch(e){ return null; } })();
+  if(cached && cached.key === apiKey && (Date.now() - cached.ts) < 300000){
+    allAwarded = cached.data;
+    renderAwardedContracts();
+    return;
+  }
+
+  const today = new Date();
+  const fmt = d => (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getDate().toString().padStart(2,'0') + '/' + d.getFullYear();
+  const yearAgo = new Date(today); yearAgo.setFullYear(yearAgo.getFullYear()-1);
+
+  const url =
+    'https://api.sam.gov/opportunities/v2/search?' +
+    'api_key=' + encodeURIComponent(apiKey) +
+    '&title=' + encodeURIComponent('window film') +
+    '&ptype=' + encodeURIComponent('a') +
+    '&postedFrom=' + encodeURIComponent(fmt(yearAgo)) +
+    '&postedTo=' + encodeURIComponent(fmt(today)) +
+    '&limit=100&offset=0';
+
+  try {
+    const resp = await fetch(url, {signal: AbortSignal.timeout(25000)});
+    if(!resp.ok){
+      const bodyText = await resp.text().catch(() => '');
+      let msg = 'HTTP ' + resp.status;
+      if(resp.status === 429){
+        let quotaDetail = '';
+        try {
+          const errJson = JSON.parse(bodyText);
+          if(errJson.nextAccessTime){
+            const reset = new Date(errJson.nextAccessTime.replace(' UTC','').replace('+0000','Z').replace(/(\d{4})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2})/, (_, y, m, d) => {
+              const months = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+              return y + '-' + String(months[m]+1).padStart(2,'0') + '-' + d;
+            }));
+            if(!isNaN(reset)){
+              quotaDetail = ' Quota resets at ' + reset.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' local time.';
+            }
+          }
+        } catch(e){}
+        msg = 'Daily API quota exceeded.' + quotaDetail + ' Check back tomorrow for live awarded contract data.';
+      } else if(resp.status === 401){
+        msg = 'Invalid or inactive API key.';
+      } else if(resp.status === 403){
+        msg = 'API key not authorized for this endpoint.';
+      }
+      document.getElementById('awardedBannerText').textContent = 'SAM.gov error: ' + msg;
+      banner.classList.remove('hidden');
+      grid.innerHTML = '';
+      badge.textContent = '0';
+      return;
+    }
+    const data = await resp.json();
+    allAwarded = (data.opportunitiesData || []).map(d => {
+      const award = d.award || {};
+      const noticeId = d.noticeId || '';
+      return {
+        title: d.title || 'Untitled',
+        solNum: d.solicitationNumber || '',
+        agency: d.fullParentPathName || d.organizationHierarchy?.[0]?.name || 'Unknown Agency',
+        awardee: award.awardee?.name || award.awardee || d.awardeeInfo?.name || '',
+        awardAmount: award.amount || award.baseAndAllOptionsValue || 0,
+        awardDate: award.date || d.postedDate || '',
+        posted: d.postedDate ? d.postedDate.split('T')[0] : '',
+        samUrl: d.uiLink || ('https://sam.gov/opp/' + noticeId + '/view'),
+        noticeId
+      };
+    });
+    try { sessionStorage.setItem(cacheKey, JSON.stringify({key: apiKey, ts: Date.now(), data: allAwarded})); } catch(e){}
+    renderAwardedContracts();
+  } catch(e){
+    document.getElementById('awardedBannerText').textContent = 'SAM.gov error: ' + (e.message || 'Unknown error');
+    banner.classList.remove('hidden');
+    grid.innerHTML = '';
+    badge.textContent = '0';
+  }
+}
+
+function renderAwardedContracts(){
+  const grid = document.getElementById('awardedGrid');
+  const badge = document.getElementById('awardedCountBadge');
+  badge.textContent = allAwarded.length + ' contracts';
+
+  if(!allAwarded.length){
+    grid.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:24px">No awarded window film contracts found in the past 12 months on SAM.gov.</p>';
+    return;
+  }
+
+  const fmtMoney = n => {
+    if(!n || isNaN(n)) return '—';
+    const v = Number(n);
+    if(v >= 1e6) return '$' + (v/1e6).toFixed(2) + 'M';
+    if(v >= 1e3) return '$' + (v/1e3).toFixed(0) + 'K';
+    return '$' + v.toLocaleString();
+  };
+  const fmtDate = s => {
+    if(!s) return '—';
+    const d = new Date(s);
+    return isNaN(d) ? s.split('T')[0] : d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  };
+
+  const rows = allAwarded.map(a => `
+    <tr>
+      <td class="title-cell">
+        <div class="t">${a.title}</div>
+        ${a.solNum ? `<div class="sol">${a.solNum}</div>` : ''}
+      </td>
+      <td><span class="awarded-awardee">${a.awardee || '<span style="color:var(--text-muted)">Not disclosed</span>'}</span></td>
+      <td class="awarded-value">${fmtMoney(a.awardAmount)}</td>
+      <td class="awarded-agency">${a.agency}</td>
+      <td class="awarded-date">${fmtDate(a.awardDate || a.posted)}</td>
+      <td><a class="awarded-link" href="${a.samUrl}" target="_blank" rel="noopener">&#128279; SAM.gov</a></td>
+    </tr>`).join('');
+
+  grid.innerHTML = `
+    <div class="awarded-table-wrap">
+      <table class="awarded-table">
+        <thead>
+          <tr>
+            <th>Contract Title</th>
+            <th>Awardee</th>
+            <th>Award Value</th>
+            <th>Agency</th>
+            <th>Award Date</th>
+            <th>Link</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
 }
 
 function useSeedData(){
