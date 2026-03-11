@@ -255,6 +255,14 @@ a:hover{text-decoration:underline}
 .target-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);cursor:pointer}
 .target-toggle input[type=checkbox]{accent-color:var(--accent-cyan);width:14px;height:14px}
 
+/* KEYWORD CHIPS */
+.keyword-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 0 12px;font-size:11px;color:var(--text-muted)}
+.keyword-chips .chip-label{color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:.8px;margin-right:2px}
+.keyword-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:12px;border:1px solid rgba(0,212,255,0.2);background:rgba(0,212,255,0.06);color:var(--accent-cyan);font-family:'DM Mono',monospace;font-size:10px;font-weight:500;transition:all .2s}
+.keyword-chip.active{border-color:var(--accent-cyan);background:rgba(0,212,255,0.14)}
+.keyword-chip .chip-dot{width:5px;height:5px;border-radius:50%;background:var(--accent-cyan);animation:pulse 1.2s infinite}
+.fetch-progress{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-left:auto}
+
 /* AWARDED TAB */
 .awarded-table-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .awarded-table{width:100%;border-collapse:collapse;font-size:13px}
@@ -446,6 +454,9 @@ a:hover{text-decoration:underline}
         <option value="value">Sort: Value (High-Low)</option>
       </select>
     </div>
+    <div class="keyword-chips" id="keywordChips">
+      <span class="chip-label">Searching:</span>
+    </div>
     <div class="opp-grid" id="oppGrid">
       <div class="loading-spinner"><div class="spinner"></div><span>Loading opportunities...</span></div>
     </div>
@@ -616,6 +627,9 @@ const DEFAULT_AGENCIES = [
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 
+// Keywords searched on SAM.gov — covering all common contracting terminology for window film work
+const SEARCH_KEYWORDS = ['window film', 'window tint', 'solar film', 'security film', 'blast film'];
+
 let allOpportunities = [];
 let filteredOpportunities = [];
 let pipeline = JSON.parse(localStorage.getItem('ssswf_pipeline') || '[]');
@@ -729,11 +743,41 @@ function clearApiKey(){
   closeApiModal();
 }
 
-// ─── SAM.GOV API FETCH ───────────────────────────────────────────────────────
+// ─── SAM.GOV API FETCH (multi-keyword) ───────────────────────────────────────
+
+function parseQuotaReset(bodyText){
+  try {
+    const errJson = JSON.parse(bodyText);
+    if(errJson.nextAccessTime){
+      const reset = new Date(errJson.nextAccessTime.replace(' UTC','').replace('+0000','Z').replace(
+        /(\d{4})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2})/,
+        (_, y, m, d) => {
+          const months = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+          return y + '-' + String(months[m]+1).padStart(2,'0') + '-' + d;
+        }
+      ));
+      if(!isNaN(reset)) return ' Quota resets at ' + reset.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ' local time.';
+    }
+  } catch(e){}
+  return '';
+}
+
+function renderKeywordChips(activeIndex){
+  const bar = document.getElementById('keywordChips');
+  bar.innerHTML = '<span class="chip-label">Searching:</span>' +
+    SEARCH_KEYWORDS.map((kw, i) => {
+      const isActive = i === activeIndex;
+      return `<span class="keyword-chip${isActive ? ' active' : ''}">` +
+        (isActive ? '<span class="chip-dot"></span>' : '') +
+        kw + '</span>';
+    }).join('') +
+    (activeIndex !== null ? `<span class="fetch-progress">${activeIndex + 1} / ${SEARCH_KEYWORDS.length}</span>` : '');
+}
 
 async function fetchOpportunities(){
   document.getElementById('oppGrid').innerHTML = '<div class="loading-spinner"><div class="spinner"></div><span>Fetching from SAM.gov...</span></div>';
   document.getElementById('apiBanner').classList.add('hidden');
+  renderKeywordChips(null);
 
   if(!apiKey){
     allOpportunities = [];
@@ -748,13 +792,14 @@ async function fetchOpportunities(){
 
   document.getElementById('demoBanner').classList.add('hidden');
 
-  // Check session cache (5-minute TTL) to avoid hammering SAM.gov
+  // Session cache (5-minute TTL)
   const cacheKey = 'ssswf_opp_cache';
   const cached = (() => { try { return JSON.parse(sessionStorage.getItem(cacheKey)); } catch(e){ return null; } })();
   if(cached && cached.key === apiKey && (Date.now() - cached.ts) < 300000){
     allOpportunities = cached.data;
     isLive = true;
     setLiveBadge('live');
+    renderKeywordChips(null);
     filteredOpportunities = [...allOpportunities];
     filterOpportunities();
     updateKPIs();
@@ -764,82 +809,92 @@ async function fetchOpportunities(){
   const today = new Date();
   const fmt = d => (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getDate().toString().padStart(2,'0') + '/' + d.getFullYear();
   const yearAgo = new Date(today); yearAgo.setFullYear(yearAgo.getFullYear()-1);
+  const now = new Date();
 
-  // SAM.gov Opportunities v2 — minimal param set to avoid 400/429 from bad params:
-  //   - title= for text search
-  //   - postedFrom/postedTo required alongside limit
-  //   - ptype URL-encoded (o=Solicitation, p=Presolicitation, k=Combined, r=Sources Sought)
-  //   - NO rdlfrom — omit to avoid validation errors; filter open deadlines client-side
-  const url =
-    'https://api.sam.gov/opportunities/v2/search?' +
-    'api_key=' + encodeURIComponent(apiKey) +
-    '&title=' + encodeURIComponent('window film') +
-    '&ptype=' + encodeURIComponent('o,p,k,r') +
-    '&postedFrom=' + encodeURIComponent(fmt(yearAgo)) +
-    '&postedTo=' + encodeURIComponent(fmt(today)) +
-    '&limit=100&offset=0';
-
+  const seenIds = new Set();
+  const combined = [];
   let fetchError = null;
 
-  try {
-    const resp = await fetch(url, {signal: AbortSignal.timeout(25000)});
-    if(!resp.ok){
-      const bodyText = await resp.text().catch(() => '');
-      let msg = 'HTTP ' + resp.status;
-      if(resp.status === 401){
-        msg += ' — Invalid or inactive API key. Keys can take 24–48 hrs to activate after registration.';
-      } else if(resp.status === 403){
-        msg += ' — API key not authorized. Ensure you have a Personal API key with Opportunities enabled at open.gsa.gov/apis.';
-      } else if(resp.status === 429){
-        // Parse SAM.gov quota response: {"nextAccessTime":"2026-Mar-10 00:00:00+0000 UTC", ...}
-        let quotaDetail = '';
-        try {
-          const errJson = JSON.parse(bodyText);
-          if(errJson.nextAccessTime){
-            const reset = new Date(errJson.nextAccessTime.replace(' UTC','').replace('+0000','Z').replace(/(\d{4})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2})/, (_, y, m, d) => {
-              const months = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
-              return y + '-' + String(months[m]+1).padStart(2,'0') + '-' + d;
-            }));
-            if(!isNaN(reset)){
-              quotaDetail = ' Quota resets at ' + reset.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' local time.';
-            }
-          }
-        } catch(e){}
-        msg += ' — Daily API quota exceeded.' + quotaDetail;
-      } else if(resp.status === 400){
-        msg += ' — Bad request. Check that your API key is a SAM.gov Public key.';
-      } else if(bodyText){
-        msg += ': ' + bodyText.slice(0, 120);
+  for(let i = 0; i < SEARCH_KEYWORDS.length; i++){
+    const kw = SEARCH_KEYWORDS[i];
+    renderKeywordChips(i);
+    document.getElementById('oppGrid').innerHTML =
+      `<div class="loading-spinner"><div class="spinner"></div><span>Searching: "${kw}" (${i+1}/${SEARCH_KEYWORDS.length})…</span></div>`;
+
+    const url =
+      'https://api.sam.gov/opportunities/v2/search?' +
+      'api_key=' + encodeURIComponent(apiKey) +
+      '&title=' + encodeURIComponent(kw) +
+      '&ptype=' + encodeURIComponent('o,p,k,r') +
+      '&postedFrom=' + encodeURIComponent(fmt(yearAgo)) +
+      '&postedTo=' + encodeURIComponent(fmt(today)) +
+      '&limit=100&offset=0';
+
+    try {
+      const resp = await fetch(url, {signal: AbortSignal.timeout(25000)});
+      if(!resp.ok){
+        const bodyText = await resp.text().catch(() => '');
+        if(resp.status === 429){
+          fetchError = 'Daily API quota exceeded.' + parseQuotaReset(bodyText) +
+            (combined.length ? ` Showing ${combined.length} results from ${i} of ${SEARCH_KEYWORDS.length} keywords.` : '');
+          break; // stop further calls, show what we have
+        } else if(resp.status === 401){
+          fetchError = 'Invalid or inactive API key. Keys can take 24–48 hrs to activate.';
+          break;
+        } else if(resp.status === 403){
+          fetchError = 'API key not authorized. Ensure you have a Personal API key with Opportunities enabled at open.gsa.gov/apis.';
+          break;
+        } else if(resp.status === 400){
+          fetchError = 'Bad request (HTTP 400). Check that your API key is a SAM.gov Public key.';
+          break;
+        } else {
+          // Non-fatal: skip this keyword and continue
+          continue;
+        }
       }
-      throw new Error(msg);
-    }
-    const data = await resp.json();
-    // Filter: active=Yes and deadline not yet passed (client-side open-deadline filter)
-    const now = new Date();
-    const results = (data.opportunitiesData || []).filter(d => {
-      if(d.active !== 'Yes') return false;
-      if(d.responseDeadLine){
-        const dl = new Date(d.responseDeadLine);
-        if(!isNaN(dl) && dl < now) return false;
+      const data = await resp.json();
+      const results = (data.opportunitiesData || []).filter(d => {
+        if(d.active !== 'Yes') return false;
+        if(d.responseDeadLine){
+          const dl = new Date(d.responseDeadLine);
+          if(!isNaN(dl) && dl < now) return false;
+        }
+        return true;
+      });
+      for(const d of results){
+        const id = d.noticeId || d.solicitationNumber || d.title;
+        if(id && seenIds.has(id)) continue;
+        if(id) seenIds.add(id);
+        const opp = parseSAMOpp(d);
+        opp.matchedKeyword = kw;
+        combined.push(opp);
       }
-      return true;
-    });
-    allOpportunities = results.map(parseSAMOpp);
-    isLive = true;
-    setLiveBadge('live');
-    if(results.length === 0){
-      showApiBanner('SAM.gov connected — no open window film opportunities at this time. Check back soon.');
+    } catch(e){
+      // Timeout or network error on one keyword — skip and continue
+      if(e.name === 'AbortError' || e.name === 'TimeoutError') continue;
+      fetchError = e.message || 'Unknown error';
+      break;
     }
-    // Cache successful result
-    try { sessionStorage.setItem(cacheKey, JSON.stringify({key: apiKey, ts: Date.now(), data: allOpportunities})); } catch(e){}
-  } catch(e){
-    fetchError = e.message || 'Unknown error';
+
+    // Small pause between requests to be a good API citizen
+    if(i < SEARCH_KEYWORDS.length - 1) await new Promise(r => setTimeout(r, 400));
   }
 
-  if(fetchError){
+  renderKeywordChips(null);
+
+  if(fetchError && combined.length === 0){
     showApiBanner('SAM.gov error: ' + fetchError);
     setLiveBadge('error');
     allOpportunities = [];
+  } else {
+    if(fetchError) showApiBanner('SAM.gov: ' + fetchError); // partial results warning
+    allOpportunities = combined;
+    isLive = true;
+    setLiveBadge('live');
+    if(combined.length === 0){
+      showApiBanner('SAM.gov connected — no open opportunities found across all search terms. Check back soon.');
+    }
+    try { sessionStorage.setItem(cacheKey, JSON.stringify({key: apiKey, ts: Date.now(), data: allOpportunities})); } catch(e){}
   }
 
   filteredOpportunities = [...allOpportunities];
@@ -1090,7 +1145,7 @@ function renderOpportunityCards(opps){
     const msg = !apiKey
       ? 'Add your SAM.gov API key (top right) to load live window film opportunities.'
       : allOpportunities.length === 0
-        ? 'No active window film opportunities found on SAM.gov. Check back later or adjust your date range.'
+        ? 'No active opportunities found across all search terms (' + SEARCH_KEYWORDS.join(', ') + '). Check back later.'
         : 'No opportunities match your filters.';
     grid.innerHTML = `<div style="color:var(--text-muted);font-size:13px;padding:40px;text-align:center;grid-column:1/-1">${msg}</div>`;
     return;
@@ -1116,6 +1171,7 @@ function oppCard(o){
       <span class="tag tag-naics">NAICS ${o.naics}</span>
       <span class="tag ${saTagC}">${esc(o.setAside)}</span>
       ${o.psc ? `<span class="tag tag-naics">PSC ${o.psc}</span>` : ''}
+      ${o.matchedKeyword && o.matchedKeyword !== 'window film' ? `<span class="tag" style="background:rgba(168,85,247,0.1);color:#a855f7;border-color:rgba(168,85,247,0.25)">&#128269; ${esc(o.matchedKeyword)}</span>` : ''}
     </div>
     <div class="opp-value">${valueDisplay}</div>
     <div class="opp-meta">
