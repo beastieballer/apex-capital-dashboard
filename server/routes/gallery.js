@@ -3,21 +3,19 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const db = require('../db/schema');
+const { all, get, run } = require('../db/client');
+const { initDb } = require('../db/schema');
+const { uploadFile } = require('../services/storage');
 
-const storage = multer.diskStorage({
-  destination: path.join(__dirname, '../../uploads/gallery'),
-  filename: (req, file, cb) => cb(null, `${uuidv4()}${path.extname(file.originalname)}`),
-});
-const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
-// Serve placeholder SVGs for seeded demo data
+// SVG placeholders for seeded demo data
 router.get('/placeholder/:name', (req, res) => {
   const name = req.params.name.replace(/-/g, ' ');
   const colors = {
-    'blackwork': ['#1a1a1a', '#333'],
-    'geometric': ['#2d2d2d', '#444'],
-    'fine line': ['#3a3a3a', '#555'],
+    'blackwork': ['#1a1a1a', '#444'],
+    'geometric': ['#2d2d2d', '#555'],
+    'fine line': ['#3a3a3a', '#666'],
     'traditional': ['#8B0000', '#CC3300'],
     'panther': ['#1a1a1a', '#2d2d2d'],
     'koi': ['#FF6B35', '#F7C59F'],
@@ -46,29 +44,43 @@ router.get('/placeholder/:name', (req, res) => {
   res.send(svg);
 });
 
-router.get('/', (req, res) => {
-  const { artist_id, style } = req.query;
-  let query = 'SELECT g.*, a.name as artist_name FROM gallery g JOIN artists a ON g.artist_id = a.id WHERE 1=1';
-  const params = [];
+router.get('/', async (req, res) => {
+  try {
+    await initDb();
+    const { artist_id, style } = req.query;
+    let sql = 'SELECT g.*, a.name as artist_name FROM gallery g JOIN artists a ON g.artist_id = a.id WHERE 1=1';
+    const args = [];
 
-  if (artist_id) { query += ' AND g.artist_id = ?'; params.push(artist_id); }
-  if (style) { query += ' AND g.style LIKE ?'; params.push(`%${style}%`); }
+    if (artist_id) { sql += ' AND g.artist_id = ?'; args.push(artist_id); }
+    if (style) { sql += ' AND g.style LIKE ?'; args.push(`%${style}%`); }
+    sql += ' ORDER BY g.created_at DESC';
 
-  query += ' ORDER BY g.created_at DESC';
-  res.json(db.prepare(query).all(...params));
+    res.json(await all(sql, args));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-router.post('/', upload.single('image'), (req, res) => {
-  const { artist_id, title, style, body_placement } = req.body;
-  if (!artist_id || !req.file) return res.status(400).json({ error: 'artist_id and image required' });
+router.post('/', upload.single('image'), async (req, res) => {
+  try {
+    await initDb();
+    const { artist_id, title, style, body_placement } = req.body;
+    if (!artist_id || !req.file) return res.status(400).json({ error: 'artist_id and image required' });
 
-  const id = uuidv4();
-  db.prepare(`
-    INSERT INTO gallery (id, artist_id, image_path, title, style, body_placement)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run(id, artist_id, `/uploads/gallery/${req.file.filename}`, title || null, style || null, body_placement || null);
+    const ext = path.extname(req.file.originalname);
+    const filename = `gallery/${uuidv4()}${ext}`;
+    const imageUrl = await uploadFile(req.file.buffer, filename, req.file.mimetype);
 
-  res.status(201).json(db.prepare('SELECT * FROM gallery WHERE id = ?').get(id));
+    const id = uuidv4();
+    await run(
+      'INSERT INTO gallery (id, artist_id, image_path, title, style, body_placement) VALUES (?,?,?,?,?,?)',
+      [id, artist_id, imageUrl, title || null, style || null, body_placement || null]
+    );
+
+    res.status(201).json(await get('SELECT * FROM gallery WHERE id = ?', [id]));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 module.exports = router;
