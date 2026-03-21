@@ -1,0 +1,89 @@
+.gallery-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 32px;
+}
+
+.gallery-grid {
+  columns: 4 220px;
+  gap: 8px;
+  padding: 0 24px 60px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.gallery-tile {
+  break-inside: avoid;
+  margin-bottom: 8px;
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--surface);
+}
+
+.gallery-tile img {
+  width: 100%;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.gallery-tile:hover img { transform: scale(1.04); }
+
+.gallery-tile-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 32px 12px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.gallery-tile:hover .gallery-tile-info { opacity: 1; }
+.gallery-tile-info p { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.gallery-tile-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(8px);
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 600px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 32px; height: 32px;
+  background: rgba(0,0,0,0.6);
+  border: none;
+  color: white;
+  font-size: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  z-index: 1;
+  line-height: 1;
+}
+
+.lightbox-content img { width: 100%; max-height: 70vh; object-fit: cover; }
+
+.lightbox-meta { padding: 20px 24px; }
+.lightbox-meta h3 { font-size: 1.4rem; margin-bottom: 4px; }
+.lightbox-artist { color: var(--text2); font-size: 14px; margin-bottom: 12px; }
+.lightbox-tags { display: flex; flex-wrap: wrap; gap: 6px; }

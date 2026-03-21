@@ -1,0 +1,173 @@
+.vc-page { padding-bottom: 80px; }
+
+.vc-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  align-items: start;
+}
+
+.vc-main { display: flex; flex-direction: column; gap: 20px; }
+.vc-sidebar { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 80px; }
+
+.vc-section { overflow: visible; }
+.vc-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.vc-section-header h3 {
+  font-size: 1rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.vc-section > *:not(.vc-section-header) { padding: 20px 24px; }
+.vc-section > *:not(.vc-section-header):not(:last-child) { padding-bottom: 0; }
+
+.vc-desc { color: var(--text2); font-size: 14px; line-height: 1.6; }
+.vc-error { background: rgba(204,51,0,0.12); border: 1px solid rgba(204,51,0,0.3); border-radius: var(--radius); padding: 10px 14px; color: #ff6b35; font-size: 13px; }
+
+.vc-drop {
+  border: 2px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 36px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: var(--bg3);
+}
+.vc-drop:hover { border-color: var(--accent); background: rgba(232,201,122,0.03); }
+.vc-drop-icon { font-size: 36px; display: block; margin-bottom: 12px; }
+.vc-drop p { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.vc-drop-hint { font-size: 12px; color: var(--text3); }
+
+.vc-file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.vc-file-icon { font-size: 28px; flex-shrink: 0; }
+.vc-file-name { font-weight: 700; font-size: 14px; margin-bottom: 2px; word-break: break-all; }
+.vc-file-meta { font-size: 12px; color: var(--text2); }
+.vc-change { margin-left: auto; font-size: 12px; color: var(--accent); font-weight: 600; flex-shrink: 0; }
+
+.vc-preview {
+  width: 100%;
+  border-radius: var(--radius);
+  background: #000;
+  max-height: 340px;
+  display: block;
+}
+
+.vc-settings { display: flex; flex-direction: column; gap: 24px; }
+.vc-setting label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 10px;
+}
+
+.duration-btns { display: flex; gap: 8px; }
+.duration-btn {
+  padding: 10px 24px;
+  background: var(--bg3);
+  border: 2px solid var(--border2);
+  color: var(--text2);
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.1em;
+}
+.duration-btn:hover { border-color: var(--accent); color: var(--accent); }
+.duration-btn.active { background: var(--accent); color: #0a0a0a; border-color: var(--accent); }
+
+.vc-count-hint { font-size: 13px; color: var(--text2); margin-top: 10px; }
+.vc-count-hint strong { color: var(--accent); }
+
+.ar-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px 14px;
+  background: var(--bg3);
+  border: 2px solid var(--border2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+.ar-btn:hover { border-color: var(--accent); }
+.ar-btn.active { border-color: var(--accent); background: rgba(232,201,122,0.08); }
+.ar-ratio { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--text); letter-spacing: 0.05em; }
+.ar-label { font-size: 11px; color: var(--text3); font-weight: 500; }
+.ar-btn.active .ar-ratio { color: var(--accent); }
+
+.vc-process-btn { width: 100%; padding: 14px !important; font-size: 15px !important; }
+
+.vc-progress { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.vc-progress-bar { flex: 1; height: 6px; background: var(--border2); border-radius: 3px; overflow: hidden; }
+.vc-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 3px; transition: width 0.3s; }
+.vc-progress span { font-size: 13px; font-weight: 700; color: var(--accent); width: 36px; text-align: right; }
+
+.clips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.clip-card {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.clip-video { width: 100%; aspect-ratio: 9/16; object-fit: cover; background: #000; }
+.clip-info { padding: 10px 12px; }
+.clip-name { font-weight: 700; font-size: 13px; }
+.clip-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.clip-dl { margin: 0 10px 10px; width: calc(100% - 20px); padding: 8px !important; font-size: 12px !important; }
+
+/* Log panel */
+.vc-log-panel { overflow: hidden; }
+.vc-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.vc-log-header h4 { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); }
+.vc-log-body { padding: 12px 16px; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+.vc-log-empty { color: var(--text3); font-size: 13px; font-style: italic; }
+.vc-log-line { font-size: 11px; color: var(--text2); font-family: monospace; line-height: 1.5; word-break: break-all; }
+
+.vc-tips { padding: 16px; }
+.vc-tips h4 { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); margin-bottom: 12px; }
+.vc-tips ul { display: flex; flex-direction: column; gap: 8px; padding-left: 16px; }
+.vc-tips li { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.vc-tips strong { color: var(--text); }
+
+@media (max-width: 900px) {
+  .vc-layout { grid-template-columns: 1fr; }
+  .vc-sidebar { position: static; }
+  .ar-options { grid-template-columns: 1fr 1fr; }
+}

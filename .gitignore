@@ -1,0 +1,15 @@
+node_modules/
+server/node_modules/
+client/node_modules/
+server/tattoo.db
+uploads/gallery/*
+uploads/references/*
+uploads/videos/*
+uploads/clips/*
+!uploads/gallery/.gitkeep
+!uploads/references/.gitkeep
+!uploads/videos/.gitkeep
+!uploads/clips/.gitkeep
+dist/
+.env
+*.log
