@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Tool Stack Tracker</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app">
+
+    <!-- ── HEADER ────────────────────────────────────────── -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">⚡</div>
+        <div>
+          <h1 class="header-title">AI Tool Stack Tracker</h1>
+          <p class="header-sub">Operator Dashboard</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="billing-toggle">
+          <span class="toggle-label">View:</span>
+          <button class="toggle-btn active" id="toggleMonthly" onclick="setBillingView('monthly')">Monthly</button>
+          <button class="toggle-btn" id="toggleAnnual" onclick="setBillingView('annual')">Annual</button>
+        </div>
+        <div class="last-reviewed-wrap">
+          <span class="lrw-label">Last Reviewed:</span>
+          <span id="lastReviewedDate" class="lrw-value">Never</span>
+          <button class="btn btn-ghost btn-sm" onclick="markReviewed()">Mark Reviewed</button>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-ghost" onclick="importJSON()">↑ Import</button>
+          <button class="btn btn-ghost" onclick="exportJSON()">↓ Export</button>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Add Tool</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── SUMMARY CARDS ─────────────────────────────────── -->
+    <section class="summary-cards">
+      <div class="card summary-card">
+        <div class="card-icon">💸</div>
+        <div class="card-content">
+          <div class="card-value" id="totalMonthly">$0</div>
+          <div class="card-label" id="spendLabel">Monthly Spend</div>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-icon">📅</div>
+        <div class="card-content">
+          <div class="card-value" id="totalAnnual">$0</div>
+          <div class="card-label">Annual Spend</div>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-icon">⚙️</div>
+        <div class="card-content">
+          <div class="card-value" id="activeTools">0</div>
+          <div class="card-label">Active Tools</div>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-icon">✂️</div>
+        <div class="card-content">
+          <div class="card-value cut-value" id="cutTools">0</div>
+          <div class="card-label">Marked to Cut</div>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-icon">⭐</div>
+        <div class="card-content">
+          <div class="card-value" id="avgRoi">0.0</div>
+          <div class="card-label">Avg ROI Score</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TABS ──────────────────────────────────────────── -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="tools"   onclick="switchTab('tools')">Tools Stack</button>
+      <button class="tab"        data-tab="chart"   onclick="switchTab('chart')">Spend Chart</button>
+      <button class="tab"        data-tab="review"  onclick="switchTab('review')">Weekly Review</button>
+      <button class="tab"        data-tab="command" onclick="switchTab('command')">Command Center</button>
+    </nav>
+
+    <!-- ── TAB: TOOLS ─────────────────────────────────────── -->
+    <div id="tab-tools" class="tab-panel active">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <input  type="text"   id="searchInput"    class="input input-search" placeholder="🔍  Search tools…" oninput="renderTable()" />
+          <select id="filterStatus"   class="input input-select" onchange="renderTable()">
+            <option value="">All Status</option>
+            <option value="Keep">Keep</option>
+            <option value="Review">Review</option>
+            <option value="Cut">Cut</option>
+          </select>
+          <select id="filterCategory" class="input input-select" onchange="renderTable()">
+            <option value="">All Categories</option>
+            <option value="coding">Coding</option>
+            <option value="content">Content</option>
+            <option value="automation">Automation</option>
+            <option value="image">Image</option>
+            <option value="research">Research</option>
+            <option value="sales">Sales</option>
+            <option value="productivity">Productivity</option>
+            <option value="other">Other</option>
+          </select>
+          <select id="filterRoi" class="input input-select" onchange="renderTable()">
+            <option value="">All ROI</option>
+            <option value="5">5 ★★★★★</option>
+            <option value="4">4 ★★★★</option>
+            <option value="3">3 ★★★</option>
+            <option value="2">2 ★★</option>
+            <option value="1">1 ★</option>
+          </select>
+        </div>
+        <div class="toolbar-right">
+          <span id="toolCount" class="tool-count"></span>
+          <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Clear Filters</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="tools-table">
+          <thead>
+            <tr>
+              <th data-sort="name"        onclick="sortBy('name')">Tool <span class="sort-icon"></span></th>
+              <th data-sort="category"    onclick="sortBy('category')">Category <span class="sort-icon"></span></th>
+              <th data-sort="cost"        onclick="sortBy('cost')">Cost <span class="sort-icon"></span></th>
+              <th data-sort="billingCycle" onclick="sortBy('billingCycle')">Billing <span class="sort-icon"></span></th>
+              <th>Purpose</th>
+              <th data-sort="lastUsed"    onclick="sortBy('lastUsed')">Last Used <span class="sort-icon"></span></th>
+              <th data-sort="roiScore"    onclick="sortBy('roiScore')">ROI <span class="sort-icon"></span></th>
+              <th data-sort="status"      onclick="sortBy('status')">Status <span class="sort-icon"></span></th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="empty-state" style="display:none">
+        <div class="empty-icon">🔍</div>
+        <p>No tools match your filters.</p>
+        <button class="btn btn-primary" style="margin-top:12px" onclick="clearFilters()">Clear Filters</button>
+      </div>
+    </div>
+
+    <!-- ── TAB: CHART ─────────────────────────────────────── -->
+    <div id="tab-chart" class="tab-panel">
+      <div class="chart-grid">
+        <div class="card chart-card">
+          <h3 class="chart-title">Monthly Spend by Category</h3>
+          <div class="chart-container"><canvas id="categoryChart"></canvas></div>
+        </div>
+        <div class="card chart-card">
+          <h3 class="chart-title">ROI Score Distribution</h3>
+          <div class="chart-container"><canvas id="roiChart"></canvas></div>
+        </div>
+        <div class="card chart-card">
+          <h3 class="chart-title">Status Breakdown</h3>
+          <div class="chart-container"><canvas id="statusChart"></canvas></div>
+        </div>
+        <div class="card chart-card spend-list-card">
+          <h3 class="chart-title">Top Spend (Active Tools)</h3>
+          <div id="topSpendList" class="top-spend-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: WEEKLY REVIEW ─────────────────────────────── -->
+    <div id="tab-review" class="tab-panel">
+      <div class="review-section">
+        <div class="review-header">
+          <h2 class="section-title">Weekly Review Checklist</h2>
+          <button class="btn btn-ghost btn-sm" onclick="resetChecklist()">Reset</button>
+        </div>
+        <div class="checklist" id="checklist"></div>
+
+        <div class="review-notes-wrap">
+          <h3 class="section-label">Review Notes</h3>
+          <textarea id="reviewNotes" class="input input-textarea" placeholder="Capture your review observations here…"></textarea>
+          <button class="btn btn-primary" style="margin-top:10px" onclick="saveReviewNotes()">Save Notes</button>
+        </div>
+
+        <div class="tools-to-review">
+          <h3 class="section-label">Tools Flagged for Action</h3>
+          <div id="toolsToCut"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: COMMAND CENTER ────────────────────────────── -->
+    <div id="tab-command" class="tab-panel">
+      <div class="command-section">
+        <div class="command-header">
+          <h2 class="section-title">AI Command Center</h2>
+          <p class="section-sub">Ideas, workflows, and automations to build later.</p>
+        </div>
+        <div class="command-add">
+          <input type="text" id="commandInput" class="input" placeholder="Add a new idea, workflow, or integration…" />
+          <select id="commandCategory" class="input input-select">
+            <option value="idea">💡 Idea</option>
+            <option value="workflow">⚡ Workflow</option>
+            <option value="automation">🤖 Automation</option>
+            <option value="integration">🔗 Integration</option>
+            <option value="review">📋 To Review</option>
+          </select>
+          <button class="btn btn-primary" onclick="addCommand()">Add</button>
+        </div>
+        <div id="commandList" class="command-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /.app -->
+
+  <!-- ── MODAL: ADD / EDIT TOOL ─────────────────────────── -->
+  <div id="modal" class="modal-overlay" onclick="handleOverlayClick(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle" class="modal-title">Add Tool</h2>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editId" />
+        <div class="form-grid">
+
+          <div class="form-group form-full">
+            <label class="form-label">Tool Name *</label>
+            <input type="text" id="toolName" class="input" placeholder="e.g. Claude Pro" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="toolCategory" class="input input-select">
+              <option value="coding">Coding</option>
+              <option value="content">Content</option>
+              <option value="automation">Automation</option>
+              <option value="image">Image</option>
+              <option value="research">Research</option>
+              <option value="sales">Sales</option>
+              <option value="productivity">Productivity</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Cost ($)</label>
+            <input type="number" id="toolCost" class="input" placeholder="0.00" step="0.01" min="0" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Billing Cycle</label>
+            <select id="toolBilling" class="input input-select">
+              <option value="monthly">Monthly</option>
+              <option value="annual">Annual</option>
+              <option value="one-time">One-time</option>
+              <option value="free">Free</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ROI Score</label>
+            <select id="toolRoi" class="input input-select">
+              <option value="5">5 – Essential ★★★★★</option>
+              <option value="4">4 – High Value ★★★★</option>
+              <option value="3">3 – Moderate ★★★</option>
+              <option value="2">2 – Low Value ★★</option>
+              <option value="1">1 – Waste ★</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select id="toolStatus" class="input input-select">
+              <option value="Keep">Keep</option>
+              <option value="Review">Review</option>
+              <option value="Cut">Cut</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Last Used</label>
+            <input type="date" id="toolLastUsed" class="input" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Last Reviewed</label>
+            <input type="date" id="toolLastReviewed" class="input" />
+          </div>
+
+          <div class="form-group form-full">
+            <label class="form-label">Purpose</label>
+            <input type="text" id="toolPurpose" class="input" placeholder="What do you use this for?" />
+          </div>
+
+          <div class="form-group form-full">
+            <label class="form-label">Money Link</label>
+            <input type="text" id="toolMoneyLink" class="input" placeholder="How does this contribute to revenue?" />
+          </div>
+
+          <div class="form-group form-full">
+            <label class="form-label">Notes</label>
+            <textarea id="toolNotes" class="input input-textarea" placeholder="Additional context…"></textarea>
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveTool()">Save Tool</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Hidden import input -->
+  <input type="file" id="importInput" accept=".json" style="display:none" onchange="handleImport(event)" />
+
+  <script src="script.js"></script>
+</body>
+</html>
