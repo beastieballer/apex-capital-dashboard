@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dead Kings Co</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black: #050505;
+      --off-black: #0d0d0d;
+      --dark: #111111;
+      --card: #161616;
+      --border: #222222;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --white: #f5f0eb;
+      --muted: #888888;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-serif: 'Playfair Display', serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 48px;
+      transition: background 0.4s, padding 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(5, 5, 5, 0.96);
+      backdrop-filter: blur(12px);
+      padding: 16px 48px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 28px;
+      letter-spacing: 4px;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-cta {
+      background: var(--gold);
+      color: var(--black) !important;
+      padding: 10px 24px !important;
+      letter-spacing: 2px !important;
+      transition: background 0.2s, color 0.2s !important;
+    }
+    .nav-cta:hover { background: var(--gold-light) !important; color: var(--black) !important; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: var(--white); transition: 0.3s; }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 700px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1600&q=80');
+      background-size: cover;
+      background-position: center 30%;
+      filter: brightness(0.28);
+      transform: scale(1.05);
+      transition: transform 8s ease;
+    }
+    .hero:hover .hero-bg { transform: scale(1.0); }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, var(--black) 100%);
+    }
+    .hero-content {
+      position: relative;
+      text-align: center;
+      padding: 0 20px;
+    }
+    .hero-tag {
+      font-size: 11px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(72px, 14vw, 180px);
+      line-height: 0.9;
+      letter-spacing: 8px;
+      color: var(--white);
+      text-shadow: 0 0 80px rgba(201, 168, 76, 0.15);
+    }
+    .hero-title .accent { color: var(--gold); display: block; }
+    .hero-sub {
+      margin-top: 32px;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-actions {
+      margin-top: 52px;
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-block;
+      padding: 16px 40px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s;
+      cursor: pointer;
+      border: none;
+      font-family: var(--font-body);
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: var(--black);
+    }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    .btn-secondary:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+    .scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      animation: float 2s ease-in-out infinite;
+    }
+    .scroll-hint::after {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+    }
+    @keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+    /* ── MARQUEE ── */
+    .marquee-wrap {
+      background: var(--gold);
+      overflow: hidden;
+      padding: 14px 0;
+    }
+    .marquee-track {
+      display: flex;
+      white-space: nowrap;
+      animation: marquee 18s linear infinite;
+    }
+    .marquee-track span {
+      font-family: var(--font-display);
+      font-size: 15px;
+      letter-spacing: 4px;
+      color: var(--black);
+      padding: 0 48px;
+    }
+    .marquee-track .dot { color: rgba(0,0,0,0.4); }
+    @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+    /* ── SECTIONS ── */
+    section { padding: 120px 0; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(42px, 6vw, 72px);
+      letter-spacing: 3px;
+      line-height: 1;
+      color: var(--white);
+    }
+    .section-divider {
+      width: 60px;
+      height: 2px;
+      background: var(--gold);
+      margin: 24px 0 40px;
+    }
+
+    /* ── ABOUT ── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .about-img-wrap {
+      position: relative;
+    }
+    .about-img {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      display: block;
+    }
+    .about-img-accent {
+      position: absolute;
+      bottom: -20px;
+      right: -20px;
+      width: 60%;
+      aspect-ratio: 1;
+      border: 2px solid var(--gold);
+      z-index: -1;
+    }
+    .about-text p {
+      color: var(--muted);
+      line-height: 1.9;
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    .about-stats {
+      display: flex;
+      gap: 48px;
+      margin-top: 48px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+    }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 48px;
+      letter-spacing: 2px;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── GALLERY ── */
+    .gallery-section { background: var(--off-black); }
+    .gallery-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 60px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: auto;
+      gap: 12px;
+    }
+    .g-item {
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+    .g-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s ease, filter 0.4s;
+      filter: brightness(0.85) saturate(0.8);
+    }
+    .g-item:hover img { transform: scale(1.06); filter: brightness(1) saturate(1); }
+    .g-item-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.4s;
+      display: flex;
+      align-items: flex-end;
+      padding: 20px;
+    }
+    .g-item:hover .g-item-overlay { opacity: 1; }
+    .g-item-overlay .ig-handle {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    /* Grid layout */
+    .g1 { grid-column: span 5; grid-row: span 2; aspect-ratio: unset; min-height: 480px; }
+    .g2 { grid-column: span 4; min-height: 230px; }
+    .g3 { grid-column: span 3; min-height: 230px; }
+    .g4 { grid-column: span 4; min-height: 230px; }
+    .g5 { grid-column: span 3; min-height: 230px; }
+    .g6 { grid-column: span 4; min-height: 320px; }
+    .g7 { grid-column: span 4; min-height: 320px; }
+    .g8 { grid-column: span 4; min-height: 320px; }
+
+    .gallery-footer {
+      display: flex;
+      justify-content: center;
+      margin-top: 60px;
+    }
+
+    /* ── SERVICES ── */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 60px;
+    }
+    .service-card {
+      background: var(--card);
+      padding: 48px 36px;
+      transition: background 0.3s;
+      border: 1px solid var(--border);
+    }
+    .service-card:hover { background: #1a1a1a; border-color: var(--gold); }
+    .service-icon {
+      font-size: 32px;
+      margin-bottom: 24px;
+      display: block;
+    }
+    .service-card h3 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      letter-spacing: 2px;
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+    .service-card p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    /* ── BOOKING ── */
+    .booking-section {
+      background: var(--dark);
+      position: relative;
+      overflow: hidden;
+    }
+    .booking-section::before {
+      content: 'BOOK';
+      position: absolute;
+      font-family: var(--font-display);
+      font-size: 320px;
+      color: rgba(201, 168, 76, 0.03);
+      right: -40px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      letter-spacing: 10px;
+    }
+    .booking-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 100px;
+      align-items: center;
+    }
+    .booking-text .section-title { margin-bottom: 0; }
+    .booking-text p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.9;
+      margin-top: 24px;
+    }
+    .booking-options {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .booking-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      transition: border-color 0.3s, background 0.3s;
+      text-decoration: none;
+    }
+    .booking-card:hover { border-color: var(--gold); background: rgba(201,168,76,0.04); }
+    .booking-card-info h4 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      letter-spacing: 2px;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .booking-card-info p {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+    .booking-arrow {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      font-size: 18px;
+      flex-shrink: 0;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .booking-card:hover .booking-arrow { background: var(--gold); color: var(--black); border-color: var(--gold); }
+    .booking-cta-group {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn-full { width: 100%; text-align: center; }
+
+    /* ── FORM ── */
+    .booking-form-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 48px 40px;
+      margin-top: 80px;
+    }
+    .form-title {
+      font-family: var(--font-display);
+      font-size: 36px;
+      letter-spacing: 3px;
+      color: var(--white);
+      margin-bottom: 32px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .form-full { grid-column: span 2; }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .form-group label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--dark);
+      border: 1px solid var(--border);
+      color: var(--white);
+      padding: 14px 18px;
+      font-size: 14px;
+      font-family: var(--font-body);
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--gold); }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+    .form-group select option { background: var(--dark); }
+    .form-submit { margin-top: 24px; }
+
+    /* ── INSTAGRAM STRIP ── */
+    .ig-strip {
+      background: var(--off-black);
+      padding: 80px 0;
+    }
+    .ig-strip-inner {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .ig-handles {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .ig-handle-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--white);
+      border: 1px solid var(--border);
+      padding: 16px 28px;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .ig-handle-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .ig-handle-btn svg { width: 20px; height: 20px; fill: currentColor; }
+    .ig-handle-btn span { font-size: 13px; letter-spacing: 2px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--black);
+      border-top: 1px solid var(--border);
+      padding: 60px 0 40px;
+    }
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 24px;
+      letter-spacing: 5px;
+      color: var(--white);
+    }
+    .footer-logo span { color: var(--gold); }
+    .footer-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+    .footer-links a {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-copy {
+      width: 100%;
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 2px;
+    }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.95);
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox.active { display: flex; }
+    .lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+    .lightbox-close {
+      position: absolute;
+      top: 24px;
+      right: 32px;
+      font-size: 32px;
+      color: var(--white);
+      cursor: pointer;
+      font-weight: 300;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    .lightbox-close:hover { color: var(--gold); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 900px) {
+      nav { padding: 20px 24px; }
+      nav.scrolled { padding: 14px 24px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .about-grid { grid-template-columns: 1fr; gap: 40px; }
+      .about-img-wrap { order: -1; }
+      .services-grid { grid-template-columns: 1fr; }
+      .booking-inner { grid-template-columns: 1fr; gap: 48px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-full { grid-column: span 1; }
+      .g1 { grid-column: span 12; min-height: 360px; }
+      .g2,.g3,.g4,.g5 { grid-column: span 6; }
+      .g6,.g7,.g8 { grid-column: span 12; }
+      .footer-inner { justify-content: center; text-align: center; }
+      .footer-links { justify-content: center; }
+      .booking-section::before { font-size: 160px; }
+      .about-stats { gap: 24px; }
+    }
+    @media (max-width: 600px) {
+      .container { padding: 0 20px; }
+      section { padding: 80px 0; }
+      .g2,.g3,.g4,.g5 { grid-column: span 12; }
+      .hero-actions { flex-direction: column; align-items: center; }
+      .btn { padding: 14px 32px; }
+      .ig-handles { flex-direction: column; align-items: center; }
+    }
+
+    /* ── FADE-IN ANIMATION ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <a href="#" class="nav-logo">DEAD<span>KINGS</span></a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#booking" class="nav-cta">Book Now</a></li>
+    </ul>
+    <div class="hamburger" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="home">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-tag fade-up">Est. Los Angeles &nbsp;·&nbsp; Photography &amp; Creative</p>
+      <h1 class="hero-title fade-up">
+        DEAD
+        <span class="accent">KINGS</span>
+      </h1>
+      <p class="hero-sub fade-up">We don't follow trends. We set them in stone.</p>
+      <div class="hero-actions fade-up">
+        <a href="#booking" class="btn btn-primary">Book a Session</a>
+        <a href="#gallery" class="btn btn-secondary">View Work</a>
+      </div>
+    </div>
+    <div class="scroll-hint">Scroll</div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <span>DEAD KINGS CO</span><span class="dot">✦</span>
+      <span>PHOTOGRAPHY</span><span class="dot">✦</span>
+      <span>CREATIVE DIRECTION</span><span class="dot">✦</span>
+      <span>BOOKING OPEN</span><span class="dot">✦</span>
+      <span>LOS ANGELES</span><span class="dot">✦</span>
+      <span>DEAD KINGS CO</span><span class="dot">✦</span>
+      <span>PHOTOGRAPHY</span><span class="dot">✦</span>
+      <span>CREATIVE DIRECTION</span><span class="dot">✦</span>
+      <span>BOOKING OPEN</span><span class="dot">✦</span>
+      <span>LOS ANGELES</span><span class="dot">✦</span>
+      <span>DEAD KINGS CO</span><span class="dot">✦</span>
+      <span>PHOTOGRAPHY</span><span class="dot">✦</span>
+      <span>CREATIVE DIRECTION</span><span class="dot">✦</span>
+      <span>BOOKING OPEN</span><span class="dot">✦</span>
+      <span>LOS ANGELES</span><span class="dot">✦</span>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-img-wrap fade-up">
+          <img class="about-img" src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800&q=80" alt="Dead Kings Co" />
+          <div class="about-img-accent"></div>
+        </div>
+        <div class="about-text fade-up">
+          <p class="section-label">Our Story</p>
+          <h2 class="section-title">Born from<br/>the Streets</h2>
+          <div class="section-divider"></div>
+          <p>Dead Kings Co is a creative collective built on raw energy, authentic storytelling, and a relentless pursuit of the perfect shot. We create imagery that moves — editorial, portrait, streetwear, and lifestyle work that lives beyond the feed.</p>
+          <p>Founded by Harlan Kantner, the brand merges underground culture with high fashion sensibility. Every frame is intentional. Every collaboration is personal.</p>
+          <div class="about-stats">
+            <div>
+              <div class="stat-num">500+</div>
+              <div class="stat-label">Sessions Completed</div>
+            </div>
+            <div>
+              <div class="stat-num">50+</div>
+              <div class="stat-label">Brand Collabs</div>
+            </div>
+            <div>
+              <div class="stat-num">3+</div>
+              <div class="stat-label">Years Active</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section id="gallery" class="gallery-section">
+    <div class="container">
+      <div class="gallery-header">
+        <div>
+          <p class="section-label">The Work</p>
+          <h2 class="section-title">Portfolio</h2>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <a href="https://www.instagram.com/deadkingsco" target="_blank" rel="noopener" class="btn btn-secondary" style="padding:12px 28px">@deadkingsco</a>
+          <a href="https://www.instagram.com/harlankantner" target="_blank" rel="noopener" class="btn btn-secondary" style="padding:12px 28px">@harlankantner</a>
+        </div>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="g-item g1" onclick="openLight(this)">
+          <img src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=900&q=80" alt="Gallery" />
+          <div class="g-item-overlay"><span class="ig-handle">@deadkingsco</span></div>
+        </div>
+        <div class="g-item g2" onclick="openLight(this)">
+          <img src="https://images.unsplash.com/photo-1534126511673-b6899657816a?w=700&q=80" alt="Gallery" />
+          <div class="g-item-overlay"><span class="ig-handle">@harlankantner</span></div>
+        </div>
+        <div class="g-item g3" onclick="openLight(this)">
+          <img src="https://images.unsplash.com/photo-1613685044444-f1b4bbf0b3a8?w=600&q=80" alt="Gallery" />
+          <div class="g-item-overlay"><span class="ig-handle">@deadkingsco</span></div>
+        </div>
+        <div class="g-item g4" onclick="openLight(this)">
+          <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=700&q=80" alt="Gallery" />
+          <div class="g-item-overlay"><span class="ig-handle">@harlankantner</span></div>
+        </div>
+        <div class="g-item g5" onclick="openLight(this)">
+          <img src="https://images.unsplash.com/photo-1520975954732-35dd22299614?w=600&q=80" alt="Gallery" />
+          <div class="g-item-overlay"><span class="ig-handle">@deadkingsco</span></div>
+        </div>
+        <div class="g-item g6" onclick="openLight(this)">
+          <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=700&q=80" alt="Gallery" />
+          <div class="g-item-overlay"><span class="ig-handle">@deadkingsco</span></div>
+        </div>
+        <div class="g-item g7" onclick="openLight(this)">
+          <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=700&q=80" alt="Gallery" />
+          <div class="g-item-overlay"><span class="ig-handle">@harlankantner</span></div>
+        </div>
+        <div class="g-item g8" onclick="openLight(this)">
+          <img src="https://images.unsplash.com/photo-1536766768598-e09213fdcf22?w=700&q=80" alt="Gallery" />
+          <div class="g-item-overlay"><span class="ig-handle">@deadkingsco</span></div>
+        </div>
+      </div>
+
+      <div class="gallery-footer">
+        <a href="https://www.instagram.com/deadkingsco" target="_blank" rel="noopener" class="btn btn-secondary">See More on Instagram →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="container">
+      <div class="fade-up" style="text-align:center;max-width:600px;margin:0 auto 60px;">
+        <p class="section-label">What We Do</p>
+        <h2 class="section-title">Creative<br/>Services</h2>
+        <div class="section-divider" style="margin:24px auto;"></div>
+      </div>
+      <div class="services-grid">
+        <div class="service-card fade-up">
+          <span class="service-icon">📸</span>
+          <h3>Portrait Sessions</h3>
+          <p>Individual and editorial portraits with a moody, intentional aesthetic. Studio or location — we craft your visual identity.</p>
+        </div>
+        <div class="service-card fade-up">
+          <span class="service-icon">👗</span>
+          <h3>Streetwear &amp; Brand</h3>
+          <p>Product and lookbook photography for clothing brands and creatives. We understand the culture — your drops deserve it.</p>
+        </div>
+        <div class="service-card fade-up">
+          <span class="service-icon">🎬</span>
+          <h3>Creative Direction</h3>
+          <p>End-to-end creative concepting, set design, and art direction for campaigns, releases, and editorial projects.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOOKING -->
+  <section id="booking" class="booking-section">
+    <div class="container">
+      <div class="booking-inner">
+        <div class="booking-text fade-up">
+          <p class="section-label">Work With Us</p>
+          <h2 class="section-title">Let's<br/>Create</h2>
+          <div class="section-divider"></div>
+          <p>Ready to build something legendary? Whether it's a solo portrait session, a full brand campaign, or a creative collab — we want to hear from you. Spots are limited. Don't sleep.</p>
+          <div class="booking-cta-group">
+            <a href="mailto:deadkingsco@gmail.com" class="btn btn-primary btn-full">Email Us Directly</a>
+            <a href="https://www.instagram.com/deadkingsco" target="_blank" rel="noopener" class="btn btn-secondary btn-full">DM on Instagram</a>
+          </div>
+        </div>
+        <div class="booking-options fade-up">
+          <a href="#contact-form" class="booking-card">
+            <div class="booking-card-info">
+              <h4>Portrait Session</h4>
+              <p>1–2 hours · Studio or Location</p>
+            </div>
+            <div class="booking-arrow">→</div>
+          </a>
+          <a href="#contact-form" class="booking-card">
+            <div class="booking-card-info">
+              <h4>Brand Lookbook</h4>
+              <p>Half or Full Day · Multiple Looks</p>
+            </div>
+            <div class="booking-arrow">→</div>
+          </a>
+          <a href="#contact-form" class="booking-card">
+            <div class="booking-card-info">
+              <h4>Creative Campaign</h4>
+              <p>Full Production · Art Direction Included</p>
+            </div>
+            <div class="booking-arrow">→</div>
+          </a>
+          <a href="#contact-form" class="booking-card">
+            <div class="booking-card-info">
+              <h4>Custom Inquiry</h4>
+              <p>Let's Talk About Your Vision</p>
+            </div>
+            <div class="booking-arrow">→</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- CONTACT FORM -->
+      <div class="booking-form-wrap fade-up" id="contact-form">
+        <div class="form-title">Send an Inquiry</div>
+        <form onsubmit="handleSubmit(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" placeholder="Your first name" required />
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" placeholder="Your last name" required />
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" placeholder="your@email.com" required />
+            </div>
+            <div class="form-group">
+              <label>Instagram Handle</label>
+              <input type="text" placeholder="@yourhandle" />
+            </div>
+            <div class="form-group">
+              <label>Service Type</label>
+              <select required>
+                <option value="" disabled selected>Select a service...</option>
+                <option>Portrait Session</option>
+                <option>Brand Lookbook</option>
+                <option>Creative Campaign</option>
+                <option>Streetwear / Product</option>
+                <option>Custom Inquiry</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Preferred Date</label>
+              <input type="date" />
+            </div>
+            <div class="form-group form-full">
+              <label>Tell Us About Your Project</label>
+              <textarea placeholder="Describe your vision, mood references, location ideas, budget range..." required></textarea>
+            </div>
+          </div>
+          <div class="form-submit">
+            <button type="submit" class="btn btn-primary" style="min-width:220px">Submit Inquiry</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- IG STRIP -->
+  <div class="ig-strip">
+    <div class="container">
+      <div class="ig-strip-inner">
+        <p class="section-label">Follow the Journey</p>
+        <h2 class="section-title" style="margin-bottom:40px;">On Instagram</h2>
+        <div class="ig-handles">
+          <a href="https://www.instagram.com/deadkingsco" target="_blank" rel="noopener" class="ig-handle-btn">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            <span>@deadkingsco</span>
+          </a>
+          <a href="https://www.instagram.com/harlankantner" target="_blank" rel="noopener" class="ig-handle-btn">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            <span>@harlankantner</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-logo">DEAD<span>KINGS</span> CO</div>
+        <ul class="footer-links">
+          <li><a href="#about">About</a></li>
+          <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#booking">Book</a></li>
+        </ul>
+        <div style="display:flex;gap:16px;">
+          <a href="https://www.instagram.com/deadkingsco" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:2px;transition:color 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">IG</a>
+        </div>
+      </div>
+      <div class="footer-copy">© 2026 Dead Kings Co · All Rights Reserved · Los Angeles, CA</div>
+    </div>
+  </footer>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="closeLight()">
+    <span class="lightbox-close" onclick="closeLight()">×</span>
+    <img id="lightbox-img" src="" alt="" />
+  </div>
+
+  <script>
+    // Nav scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // Intersection observer for fade-up
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // Lightbox
+    function openLight(el) {
+      const img = el.querySelector('img');
+      document.getElementById('lightbox-img').src = img.src;
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLight() {
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLight(); });
+
+    // Mobile nav
+    function toggleNav() {
+      const links = document.querySelector('.nav-links');
+      links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+      links.style.flexDirection = 'column';
+      links.style.position = 'absolute';
+      links.style.top = '70px';
+      links.style.left = '0';
+      links.style.right = '0';
+      links.style.background = 'rgba(5,5,5,0.98)';
+      links.style.padding = '24px 32px';
+      links.style.borderBottom = '1px solid #222';
+    }
+
+    // Form submit
+    function handleSubmit(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('[type=submit]');
+      btn.textContent = 'Inquiry Sent ✓';
+      btn.style.background = '#2a6a3a';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.textContent = 'Submit Inquiry';
+        btn.style.background = '';
+        btn.disabled = false;
+        e.target.reset();
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
