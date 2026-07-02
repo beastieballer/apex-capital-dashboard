@@ -1,10 +1,286 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="refresh" content="0; url=apex-dashboard.html">
-  <title>Apex Capital Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX CAPITAL v5 — 24-Month Growth Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020810;--p1:#060e1c;--p2:#0a1428;--p3:#0e1c35;
+  --b1:rgba(0,200,255,0.1);--b2:rgba(0,200,255,0.22);
+  --a1:#00d4ff;--a2:#00ffb3;--a3:#ff6b35;--a4:#b94dff;
+  --gold:#ffc832;--red:#ff3d5a;--pink:#ff3fa0;--teal:#3cf0ff;--lime:#8fff5a;
+  --text:#d8eeff;--m1:#3d6080;--m2:#6a90aa;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,0.022) 1px,transparent 1px);background-size:54px 54px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;top:-40%;left:-40%;width:180%;height:180%;background:radial-gradient(ellipse at 12% 22%,rgba(0,200,255,0.05) 0%,transparent 50%),radial-gradient(ellipse at 88% 78%,rgba(185,77,255,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
+.w{position:relative;z-index:1;max-width:1800px;margin:0 auto;padding:0 22px 80px;}
+header{padding:24px 0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b1);margin-bottom:20px;}
+.logo{display:flex;align-items:center;gap:13px;}
+.logo-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--a1),var(--a2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;animation:lp 3s ease-in-out infinite;}
+@keyframes lp{0%,100%{box-shadow:0 0 20px rgba(0,212,255,0.35)}50%{box-shadow:0 0 44px rgba(0,212,255,0.62),0 0 66px rgba(0,255,179,0.15)}}
+.logo-text{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:6px;background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--m1);letter-spacing:3px;margin-top:2px;}
+.version{font-family:'DM Mono',monospace;font-size:10px;color:var(--m2);border:1px solid var(--b1);padding:4px 12px;border-radius:5px;}
+
+.verdict{background:linear-gradient(135deg,rgba(0,212,255,0.07),rgba(0,255,179,0.04));border:1px solid rgba(0,255,179,0.2);border-radius:12px;padding:16px 22px;margin-bottom:22px;position:relative;}
+.verdict::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--a1),var(--a2));border-radius:3px 0 0 3px;}
+.v-lbl{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;color:var(--a2);margin-bottom:6px;}
+.v-body{font-size:13px;line-height:1.85;color:#88b2ca;}
+.v-body strong{color:var(--a1);}
+
+.sectors-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+.sector-card{background:var(--p1);border:1px solid var(--b1);border-radius:12px;padding:18px;position:relative;overflow:hidden;cursor:pointer;transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s;}
+.sector-card:hover{transform:translateY(-3px);box-shadow:0 0 24px color-mix(in srgb,var(--sc,var(--a1)) 15%,transparent);}
+.sector-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--sc,var(--a1));}
+.sc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.sc-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--sc,var(--a1));}
+.sc-badge{font-family:'DM Mono',monospace;font-size:9px;padding:3px 10px;border-radius:4px;border:1px solid var(--sc,var(--a1));color:var(--sc,var(--a1));}
+.sc-rationale{font-size:11px;color:var(--m2);line-height:1.6;margin-bottom:12px;font-style:italic;}
+.sc-stocks{display:flex;flex-direction:column;gap:5px;}
+.stock-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:5px;transition:background 0.2s;font-size:12px;}
+.stock-row:hover{background:rgba(0,212,255,0.05);}
+.stock-sym{font-family:'DM Mono',monospace;font-weight:600;color:var(--sc,var(--a1));width:50px;}
+.stock-name{flex:1;font-size:11px;color:var(--text);}
+.stock-thesis{font-size:10px;color:var(--m2);text-align:right;}
+
+.s1{--sc:var(--a1);} .s2{--sc:var(--a2);} .s3{--sc:var(--a4);}
+.s4{--sc:var(--a3);} .s5{--sc:var(--gold);} .s6{--sc:var(--pink);}
+.s7{--sc:var(--teal);}
+
+.allocation-bar{background:var(--p2);border:1px solid var(--b2);border-radius:12px;padding:18px 22px;margin-bottom:22px;}
+.ab-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:var(--a1);margin-bottom:14px;}
+.ab-grid{display:flex;gap:8px;height:32px;border-radius:6px;overflow:hidden;}
+.ab-seg{height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:#020810;font-weight:600;transition:flex 0.4s;}
+.ab-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;}
+.ab-item{display:flex;align-items:center;gap:6px;font-size:11px;}
+.ab-dot{width:10px;height:10px;border-radius:3px;}
+
+.quick-math{background:linear-gradient(135deg,var(--p1),var(--p2));border:1px solid var(--b2);border-radius:12px;padding:18px 22px;margin-bottom:22px;}
+.qm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.qm-card{background:rgba(0,0,0,0.3);border:1px solid var(--b1);border-radius:9px;padding:14px 16px;}
+.qm-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--m1);text-transform:uppercase;margin-bottom:4px;}
+.qm-v{font-family:'Bebas Neue',sans-serif;font-size:26px;line-height:1;}
+.qm-s{font-size:9.5px;color:var(--m2);margin-top:2px;}
+
+.notes{background:var(--p1);border:1px solid var(--b1);border-radius:12px;padding:18px 22px;}
+.notes-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:var(--gold);margin-bottom:12px;}
+.notes-list{list-style:none;}
+.notes-list li{font-size:12px;color:var(--m2);padding:5px 0;border-bottom:1px solid var(--b1);line-height:1.7;}
+.notes-list li:last-child{border-bottom:none;}
+.notes-list li strong{color:var(--a1);}
+
+footer{padding:16px 0;border-top:1px solid var(--b1);margin-top:22px;display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;color:var(--m1);}
+</style>
 </head>
 <body>
-  <p>Redirecting to <a href="apex-dashboard.html">Apex Capital Dashboard</a>...</p>
+<div class="w">
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">▲</div>
+    <div>
+      <div class="logo-text">APEX CAPITAL</div>
+      <div class="logo-sub">24-MONTH GROWTH PORTFOLIO · V5</div>
+    </div>
+  </div>
+  <div class="version">JULY 2026 — JULY 2028</div>
+</header>
+
+<div class="verdict">
+  <div class="v-lbl">▸ INVESTMENT THESIS</div>
+  <div class="v-body">
+    <strong>6 sectors. 60 stocks. $100,000 equally allocated.</strong> This portfolio is built for the 2026–2028 window: the AI infrastructure buildout accelerates, nuclear energy becomes the bottleneck that matters most, humanoid robots begin real commercial deployment, and the <strong>space economy</strong> enters its exponential phase. Cybersecurity and clean energy are cut — they failed the 6-month test. <strong>Space is the dark horse.</strong> Equal-weight sector allocation ($16,667/sector) with $1,667 per stock.
+  </div>
+</div>
+
+<div class="allocation-bar">
+  <div class="ab-title">◈ CAPITAL ALLOCATION — $100,000</div>
+  <div class="ab-grid">
+    <div class="ab-seg" style="flex:20;background:var(--a1);">SEMI 20%</div>
+    <div class="ab-seg" style="flex:20;background:var(--a2);">NUC 20%</div>
+    <div class="ab-seg" style="flex:20;background:var(--a3);">ROBO 15%</div>
+    <div class="ab-seg" style="flex:20;background:var(--a4);">AI 20%</div>
+    <div class="ab-seg" style="flex:15;background:var(--gold);">SPACE 15%</div>
+    <div class="ab-seg" style="flex:10;background:var(--pink);">BIO 10%</div>
+  </div>
+  <div class="ab-legend">
+    <div class="ab-item"><div class="ab-dot" style="background:var(--a1);"></div>Semiconductors — $20,000</div>
+    <div class="ab-item"><div class="ab-dot" style="background:var(--a2);"></div>Nuclear / AI Energy — $20,000</div>
+    <div class="ab-item"><div class="ab-dot" style="background:var(--a3);"></div>Robotics — $15,000</div>
+    <div class="ab-item"><div class="ab-dot" style="background:var(--a4);"></div>AI Infrastructure — $20,000</div>
+    <div class="ab-item"><div class="ab-dot" style="background:var(--gold);"></div>🆕 Space Economy — $15,000</div>
+    <div class="ab-item"><div class="ab-dot" style="background:var(--pink);"></div>Biotech (Satellite) — $10,000</div>
+  </div>
+</div>
+
+<div class="quick-math">
+  <div class="qm-grid">
+    <div class="qm-card">
+      <div class="qm-l">Total Stocks</div>
+      <div class="qm-v" style="color:var(--a1);">60</div>
+      <div class="qm-s">Across 6 sectors</div>
+    </div>
+    <div class="qm-card">
+      <div class="qm-l">Per Stock</div>
+      <div class="qm-v" style="color:var(--a2);">~$1,667</div>
+      <div class="qm-s">Equal weight within sector</div>
+    </div>
+    <div class="qm-card">
+      <div class="qm-l">24-Month Target</div>
+      <div class="qm-v" style="color:var(--gold);">+85–140%</div>
+      <div class="qm-s">Blended sector projection</div>
+    </div>
+    <div class="qm-card">
+      <div class="qm-l">Portfolio Beta</div>
+      <div class="qm-v" style="color:var(--a3);">~1.6</div>
+      <div class="qm-s">High growth, high volatility</div>
+    </div>
+  </div>
+</div>
+
+<div class="sectors-grid">
+
+  <!-- SEMICONDUCTORS -->
+  <div class="sector-card s1">
+    <div class="sc-header"><span class="sc-name">Semiconductors</span><span class="sc-badge">20% · $20K</span></div>
+    <div class="sc-rationale">The picks-and-shovels of the AI industrial revolution. TSMC's 2nm node, NVIDIA's Rubin architecture, and HBM4 memory will drive the next leg. Equipment makers (ASML, AMAT, LRCX) are the monopoly suppliers.</div>
+    <div class="sc-stocks">
+      <div class="stock-row"><span class="stock-sym">NVDA</span><span class="stock-name">NVIDIA — AI GPU monopoly</span><span class="stock-thesis">Rubin 2026</span></div>
+      <div class="stock-row"><span class="stock-sym">AVGO</span><span class="stock-name">Broadcom — Custom AI chips + networking</span><span class="stock-thesis">TPU/ASIC boom</span></div>
+      <div class="stock-row"><span class="stock-sym">TSM</span><span class="stock-name">TSMC — Only 2nm fab on Earth</span><span class="stock-thesis">Monopoly pricing</span></div>
+      <div class="stock-row"><span class="stock-sym">AMD</span><span class="stock-name">AMD — MI400 challenges NVIDIA</span><span class="stock-thesis">Datacenter GPU</span></div>
+      <div class="stock-row"><span class="stock-sym">ASML</span><span class="stock-name">ASML — Only EUV lithography</span><span class="stock-thesis">Priced per wafer</span></div>
+      <div class="stock-row"><span class="stock-sym">AMAT</span><span class="stock-name">Applied Materials — Fab equipment</span><span class="stock-thesis">Capex supercycle</span></div>
+      <div class="stock-row"><span class="stock-sym">LRCX</span><span class="stock-name">Lam Research — Etch leader</span><span class="stock-thesis">3D NAND + logic</span></div>
+      <div class="stock-row"><span class="stock-sym">MRVL</span><span class="stock-name">Marvell — Data infrastructure</span><span class="stock-thesis">Custom ASIC wins</span></div>
+      <div class="stock-row"><span class="stock-sym">MU</span><span class="stock-name">Micron — HBM memory for AI</span><span class="stock-thesis">HBM4 cycle</span></div>
+      <div class="stock-row"><span class="stock-sym">INTC</span><span class="stock-name">Intel — Turnaround / 18A node</span><span class="stock-thesis">Foundry play</span></div>
+    </div>
+  </div>
+
+  <!-- NUCLEAR / AI ENERGY -->
+  <div class="sector-card s2">
+    <div class="sc-header"><span class="sc-name">Nuclear / AI Energy</span><span class="sc-badge">20% · $20K</span></div>
+    <div class="sc-rationale">Data centers need 5–10GW each. Grid permitting takes 5–10 years. Nuclear is the only zero-carbon baseload answer. Fusion just cleared regulatory hurdles. SMRs are going from paper to steel. This is the decade's infrastructure trade.</div>
+    <div class="sc-stocks">
+      <div class="stock-row"><span class="stock-sym">CEG</span><span class="stock-name">Constellation Energy — Nuclear PPA leader</span><span class="stock-thesis">Meta/MSFT deals</span></div>
+      <div class="stock-row"><span class="stock-sym">GEV</span><span class="stock-name">GE Vernova — Gas + nuclear turbines</span><span class="stock-thesis">Data center demand</span></div>
+      <div class="stock-row"><span class="stock-sym">VST</span><span class="stock-name">Vistra — Nuclear + gas fleet</span><span class="stock-thesis">Capacity expansion</span></div>
+      <div class="stock-row"><span class="stock-sym">TLN</span><span class="stock-name">Talen Energy — Data center campus</span><span class="stock-thesis">AWS campus deal</span></div>
+      <div class="stock-row"><span class="stock-sym">OKLO</span><span class="stock-name">Oklo — SMR nuclear (Altman-backed)</span><span class="stock-thesis">First SMR 2027</span></div>
+      <div class="stock-row"><span class="stock-sym">BE</span><span class="stock-name">Bloom Energy — Fuel cells for AI</span><span class="stock-thesis">On-site power</span></div>
+      <div class="stock-row"><span class="stock-sym">MTZ</span><span class="stock-name">MasTec — Energy infrastructure</span><span class="stock-thesis">Buildout beneficiary</span></div>
+      <div class="stock-row"><span class="stock-sym">NNE</span><span class="stock-name">Nano Nuclear — Microreactors</span><span class="stock-thesis">Portable nuclear</span></div>
+      <div class="stock-row"><span class="stock-sym">CCJ</span><span class="stock-name">Cameco — Uranium mining</span><span class="stock-thesis">Fuel supply chain</span></div>
+      <div class="stock-row"><span class="stock-sym">FLR</span><span class="stock-name">Fluor — Nuclear EPC contractor</span><span class="stock-thesis">SMR construction</span></div>
+    </div>
+  </div>
+
+  <!-- ROBOTICS -->
+  <div class="sector-card s4">
+    <div class="sc-header"><span class="sc-name">Robotics & Physical AI</span><span class="sc-badge">15% · $15K</span></div>
+    <div class="sc-rationale">Humanoid robots are having their ChatGPT moment. Unitree ships at $4,900. Tesla Optimus enters production. 140+ humanoid companies in China. The software layer (robot foundation models) will be the value capture. Physical labor → near-zero cost is a 10-year arc; we're in year 2.</div>
+    <div class="sc-stocks">
+      <div class="stock-row"><span class="stock-sym">TSLA</span><span class="stock-name">Tesla — Optimus humanoid</span><span class="stock-thesis">Internal deployment</span></div>
+      <div class="stock-row"><span class="stock-sym">ISRG</span><span class="stock-name">Intuitive Surgical — da Vinci</span><span class="stock-thesis">AI-assisted surgery</span></div>
+      <div class="stock-row"><span class="stock-sym">TER</span><span class="stock-name">Teradyne — Robotics + test</span><span class="stock-thesis">Universal Robots</span></div>
+      <div class="stock-row"><span class="stock-sym">NVDA</span><span class="stock-name">NVIDIA — Robot foundation models</span><span class="stock-thesis">GR00T platform</span></div>
+      <div class="stock-row"><span class="stock-sym">KTOS</span><span class="stock-name">Kratos — Autonomous military</span><span class="stock-thesis">Valkyrie drone</span></div>
+      <div class="stock-row"><span class="stock-sym">ABB</span><span class="stock-name">ABB — Industrial robotics</span><span class="stock-thesis">Factory automation</span></div>
+      <div class="stock-row"><span class="stock-sym">CDNS</span><span class="stock-name">Cadence — Robot simulation SW</span><span class="stock-thesis">Digital twins</span></div>
+      <div class="stock-row"><span class="stock-sym">FANUY</span><span class="stock-name">Fanuc — Japanese automation</span><span class="stock-thesis">CNC + robots</span></div>
+      <div class="stock-row"><span class="stock-sym">PATH</span><span class="stock-name">UiPath — Software automation</span><span class="stock-thesis">RPA → Agentic</span></div>
+      <div class="stock-row"><span class="stock-sym">ANDR</span><span class="stock-name">Anduril — Defense autonomy</span><span class="stock-thesis">Watch for IPO</span></div>
+    </div>
+  </div>
+
+  <!-- AI INFRASTRUCTURE -->
+  <div class="sector-card s3">
+    <div class="sc-header"><span class="sc-name">AI Infrastructure</span><span class="sc-badge">20% · $20K</span></div>
+    <div class="sc-rationale">The AI buildout requires compute, networking, cooling, and platforms. Nebius and CoreWeave are the pure-play AI clouds. Palantir owns enterprise AI deployment. Vertiv cools the data centers. The hyperscalers (AMZN, GOOG) provide ballast with upside from their own AI platforms.</div>
+    <div class="sc-stocks">
+      <div class="stock-row"><span class="stock-sym">NVDA</span><span class="stock-name">NVIDIA — The GPU standard</span><span class="stock-thesis">Still the sun</span></div>
+      <div class="stock-row"><span class="stock-sym">NBIS</span><span class="stock-name">Nebius — AI cloud infrastructure</span><span class="stock-thesis">GPU-as-a-service</span></div>
+      <div class="stock-row"><span class="stock-sym">CRWV</span><span class="stock-name">CoreWeave — GPU cloud</span><span class="stock-thesis">Hyperscaler alternative</span></div>
+      <div class="stock-row"><span class="stock-sym">GOOG</span><span class="stock-name">Alphabet — TPU + Gemini</span><span class="stock-thesis">Own silicon</span></div>
+      <div class="stock-row"><span class="stock-sym">AMZN</span><span class="stock-name">Amazon — AWS + Trainium</span><span class="stock-thesis">Cloud monopoly</span></div>
+      <div class="stock-row"><span class="stock-sym">PLTR</span><span class="stock-name">Palantir — Enterprise AI OS</span><span class="stock-thesis">AIP platform</span></div>
+      <div class="stock-row"><span class="stock-sym">VRT</span><span class="stock-name">Vertiv — Data center cooling</span><span class="stock-thesis">Liquid cooling</span></div>
+      <div class="stock-row"><span class="stock-sym">IREN</span><span class="stock-name">Iris Energy — AI compute pivot</span><span class="stock-thesis">BTC → AI</span></div>
+      <div class="stock-row"><span class="stock-sym">ORCL</span><span class="stock-name">Oracle — OCI cloud</span><span class="stock-thesis">AI training deals</span></div>
+      <div class="stock-row"><span class="stock-sym">ANET</span><span class="stock-name">Arista — AI networking</span><span class="stock-thesis">400G/800G switches</span></div>
+    </div>
+  </div>
+
+  <!-- SPACE ECONOMY (DARK HORSE) -->
+  <div class="sector-card s5">
+    <div class="sc-header"><span class="sc-name">🆕 Space Economy</span><span class="sc-badge">15% · $15K</span></div>
+    <div class="sc-rationale">The dark horse. Starship brings launch costs to ~$200/kg. Rocket Lab is cloning the SpaceX playbook (launch + sats + spectrum). Orbital data centers launch in January. Direct-to-phone satellite internet is coming. The space economy is where AI was in 2019 — infrastructure built, cost curves bending, exponential move ahead.</div>
+    <div class="sc-stocks">
+      <div class="stock-row"><span class="stock-sym">RKLB</span><span class="stock-name">Rocket Lab — SpaceX at 1/10th scale</span><span class="stock-thesis">Neutron + Iridium</span></div>
+      <div class="stock-row"><span class="stock-sym">ASTS</span><span class="stock-name">AST SpaceMobile — Phone from space</span><span class="stock-thesis">5G from LEO</span></div>
+      <div class="stock-row"><span class="stock-sym">RDW</span><span class="stock-name">Redwire — Space infrastructure</span><span class="stock-thesis">ISS → commercial</span></div>
+      <div class="stock-row"><span class="stock-sym">PL</span><span class="stock-name">Planet Labs — Earth observation</span><span class="stock-thesis">Daily imagery</span></div>
+      <div class="stock-row"><span class="stock-sym">LUNR</span><span class="stock-name">Intuitive Machines — Lunar</span><span class="stock-thesis">Moon economy</span></div>
+      <div class="stock-row"><span class="stock-sym">BKSY</span><span class="stock-name">BlackSky — Geospatial intel</span><span class="stock-thesis">Defense contracts</span></div>
+      <div class="stock-row"><span class="stock-sym">GSAT</span><span class="stock-name">Globalstar — Apple satellite partner</span><span class="stock-thesis">iPhone SOS</span></div>
+      <div class="stock-row"><span class="stock-sym">SPIR</span><span class="stock-name">Spire Global — Weather + tracking</span><span class="stock-thesis">Maritime/Aviation</span></div>
+      <div class="stock-row"><span class="stock-sym">IRDM</span><span class="stock-name">Iridium — L-band spectrum (RKLB bid)</span><span class="stock-thesis">Acquisition premium</span></div>
+      <div class="stock-row"><span class="stock-sym">VSAT</span><span class="stock-name">Viasat — Satellite broadband</span><span class="stock-thesis">Defense + maritime</span></div>
+    </div>
+  </div>
+
+  <!-- BIOTECH (SATELLITE) -->
+  <div class="sector-card s6">
+    <div class="sc-header"><span class="sc-name">Biotech (Satellite)</span><span class="sc-badge">10% · $10K</span></div>
+    <div class="sc-rationale">Selective biotech exposure. AI-driven drug discovery, liquid biopsy, gene editing. Stock-specific outcomes — index exposure doesn't work here. Focus on platforms with multiple pipeline shots on goal.</div>
+    <div class="sc-stocks">
+      <div class="stock-row"><span class="stock-sym">AMGN</span><span class="stock-name">Amgen — Large cap anchor</span><span class="stock-thesis">Obesity pipeline</span></div>
+      <div class="stock-row"><span class="stock-sym">GH</span><span class="stock-name">Guardant Health — Liquid biopsy</span><span class="stock-thesis">Cancer screening</span></div>
+      <div class="stock-row"><span class="stock-sym">ILMN</span><span class="stock-name">Illumina — Gene sequencing</span><span class="stock-thesis">NovaSeq X</span></div>
+      <div class="stock-row"><span class="stock-sym">VEEV</span><span class="stock-name">Veeva — Life sciences cloud</span><span class="stock-thesis">SaaS moat</span></div>
+      <div class="stock-row"><span class="stock-sym">ALNY</span><span class="stock-name">Alnylam — RNAi therapeutics</span><span class="stock-thesis">Multiple approvals</span></div>
+      <div class="stock-row"><span class="stock-sym">CRSP</span><span class="stock-name">CRISPR Therapeutics — Gene edit</span><span class="stock-thesis">Casgevy revenue</span></div>
+      <div class="stock-row"><span class="stock-sym">MRNA</span><span class="stock-name">Moderna — mRNA platform</span><span class="stock-thesis">Cancer + flu</span></div>
+      <div class="stock-row"><span class="stock-sym">EXAS</span><span class="stock-name">Exact Sciences — Cologuard</span><span class="stock-thesis">Cancer screening</span></div>
+      <div class="stock-row"><span class="stock-sym">NTLA</span><span class="stock-name">Intellia — In-vivo CRISPR</span><span class="stock-thesis">Single-dose cure</span></div>
+      <div class="stock-row"><span class="stock-sym">ISRG</span><span class="stock-name">Intuitive Surgical — Robotic surgery</span><span class="stock-thesis">da Vinci 5</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <div class="notes-title">▸ WHAT GOT CUT (AND WHY)</div>
+  <ul class="notes-list">
+    <li><strong>✂️ Cybersecurity</strong> — +3.9% return is dead money. CRWD -49%, SentinelOne -33%, Zscaler -30%. AI-native security startups are eating the incumbents. This sector is in structural decline, not a dip.</li>
+    <li><strong>✂️ Clean Energy</strong> — Folded into Nuclear which captures the same thesis with 3x the return. Solar/wind pure plays (ENPH, RUN, STEM) can't compete with nuclear's baseload economics for AI data centers.</li>
+    <li><strong>✂️ Quantum (pure plays)</strong> — IONQ, QBTS, RGTI are pre-revenue lottery tickets. Quantum exposure stays via GOOG, IBM, MSFT in other sectors where it's a free option on the megacap.</li>
+    <li><strong>✂️ META / MSFT (trimmed)</strong> — Both underperformed in the AI infra basket. META's open-source strategy is commoditizing its own moat. MSFT is an AI distributor not an AI owner. Replaced with purer plays (VRT, ANET, NBIS, CRWV).</li>
+    <li><strong>⚠️ CYBR (CyberArk)</strong> — Appears to be trading near zero or delisted. $2,500 loss in v4 portfolio. Dropped entirely.</li>
+  </ul>
+</div>
+
+<div class="notes" style="margin-top:14px;">
+  <div class="notes-title">▸ WHY SPACE IS THE DARK HORSE</div>
+  <ul class="notes-list">
+    <li><strong>Launch costs collapsing:</strong> Starship targets ~$200/kg to LEO. Falcon 9 was $2,700/kg a decade ago. At $200/kg, entirely new business models become viable — orbital data centers, space manufacturing, pharmaceutical crystallization in microgravity.</li>
+    <li><strong>Rocket Lab (RKLB) is the closest public comp to early SpaceX:</strong> They now own launch (Electron + Neutron coming), satellite manufacturing, AND spectrum (Iridium acquisition). Peter Beck is cloning the vertical integration playbook at 1/10th the valuation of where SpaceX would trade.</li>
+    <li><strong>Orbital compute is happening now:</strong> StarCloud launches their first orbital data center in January 2026. Philip's thesis from the Moonshots podcast: energy + infrastructure is 30%+ of terrestrial data center cost. In space, cooling is passive, power is solar, and there's no 5-year grid permitting queue.</li>
+    <li><strong>Direct-to-phone satellite:</strong> AST SpaceMobile has a working prototype delivering 5G from low Earth orbit. Starlink is 2 years from direct-to-phone video streaming. The telecom industry is about to get disrupted from above.</li>
+    <li><strong>The timing:</strong> The space economy in 2026 is where AI was in 2019. The infrastructure is built. The cost curves are bending. The exponential hasn't hit yet — but the slope is about to change.</li>
+  </ul>
+</div>
+
+<footer>
+  <span>APEX CAPITAL v5 · 24-Month Growth Portfolio · Built July 2, 2026</span>
+  <span>60 stocks · 6 sectors · Target: +85–140% by July 2028</span>
+</footer>
+
+</div>
 </body>
 </html>
