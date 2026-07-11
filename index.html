@@ -3,80 +3,215 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APEX CAPITAL v5 — 24-Month Growth Portfolio</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<title>APEX CAPITAL — 24-Month Growth Portfolio</title>
+<meta name="description" content="Apex Capital · $100,000 across 6 sectors, 60 stocks, built for the 2026–2028 AI infrastructure, nuclear, robotics and space economy window.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#020810;--p1:#060e1c;--p2:#0a1428;--p3:#0e1c35;
-  --b1:rgba(0,200,255,0.1);--b2:rgba(0,200,255,0.22);
-  --a1:#00d4ff;--a2:#00ffb3;--a3:#ff6b35;--a4:#b94dff;
-  --gold:#ffc832;--red:#ff3d5a;--pink:#ff3fa0;--teal:#3cf0ff;--lime:#8fff5a;
-  --text:#d8eeff;--m1:#3d6080;--m2:#6a90aa;
+  --bg:#050b14; --p1:#0a1220; --p2:#0e192b; --p3:#122036; --glass:rgba(14,25,43,0.6);
+  --b1:rgba(0,209,255,0.12); --b2:rgba(0,209,255,0.26); --b3:rgba(0,209,255,0.45);
+  --a1:#00d4ff; --a2:#00ffb3; --a3:#ff7a45; --a4:#c073ff;
+  --gold:#ffc94d; --red:#ff4d6a; --pink:#ff5cb0; --teal:#3cf0ff; --lime:#a3ff6b;
+  --text:#e7f4ff; --m1:#4a6b88; --m2:#8bb0cc; --m3:#5f88a6;
+  --radius:16px; --radius-sm:10px;
+  --ease:cubic-bezier(.16,.84,.44,1);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,0.022) 1px,transparent 1px);background-size:54px 54px;pointer-events:none;z-index:0;}
-body::after{content:'';position:fixed;top:-40%;left:-40%;width:180%;height:180%;background:radial-gradient(ellipse at 12% 22%,rgba(0,200,255,0.05) 0%,transparent 50%),radial-gradient(ellipse at 88% 78%,rgba(185,77,255,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
-.w{position:relative;z-index:1;max-width:1800px;margin:0 auto;padding:0 22px 80px;}
-header{padding:24px 0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b1);margin-bottom:20px;}
-.logo{display:flex;align-items:center;gap:13px;}
-.logo-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--a1),var(--a2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;animation:lp 3s ease-in-out infinite;}
-@keyframes lp{0%,100%{box-shadow:0 0 20px rgba(0,212,255,0.35)}50%{box-shadow:0 0 44px rgba(0,212,255,0.62),0 0 66px rgba(0,255,179,0.15)}}
-.logo-text{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:6px;background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.logo-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--m1);letter-spacing:3px;margin-top:2px;}
-.version{font-family:'DM Mono',monospace;font-size:10px;color:var(--m2);border:1px solid var(--b1);padding:4px 12px;border-radius:5px;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,209,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,209,255,0.02) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;z-index:0;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 40%,transparent 100%);}
+body::after{content:'';position:fixed;top:-40%;left:-40%;width:180%;height:180%;background:radial-gradient(ellipse at 14% 18%,rgba(0,209,255,0.07) 0%,transparent 45%),radial-gradient(ellipse at 86% 82%,rgba(192,115,255,0.05) 0%,transparent 45%),radial-gradient(ellipse at 50% 100%,rgba(0,255,179,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;animation:drift 26s ease-in-out infinite alternate;}
+@keyframes drift{0%{transform:translate(0,0)}100%{transform:translate(24px,-16px)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important;}}
+.w{position:relative;z-index:1;max-width:1760px;margin:0 auto;padding:0 24px 90px;}
+::selection{background:rgba(0,212,255,0.3);color:#fff;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:var(--p1);}
+::-webkit-scrollbar-thumb{background:var(--p3);border-radius:6px;}
+::-webkit-scrollbar-thumb:hover{background:var(--b3);}
+a{color:inherit;}
+button{font-family:inherit;}
 
-.verdict{background:linear-gradient(135deg,rgba(0,212,255,0.07),rgba(0,255,179,0.04));border:1px solid rgba(0,255,179,0.2);border-radius:12px;padding:16px 22px;margin-bottom:22px;position:relative;}
-.verdict::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--a1),var(--a2));border-radius:3px 0 0 3px;}
-.v-lbl{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;color:var(--a2);margin-bottom:6px;}
-.v-body{font-size:13px;line-height:1.85;color:#88b2ca;}
-.v-body strong{color:var(--a1);}
+/* ── TICKER ── */
+#tickerWrap{position:sticky;top:0;z-index:200;background:rgba(5,11,20,0.85);border-bottom:1px solid var(--b2);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);overflow:hidden;height:36px;display:flex;align-items:center;}
+#tickerInner{display:flex;align-items:center;white-space:nowrap;animation:scroll 100s linear infinite;will-change:transform;}
+#tickerInner:hover{animation-play-state:paused;}
+.ti{display:inline-flex;align-items:center;gap:7px;padding:0 18px;font-family:'DM Mono',monospace;font-size:11px;border-right:1px solid var(--b1);}
+.ti-sym{color:var(--a1);font-weight:500;cursor:pointer;transition:color .15s;}
+.ti-sym:hover{color:var(--a2);}
+.ti-name{color:var(--m1);font-size:9.5px;}
+.ti-price{color:var(--text);}
+.ti-up{color:var(--a2);}.ti-dn{color:var(--red);}
+@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-.sectors-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
-.sector-card{background:var(--p1);border:1px solid var(--b1);border-radius:12px;padding:18px;position:relative;overflow:hidden;cursor:pointer;transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s;}
-.sector-card:hover{transform:translateY(-3px);box-shadow:0 0 24px color-mix(in srgb,var(--sc,var(--a1)) 15%,transparent);}
-.sector-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--sc,var(--a1));}
+/* ── NAV ── */
+#navWrap{position:sticky;top:36px;z-index:190;background:rgba(5,11,20,0.72);border-bottom:1px solid var(--b1);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
+.nav{max-width:1760px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:10px;overflow-x:auto;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.navpill{flex:none;font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.5px;color:var(--m2);background:var(--p1);border:1px solid var(--b1);padding:6px 14px;border-radius:20px;cursor:pointer;transition:all .2s var(--ease);white-space:nowrap;}
+.navpill:hover{border-color:var(--nc,var(--a1));color:var(--nc,var(--a1));}
+.navpill.active{background:color-mix(in srgb,var(--nc,var(--a1)) 16%,transparent);border-color:var(--nc,var(--a1));color:var(--nc,var(--a1));}
+.navsearch{flex:none;margin-left:auto;position:relative;}
+.navsearch input{width:200px;background:var(--p1);border:1px solid var(--b1);border-radius:20px;padding:7px 14px 7px 30px;font-size:12px;color:var(--text);font-family:'Outfit',sans-serif;transition:all .2s;}
+.navsearch input:focus{outline:none;border-color:var(--a1);width:240px;}
+.navsearch::before{content:'⌕';position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--m1);font-size:13px;pointer-events:none;}
+
+/* ── HEADER / HERO ── */
+header{padding:34px 0 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--a1),var(--a2));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#020810;font-weight:900;animation:pulseglow 3.2s ease-in-out infinite;flex:none;}
+@keyframes pulseglow{0%,100%{box-shadow:0 0 22px rgba(0,212,255,0.32)}50%{box-shadow:0 0 46px rgba(0,212,255,0.6),0 0 74px rgba(0,255,179,0.18)}}
+.logo-text{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:6px;background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.logo-sub{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--m1);letter-spacing:3px;margin-top:4px;}
+.hdr-r{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.live-badge{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:2px;padding:7px 14px;border-radius:20px;border:1px solid var(--b1);background:var(--p1);}
+.ld{width:7px;height:7px;border-radius:50%;background:var(--m2);animation:bl 1.4s ease-in-out infinite;}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.15}}
+.dtag{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--m2);border:1px solid var(--b1);padding:7px 14px;border-radius:20px;background:var(--p1);}
+
+/* ── VERDICT / HERO STATEMENT ── */
+.verdict{background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(0,255,179,0.03));border:1px solid rgba(0,255,179,0.22);border-radius:var(--radius);padding:22px 26px;margin-bottom:22px;position:relative;overflow:hidden;}
+.verdict::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--a1),var(--a2));}
+.v-lbl{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:5px;color:var(--a2);margin-bottom:8px;}
+.v-body{font-size:14px;line-height:1.85;color:var(--m2);max-width:1100px;}
+.v-body strong{color:var(--a1);font-weight:600;}
+
+/* ── PORTFOLIO TRACKER ── */
+#tracker{background:linear-gradient(135deg,var(--p1),var(--p2));border:1px solid var(--b2);border-radius:18px;padding:22px 26px;margin-bottom:22px;position:relative;overflow:hidden;}
+#tracker::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(0,212,255,0.05),transparent 40%,rgba(0,255,179,0.03));pointer-events:none;}
+.tr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;position:relative;}
+.tr-info{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.tr-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--a1);}
+.tr-sub{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--m1);letter-spacing:1.2px;margin-top:2px;}
+.dbadge{font-family:'DM Mono',monospace;font-size:10px;background:rgba(0,212,255,0.12);color:var(--a1);border:1px solid rgba(0,212,255,0.3);padding:5px 12px;border-radius:14px;letter-spacing:1px;}
+.rbtn{background:none;border:1px solid var(--b1);color:var(--m2);font-family:'DM Mono',monospace;font-size:9.5px;padding:6px 14px;border-radius:14px;cursor:pointer;letter-spacing:1px;transition:all .2s;}
+.rbtn:hover{border-color:var(--a1);color:var(--a1);}
+.tr-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;position:relative;}
+.tk{background:rgba(0,0,0,0.28);border:1px solid var(--b1);border-radius:12px;padding:13px 15px;transition:border-color .2s;}
+.tk:hover{border-color:var(--b2);}
+.tk-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--m1);text-transform:uppercase;margin-bottom:5px;}
+.tk-v{font-family:'Bebas Neue',sans-serif;font-size:25px;line-height:1;}
+.tk-s{font-size:9.5px;color:var(--m1);margin-top:3px;}
+.cc{color:var(--a1);}.cg{color:var(--a2);}.co{color:var(--gold);}.cp{color:var(--a4);}.cr{color:var(--red);}.cw{color:var(--a3);}
+.rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;position:relative;}
+.rp{background:rgba(0,0,0,0.22);border:1px solid var(--b1);border-radius:12px;padding:15px 16px;}
+.rp-t{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:1.5px;color:var(--m2);text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--b1);display:flex;justify-content:space-between;}
+.rrow{display:flex;align-items:center;gap:9px;padding:5px 7px;border-radius:7px;transition:background .15s;cursor:pointer;}
+.rrow:hover{background:rgba(0,212,255,0.06);}
+.rn{font-family:'Bebas Neue',sans-serif;font-size:15px;width:20px;text-align:center;color:var(--m1);}
+.rname{font-size:11.5px;font-weight:600;flex:1;}
+.rval{font-family:'DM Mono',monospace;font-size:11.5px;}
+
+/* ── ALLOCATION + QUICK MATH ── */
+.grid-2{display:grid;grid-template-columns:1.1fr 1.4fr;gap:16px;margin-bottom:22px;}
+.panel{background:var(--p1);border:1px solid var(--b1);border-radius:var(--radius);padding:22px 24px;}
+.panel-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;color:var(--a1);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.donut-wrap{position:relative;display:flex;align-items:center;justify-content:center;height:210px;}
+.donut-center{position:absolute;text-align:center;pointer-events:none;}
+.donut-center .dv{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--text);line-height:1;}
+.donut-center .dl{font-family:'DM Mono',monospace;font-size:9px;color:var(--m1);letter-spacing:2px;margin-top:4px;}
+.ab-legend{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:16px;}
+.ab-item{display:flex;align-items:center;gap:8px;font-size:11.5px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:background .15s;}
+.ab-item:hover{background:rgba(0,212,255,0.05);}
+.ab-dot{width:10px;height:10px;border-radius:3px;flex:none;}
+.ab-name{flex:1;color:var(--text);}
+.ab-amt{font-family:'DM Mono',monospace;color:var(--m2);font-size:10.5px;}
+.qm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.qm-card{background:rgba(0,0,0,0.25);border:1px solid var(--b1);border-radius:12px;padding:16px 18px;transition:transform .2s,border-color .2s;}
+.qm-card:hover{transform:translateY(-2px);border-color:var(--b2);}
+.qm-l{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:1.5px;color:var(--m1);text-transform:uppercase;margin-bottom:6px;}
+.qm-v{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1;}
+.qm-s{font-size:10px;color:var(--m1);margin-top:4px;}
+
+/* ── SECTOR CARDS ── */
+.section-hd{display:flex;align-items:baseline;justify-content:space-between;margin:30px 0 16px;flex-wrap:wrap;gap:10px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:var(--text);}
+.section-note{font-size:11.5px;color:var(--m1);font-family:'DM Mono',monospace;}
+.sectors-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.sector-card{background:var(--p1);border:1px solid var(--b1);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;cursor:pointer;transition:transform .25s var(--ease),border-color .25s,box-shadow .25s;opacity:0;transform:translateY(18px);animation:cardin .55s var(--ease) forwards;}
+.sector-card:nth-child(1){animation-delay:.03s}.sector-card:nth-child(2){animation-delay:.08s}.sector-card:nth-child(3){animation-delay:.13s}.sector-card:nth-child(4){animation-delay:.18s}.sector-card:nth-child(5){animation-delay:.23s}.sector-card:nth-child(6){animation-delay:.28s}
+@keyframes cardin{to{opacity:1;transform:translateY(0)}}
+.sector-card:hover,.sector-card.active{transform:translateY(-4px);box-shadow:0 12px 32px -8px color-mix(in srgb,var(--sc,var(--a1)) 30%,transparent);border-color:color-mix(in srgb,var(--sc,var(--a1)) 55%,var(--b1));}
+.sector-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--sc,var(--a1)),transparent);}
 .sc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.sc-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--sc,var(--a1));}
-.sc-badge{font-family:'DM Mono',monospace;font-size:9px;padding:3px 10px;border-radius:4px;border:1px solid var(--sc,var(--a1));color:var(--sc,var(--a1));}
-.sc-rationale{font-size:11px;color:var(--m2);line-height:1.6;margin-bottom:12px;font-style:italic;}
-.sc-stocks{display:flex;flex-direction:column;gap:5px;}
-.stock-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:5px;transition:background 0.2s;font-size:12px;}
-.stock-row:hover{background:rgba(0,212,255,0.05);}
-.stock-sym{font-family:'DM Mono',monospace;font-weight:600;color:var(--sc,var(--a1));width:50px;}
-.stock-name{flex:1;font-size:11px;color:var(--text);}
-.stock-thesis{font-size:10px;color:var(--m2);text-align:right;}
+.sc-name{font-family:'Bebas Neue',sans-serif;font-size:23px;letter-spacing:2px;color:var(--sc,var(--a1));}
+.sc-badge{font-family:'DM Mono',monospace;font-size:9.5px;padding:4px 11px;border-radius:12px;border:1px solid var(--sc,var(--a1));color:var(--sc,var(--a1));}
+.sc-rationale{font-size:11.5px;color:var(--m2);line-height:1.65;margin-bottom:14px;min-height:74px;}
+.sc-foot{display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--m1);border-top:1px solid var(--b1);padding-top:12px;}
+.sc-perf{font-weight:600;}
+.sc-expand{color:var(--m1);transition:transform .25s;}
+.sector-card.active .sc-expand{transform:rotate(180deg);color:var(--sc,var(--a1));}
 
 .s1{--sc:var(--a1);} .s2{--sc:var(--a2);} .s3{--sc:var(--a4);}
 .s4{--sc:var(--a3);} .s5{--sc:var(--gold);} .s6{--sc:var(--pink);}
-.s7{--sc:var(--teal);}
 
-.allocation-bar{background:var(--p2);border:1px solid var(--b2);border-radius:12px;padding:18px 22px;margin-bottom:22px;}
-.ab-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:var(--a1);margin-bottom:14px;}
-.ab-grid{display:flex;gap:8px;height:32px;border-radius:6px;overflow:hidden;}
-.ab-seg{height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:#020810;font-weight:600;transition:flex 0.4s;}
-.ab-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;}
-.ab-item{display:flex;align-items:center;gap:6px;font-size:11px;}
-.ab-dot{width:10px;height:10px;border-radius:3px;}
+/* ── SECTOR DETAIL PANEL ── */
+#detail{display:none;background:var(--p1);border:1px solid var(--b2);border-radius:var(--radius);margin:16px 0 22px;overflow:hidden;}
+#detail.open{display:block;animation:openp .35s var(--ease);}
+@keyframes openp{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.dt-hd{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--b1);background:linear-gradient(90deg,color-mix(in srgb,var(--dc,var(--a1)) 10%,transparent),transparent);flex-wrap:wrap;gap:10px;}
+.dt-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--dc,var(--a1));}
+.dt-close{background:none;border:1px solid var(--b1);color:var(--m2);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s;}
+.dt-close:hover{border-color:var(--red);color:var(--red);}
+.dt-table-wrap{overflow-x:auto;}
+table.dt-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.dt-table th{text-align:left;font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:1px;color:var(--m1);text-transform:uppercase;padding:10px 22px;border-bottom:1px solid var(--b1);cursor:pointer;white-space:nowrap;user-select:none;}
+.dt-table th:hover{color:var(--a1);}
+.dt-table th.sorted::after{content:' ▾';}
+.dt-table td{padding:11px 22px;border-bottom:1px solid rgba(255,255,255,0.03);}
+.dt-table tr:last-child td{border-bottom:none;}
+.dt-table tr:hover td{background:rgba(0,212,255,0.03);}
+.dt-sym{font-family:'DM Mono',monospace;font-weight:600;color:var(--dc,var(--a1));cursor:pointer;}
+.dt-name{color:var(--m2);}
+.dt-thesis{color:var(--m1);font-size:11px;font-style:italic;}
+.dt-price{font-family:'DM Mono',monospace;}
+.dt-pct{font-family:'DM Mono',monospace;font-weight:600;}
+.dt-alloc{font-family:'DM Mono',monospace;color:var(--m2);}
 
-.quick-math{background:linear-gradient(135deg,var(--p1),var(--p2));border:1px solid var(--b2);border-radius:12px;padding:18px 22px;margin-bottom:22px;}
-.qm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
-.qm-card{background:rgba(0,0,0,0.3);border:1px solid var(--b1);border-radius:9px;padding:14px 16px;}
-.qm-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--m1);text-transform:uppercase;margin-bottom:4px;}
-.qm-v{font-family:'Bebas Neue',sans-serif;font-size:26px;line-height:1;}
-.qm-s{font-size:9.5px;color:var(--m2);margin-top:2px;}
-
-.notes{background:var(--p1);border:1px solid var(--b1);border-radius:12px;padding:18px 22px;}
-.notes-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:var(--gold);margin-bottom:12px;}
+/* ── NOTES ── */
+.notes{background:var(--p1);border:1px solid var(--b1);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;}
+.notes-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:3px;color:var(--gold);margin-bottom:14px;}
 .notes-list{list-style:none;}
-.notes-list li{font-size:12px;color:var(--m2);padding:5px 0;border-bottom:1px solid var(--b1);line-height:1.7;}
+.notes-list li{font-size:12.5px;color:var(--m2);padding:9px 0;border-bottom:1px solid var(--b1);line-height:1.7;}
 .notes-list li:last-child{border-bottom:none;}
 .notes-list li strong{color:var(--a1);}
 
-footer{padding:16px 0;border-top:1px solid var(--b1);margin-top:22px;display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;color:var(--m1);}
+footer{padding:20px 0;border-top:1px solid var(--b1);margin-top:26px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:'DM Mono',monospace;font-size:10.5px;color:var(--m1);}
+footer a{color:var(--m2);text-decoration:none;}
+footer a:hover{color:var(--a1);}
+
+/* ── EMPTY / TOAST ── */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(120%);background:var(--p2);border:1px solid var(--b2);border-radius:12px;padding:12px 20px;font-size:12px;color:var(--text);z-index:300;transition:transform .35s var(--ease);box-shadow:0 8px 30px rgba(0,0,0,0.4);}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+@media (max-width:1100px){
+  .sectors-grid{grid-template-columns:repeat(2,1fr);}
+  .grid-2{grid-template-columns:1fr;}
+  .tr-kpis{grid-template-columns:repeat(3,1fr);}
+  .rank-grid{grid-template-columns:1fr;}
+}
+@media (max-width:680px){
+  .sectors-grid{grid-template-columns:1fr;}
+  .tr-kpis{grid-template-columns:repeat(2,1fr);}
+  .qm-grid{grid-template-columns:1fr;}
+  .logo-text{font-size:28px;letter-spacing:4px;}
+  header{padding:22px 0 16px;}
+  .navsearch input{width:140px;}
+  .navsearch input:focus{width:160px;}
+}
 </style>
 </head>
 <body>
+
+<div id="tickerWrap"><div id="tickerInner"></div></div>
+<div id="navWrap">
+  <div class="nav" id="navPills">
+    <div class="navsearch"><input id="searchInput" type="text" placeholder="Search symbol, name, thesis…" oninput="onSearch(this.value)"></div>
+  </div>
+</div>
+
 <div class="w">
 
 <header>
@@ -84,176 +219,77 @@ footer{padding:16px 0;border-top:1px solid var(--b1);margin-top:22px;display:fle
     <div class="logo-icon">▲</div>
     <div>
       <div class="logo-text">APEX CAPITAL</div>
-      <div class="logo-sub">24-MONTH GROWTH PORTFOLIO · V5</div>
+      <div class="logo-sub">24-MONTH GROWTH PORTFOLIO · V6</div>
     </div>
   </div>
-  <div class="version">JULY 2026 — JULY 2028</div>
+  <div class="hdr-r">
+    <div class="live-badge"><span class="ld" id="liveDot"></span><span id="liveBadge">CONNECTING…</span></div>
+    <div class="dtag" id="dayTag">JULY 2026 — JULY 2028</div>
+  </div>
 </header>
 
 <div class="verdict">
   <div class="v-lbl">▸ INVESTMENT THESIS</div>
   <div class="v-body">
-    <strong>6 sectors. 60 stocks. $100,000 equally allocated.</strong> This portfolio is built for the 2026–2028 window: the AI infrastructure buildout accelerates, nuclear energy becomes the bottleneck that matters most, humanoid robots begin real commercial deployment, and the <strong>space economy</strong> enters its exponential phase. Cybersecurity and clean energy are cut — they failed the 6-month test. <strong>Space is the dark horse.</strong> Equal-weight sector allocation ($16,667/sector) with $1,667 per stock.
+    <strong>6 sectors. 60 stock allocations. $100,000 equally weighted by sector.</strong> Built for the 2026–2028 window: the AI infrastructure buildout accelerates, nuclear energy becomes the bottleneck that matters most, humanoid robots begin real commercial deployment, and the <strong>space economy</strong> enters its exponential phase. Cybersecurity and clean energy were cut — they failed the 6-month test. <strong>Space is the dark horse.</strong> Equal-weight sector allocation with roughly $1,667 per position.
   </div>
 </div>
 
-<div class="allocation-bar">
-  <div class="ab-title">◈ CAPITAL ALLOCATION — $100,000</div>
-  <div class="ab-grid">
-    <div class="ab-seg" style="flex:20;background:var(--a1);">SEMI 20%</div>
-    <div class="ab-seg" style="flex:20;background:var(--a2);">NUC 20%</div>
-    <div class="ab-seg" style="flex:20;background:var(--a3);">ROBO 15%</div>
-    <div class="ab-seg" style="flex:20;background:var(--a4);">AI 20%</div>
-    <div class="ab-seg" style="flex:15;background:var(--gold);">SPACE 15%</div>
-    <div class="ab-seg" style="flex:10;background:var(--pink);">BIO 10%</div>
+<div id="tracker">
+  <div class="tr-top">
+    <div class="tr-info">
+      <div>
+        <div class="tr-title">◈ LIVE PORTFOLIO TRACKER</div>
+        <div class="tr-sub" id="trackerSub">COST BASIS LOCKED ON LOAD</div>
+      </div>
+      <span class="dbadge" id="dayBadge">DAY 1</span>
+    </div>
+    <button class="rbtn" onclick="resetBasis()">↺ RESET COST BASIS</button>
   </div>
-  <div class="ab-legend">
-    <div class="ab-item"><div class="ab-dot" style="background:var(--a1);"></div>Semiconductors — $20,000</div>
-    <div class="ab-item"><div class="ab-dot" style="background:var(--a2);"></div>Nuclear / AI Energy — $20,000</div>
-    <div class="ab-item"><div class="ab-dot" style="background:var(--a3);"></div>Robotics — $15,000</div>
-    <div class="ab-item"><div class="ab-dot" style="background:var(--a4);"></div>AI Infrastructure — $20,000</div>
-    <div class="ab-item"><div class="ab-dot" style="background:var(--gold);"></div>🆕 Space Economy — $15,000</div>
-    <div class="ab-item"><div class="ab-dot" style="background:var(--pink);"></div>Biotech (Satellite) — $10,000</div>
+  <div class="tr-kpis">
+    <div class="tk"><div class="tk-l">Portfolio Value</div><div class="tk-v cc" id="tv">$100,000.00</div><div class="tk-s" id="ttime">—</div></div>
+    <div class="tk"><div class="tk-l">Total P&amp;L</div><div class="tk-v cg" id="tpl">+$0.00</div><div class="tk-s" id="tpct">+0.000% total return</div></div>
+    <div class="tk"><div class="tk-l">Data Mode</div><div class="tk-v cp" id="tmode" style="font-size:18px;">○ Connecting</div><div class="tk-s">Finnhub · sim fallback</div></div>
+    <div class="tk"><div class="tk-l">Best Sector</div><div class="tk-v cg" id="tbs" style="font-size:19px;">—</div><div class="tk-s" id="tbsv">—</div></div>
+    <div class="tk"><div class="tk-l">Weakest Sector</div><div class="tk-v cr" id="tws" style="font-size:19px;">—</div><div class="tk-s" id="twsv">—</div></div>
+    <div class="tk"><div class="tk-l">Top Mover</div><div class="tk-v co" id="tbst" style="font-size:19px;">—</div><div class="tk-s" id="tbstv">—</div></div>
   </div>
-</div>
-
-<div class="quick-math">
-  <div class="qm-grid">
-    <div class="qm-card">
-      <div class="qm-l">Total Stocks</div>
-      <div class="qm-v" style="color:var(--a1);">60</div>
-      <div class="qm-s">Across 6 sectors</div>
-    </div>
-    <div class="qm-card">
-      <div class="qm-l">Per Stock</div>
-      <div class="qm-v" style="color:var(--a2);">~$1,667</div>
-      <div class="qm-s">Equal weight within sector</div>
-    </div>
-    <div class="qm-card">
-      <div class="qm-l">24-Month Target</div>
-      <div class="qm-v" style="color:var(--gold);">+85–140%</div>
-      <div class="qm-s">Blended sector projection</div>
-    </div>
-    <div class="qm-card">
-      <div class="qm-l">Portfolio Beta</div>
-      <div class="qm-v" style="color:var(--a3);">~1.6</div>
-      <div class="qm-s">High growth, high volatility</div>
-    </div>
+  <div class="rank-grid">
+    <div class="rp"><div class="rp-t"><span>▲ Top Gainers</span></div><div id="gainList"></div></div>
+    <div class="rp"><div class="rp-t"><span>▼ Top Laggards</span></div><div id="loseList"></div></div>
   </div>
 </div>
 
-<div class="sectors-grid">
-
-  <!-- SEMICONDUCTORS -->
-  <div class="sector-card s1">
-    <div class="sc-header"><span class="sc-name">Semiconductors</span><span class="sc-badge">20% · $20K</span></div>
-    <div class="sc-rationale">The picks-and-shovels of the AI industrial revolution. TSMC's 2nm node, NVIDIA's Rubin architecture, and HBM4 memory will drive the next leg. Equipment makers (ASML, AMAT, LRCX) are the monopoly suppliers.</div>
-    <div class="sc-stocks">
-      <div class="stock-row"><span class="stock-sym">NVDA</span><span class="stock-name">NVIDIA — AI GPU monopoly</span><span class="stock-thesis">Rubin 2026</span></div>
-      <div class="stock-row"><span class="stock-sym">AVGO</span><span class="stock-name">Broadcom — Custom AI chips + networking</span><span class="stock-thesis">TPU/ASIC boom</span></div>
-      <div class="stock-row"><span class="stock-sym">TSM</span><span class="stock-name">TSMC — Only 2nm fab on Earth</span><span class="stock-thesis">Monopoly pricing</span></div>
-      <div class="stock-row"><span class="stock-sym">AMD</span><span class="stock-name">AMD — MI400 challenges NVIDIA</span><span class="stock-thesis">Datacenter GPU</span></div>
-      <div class="stock-row"><span class="stock-sym">ASML</span><span class="stock-name">ASML — Only EUV lithography</span><span class="stock-thesis">Priced per wafer</span></div>
-      <div class="stock-row"><span class="stock-sym">AMAT</span><span class="stock-name">Applied Materials — Fab equipment</span><span class="stock-thesis">Capex supercycle</span></div>
-      <div class="stock-row"><span class="stock-sym">LRCX</span><span class="stock-name">Lam Research — Etch leader</span><span class="stock-thesis">3D NAND + logic</span></div>
-      <div class="stock-row"><span class="stock-sym">MRVL</span><span class="stock-name">Marvell — Data infrastructure</span><span class="stock-thesis">Custom ASIC wins</span></div>
-      <div class="stock-row"><span class="stock-sym">MU</span><span class="stock-name">Micron — HBM memory for AI</span><span class="stock-thesis">HBM4 cycle</span></div>
-      <div class="stock-row"><span class="stock-sym">INTC</span><span class="stock-name">Intel — Turnaround / 18A node</span><span class="stock-thesis">Foundry play</span></div>
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-title">◈ CAPITAL ALLOCATION</div>
+    <div class="donut-wrap" id="donutWrap">
+      <canvas id="allocChart" width="210" height="210"></canvas>
+      <div class="donut-center"><div class="dv">$100K</div><div class="dl">6 SECTORS</div></div>
+    </div>
+    <div class="ab-legend" id="ab-legend"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">◈ QUICK MATH</div>
+    <div class="qm-grid">
+      <div class="qm-card"><div class="qm-l">Total Positions</div><div class="qm-v" style="color:var(--a1);">60</div><div class="qm-s">Across 6 sectors · 57 unique tickers</div></div>
+      <div class="qm-card"><div class="qm-l">Per Stock</div><div class="qm-v" style="color:var(--a2);">~$1,667</div><div class="qm-s">Equal weight within sector</div></div>
+      <div class="qm-card"><div class="qm-l">24-Month Target</div><div class="qm-v" style="color:var(--gold);">+85–140%</div><div class="qm-s">Blended sector projection</div></div>
+      <div class="qm-card"><div class="qm-l">Portfolio Beta</div><div class="qm-v" style="color:var(--a3);">~1.6</div><div class="qm-s">High growth, high volatility</div></div>
     </div>
   </div>
-
-  <!-- NUCLEAR / AI ENERGY -->
-  <div class="sector-card s2">
-    <div class="sc-header"><span class="sc-name">Nuclear / AI Energy</span><span class="sc-badge">20% · $20K</span></div>
-    <div class="sc-rationale">Data centers need 5–10GW each. Grid permitting takes 5–10 years. Nuclear is the only zero-carbon baseload answer. Fusion just cleared regulatory hurdles. SMRs are going from paper to steel. This is the decade's infrastructure trade.</div>
-    <div class="sc-stocks">
-      <div class="stock-row"><span class="stock-sym">CEG</span><span class="stock-name">Constellation Energy — Nuclear PPA leader</span><span class="stock-thesis">Meta/MSFT deals</span></div>
-      <div class="stock-row"><span class="stock-sym">GEV</span><span class="stock-name">GE Vernova — Gas + nuclear turbines</span><span class="stock-thesis">Data center demand</span></div>
-      <div class="stock-row"><span class="stock-sym">VST</span><span class="stock-name">Vistra — Nuclear + gas fleet</span><span class="stock-thesis">Capacity expansion</span></div>
-      <div class="stock-row"><span class="stock-sym">TLN</span><span class="stock-name">Talen Energy — Data center campus</span><span class="stock-thesis">AWS campus deal</span></div>
-      <div class="stock-row"><span class="stock-sym">OKLO</span><span class="stock-name">Oklo — SMR nuclear (Altman-backed)</span><span class="stock-thesis">First SMR 2027</span></div>
-      <div class="stock-row"><span class="stock-sym">BE</span><span class="stock-name">Bloom Energy — Fuel cells for AI</span><span class="stock-thesis">On-site power</span></div>
-      <div class="stock-row"><span class="stock-sym">MTZ</span><span class="stock-name">MasTec — Energy infrastructure</span><span class="stock-thesis">Buildout beneficiary</span></div>
-      <div class="stock-row"><span class="stock-sym">NNE</span><span class="stock-name">Nano Nuclear — Microreactors</span><span class="stock-thesis">Portable nuclear</span></div>
-      <div class="stock-row"><span class="stock-sym">CCJ</span><span class="stock-name">Cameco — Uranium mining</span><span class="stock-thesis">Fuel supply chain</span></div>
-      <div class="stock-row"><span class="stock-sym">FLR</span><span class="stock-name">Fluor — Nuclear EPC contractor</span><span class="stock-thesis">SMR construction</span></div>
-    </div>
-  </div>
-
-  <!-- ROBOTICS -->
-  <div class="sector-card s4">
-    <div class="sc-header"><span class="sc-name">Robotics & Physical AI</span><span class="sc-badge">15% · $15K</span></div>
-    <div class="sc-rationale">Humanoid robots are having their ChatGPT moment. Unitree ships at $4,900. Tesla Optimus enters production. 140+ humanoid companies in China. The software layer (robot foundation models) will be the value capture. Physical labor → near-zero cost is a 10-year arc; we're in year 2.</div>
-    <div class="sc-stocks">
-      <div class="stock-row"><span class="stock-sym">TSLA</span><span class="stock-name">Tesla — Optimus humanoid</span><span class="stock-thesis">Internal deployment</span></div>
-      <div class="stock-row"><span class="stock-sym">ISRG</span><span class="stock-name">Intuitive Surgical — da Vinci</span><span class="stock-thesis">AI-assisted surgery</span></div>
-      <div class="stock-row"><span class="stock-sym">TER</span><span class="stock-name">Teradyne — Robotics + test</span><span class="stock-thesis">Universal Robots</span></div>
-      <div class="stock-row"><span class="stock-sym">NVDA</span><span class="stock-name">NVIDIA — Robot foundation models</span><span class="stock-thesis">GR00T platform</span></div>
-      <div class="stock-row"><span class="stock-sym">KTOS</span><span class="stock-name">Kratos — Autonomous military</span><span class="stock-thesis">Valkyrie drone</span></div>
-      <div class="stock-row"><span class="stock-sym">ABB</span><span class="stock-name">ABB — Industrial robotics</span><span class="stock-thesis">Factory automation</span></div>
-      <div class="stock-row"><span class="stock-sym">CDNS</span><span class="stock-name">Cadence — Robot simulation SW</span><span class="stock-thesis">Digital twins</span></div>
-      <div class="stock-row"><span class="stock-sym">FANUY</span><span class="stock-name">Fanuc — Japanese automation</span><span class="stock-thesis">CNC + robots</span></div>
-      <div class="stock-row"><span class="stock-sym">PATH</span><span class="stock-name">UiPath — Software automation</span><span class="stock-thesis">RPA → Agentic</span></div>
-      <div class="stock-row"><span class="stock-sym">ANDR</span><span class="stock-name">Anduril — Defense autonomy</span><span class="stock-thesis">Watch for IPO</span></div>
-    </div>
-  </div>
-
-  <!-- AI INFRASTRUCTURE -->
-  <div class="sector-card s3">
-    <div class="sc-header"><span class="sc-name">AI Infrastructure</span><span class="sc-badge">20% · $20K</span></div>
-    <div class="sc-rationale">The AI buildout requires compute, networking, cooling, and platforms. Nebius and CoreWeave are the pure-play AI clouds. Palantir owns enterprise AI deployment. Vertiv cools the data centers. The hyperscalers (AMZN, GOOG) provide ballast with upside from their own AI platforms.</div>
-    <div class="sc-stocks">
-      <div class="stock-row"><span class="stock-sym">NVDA</span><span class="stock-name">NVIDIA — The GPU standard</span><span class="stock-thesis">Still the sun</span></div>
-      <div class="stock-row"><span class="stock-sym">NBIS</span><span class="stock-name">Nebius — AI cloud infrastructure</span><span class="stock-thesis">GPU-as-a-service</span></div>
-      <div class="stock-row"><span class="stock-sym">CRWV</span><span class="stock-name">CoreWeave — GPU cloud</span><span class="stock-thesis">Hyperscaler alternative</span></div>
-      <div class="stock-row"><span class="stock-sym">GOOG</span><span class="stock-name">Alphabet — TPU + Gemini</span><span class="stock-thesis">Own silicon</span></div>
-      <div class="stock-row"><span class="stock-sym">AMZN</span><span class="stock-name">Amazon — AWS + Trainium</span><span class="stock-thesis">Cloud monopoly</span></div>
-      <div class="stock-row"><span class="stock-sym">PLTR</span><span class="stock-name">Palantir — Enterprise AI OS</span><span class="stock-thesis">AIP platform</span></div>
-      <div class="stock-row"><span class="stock-sym">VRT</span><span class="stock-name">Vertiv — Data center cooling</span><span class="stock-thesis">Liquid cooling</span></div>
-      <div class="stock-row"><span class="stock-sym">IREN</span><span class="stock-name">Iris Energy — AI compute pivot</span><span class="stock-thesis">BTC → AI</span></div>
-      <div class="stock-row"><span class="stock-sym">ORCL</span><span class="stock-name">Oracle — OCI cloud</span><span class="stock-thesis">AI training deals</span></div>
-      <div class="stock-row"><span class="stock-sym">ANET</span><span class="stock-name">Arista — AI networking</span><span class="stock-thesis">400G/800G switches</span></div>
-    </div>
-  </div>
-
-  <!-- SPACE ECONOMY (DARK HORSE) -->
-  <div class="sector-card s5">
-    <div class="sc-header"><span class="sc-name">🆕 Space Economy</span><span class="sc-badge">15% · $15K</span></div>
-    <div class="sc-rationale">The dark horse. Starship brings launch costs to ~$200/kg. Rocket Lab is cloning the SpaceX playbook (launch + sats + spectrum). Orbital data centers launch in January. Direct-to-phone satellite internet is coming. The space economy is where AI was in 2019 — infrastructure built, cost curves bending, exponential move ahead.</div>
-    <div class="sc-stocks">
-      <div class="stock-row"><span class="stock-sym">RKLB</span><span class="stock-name">Rocket Lab — SpaceX at 1/10th scale</span><span class="stock-thesis">Neutron + Iridium</span></div>
-      <div class="stock-row"><span class="stock-sym">ASTS</span><span class="stock-name">AST SpaceMobile — Phone from space</span><span class="stock-thesis">5G from LEO</span></div>
-      <div class="stock-row"><span class="stock-sym">RDW</span><span class="stock-name">Redwire — Space infrastructure</span><span class="stock-thesis">ISS → commercial</span></div>
-      <div class="stock-row"><span class="stock-sym">PL</span><span class="stock-name">Planet Labs — Earth observation</span><span class="stock-thesis">Daily imagery</span></div>
-      <div class="stock-row"><span class="stock-sym">LUNR</span><span class="stock-name">Intuitive Machines — Lunar</span><span class="stock-thesis">Moon economy</span></div>
-      <div class="stock-row"><span class="stock-sym">BKSY</span><span class="stock-name">BlackSky — Geospatial intel</span><span class="stock-thesis">Defense contracts</span></div>
-      <div class="stock-row"><span class="stock-sym">GSAT</span><span class="stock-name">Globalstar — Apple satellite partner</span><span class="stock-thesis">iPhone SOS</span></div>
-      <div class="stock-row"><span class="stock-sym">SPIR</span><span class="stock-name">Spire Global — Weather + tracking</span><span class="stock-thesis">Maritime/Aviation</span></div>
-      <div class="stock-row"><span class="stock-sym">IRDM</span><span class="stock-name">Iridium — L-band spectrum (RKLB bid)</span><span class="stock-thesis">Acquisition premium</span></div>
-      <div class="stock-row"><span class="stock-sym">VSAT</span><span class="stock-name">Viasat — Satellite broadband</span><span class="stock-thesis">Defense + maritime</span></div>
-    </div>
-  </div>
-
-  <!-- BIOTECH (SATELLITE) -->
-  <div class="sector-card s6">
-    <div class="sc-header"><span class="sc-name">Biotech (Satellite)</span><span class="sc-badge">10% · $10K</span></div>
-    <div class="sc-rationale">Selective biotech exposure. AI-driven drug discovery, liquid biopsy, gene editing. Stock-specific outcomes — index exposure doesn't work here. Focus on platforms with multiple pipeline shots on goal.</div>
-    <div class="sc-stocks">
-      <div class="stock-row"><span class="stock-sym">AMGN</span><span class="stock-name">Amgen — Large cap anchor</span><span class="stock-thesis">Obesity pipeline</span></div>
-      <div class="stock-row"><span class="stock-sym">GH</span><span class="stock-name">Guardant Health — Liquid biopsy</span><span class="stock-thesis">Cancer screening</span></div>
-      <div class="stock-row"><span class="stock-sym">ILMN</span><span class="stock-name">Illumina — Gene sequencing</span><span class="stock-thesis">NovaSeq X</span></div>
-      <div class="stock-row"><span class="stock-sym">VEEV</span><span class="stock-name">Veeva — Life sciences cloud</span><span class="stock-thesis">SaaS moat</span></div>
-      <div class="stock-row"><span class="stock-sym">ALNY</span><span class="stock-name">Alnylam — RNAi therapeutics</span><span class="stock-thesis">Multiple approvals</span></div>
-      <div class="stock-row"><span class="stock-sym">CRSP</span><span class="stock-name">CRISPR Therapeutics — Gene edit</span><span class="stock-thesis">Casgevy revenue</span></div>
-      <div class="stock-row"><span class="stock-sym">MRNA</span><span class="stock-name">Moderna — mRNA platform</span><span class="stock-thesis">Cancer + flu</span></div>
-      <div class="stock-row"><span class="stock-sym">EXAS</span><span class="stock-name">Exact Sciences — Cologuard</span><span class="stock-thesis">Cancer screening</span></div>
-      <div class="stock-row"><span class="stock-sym">NTLA</span><span class="stock-name">Intellia — In-vivo CRISPR</span><span class="stock-thesis">Single-dose cure</span></div>
-      <div class="stock-row"><span class="stock-sym">ISRG</span><span class="stock-name">Intuitive Surgical — Robotic surgery</span><span class="stock-thesis">da Vinci 5</span></div>
-    </div>
-  </div>
-
 </div>
 
+<div class="section-hd">
+  <div class="section-title">SECTOR ALLOCATION</div>
+  <div class="section-note">Click a sector to expand full holdings · click any symbol to jump to it in the ticker</div>
+</div>
+<div class="sectors-grid" id="sectorsGrid"></div>
+<div id="detail"></div>
+
+<div class="section-hd" style="margin-top:8px;">
+  <div class="section-title">NOTES</div>
+</div>
 <div class="notes">
   <div class="notes-title">▸ WHAT GOT CUT (AND WHY)</div>
   <ul class="notes-list">
@@ -264,23 +300,502 @@ footer{padding:16px 0;border-top:1px solid var(--b1);margin-top:22px;display:fle
     <li><strong>⚠️ CYBR (CyberArk)</strong> — Appears to be trading near zero or delisted. $2,500 loss in v4 portfolio. Dropped entirely.</li>
   </ul>
 </div>
-
-<div class="notes" style="margin-top:14px;">
+<div class="notes">
   <div class="notes-title">▸ WHY SPACE IS THE DARK HORSE</div>
   <ul class="notes-list">
     <li><strong>Launch costs collapsing:</strong> Starship targets ~$200/kg to LEO. Falcon 9 was $2,700/kg a decade ago. At $200/kg, entirely new business models become viable — orbital data centers, space manufacturing, pharmaceutical crystallization in microgravity.</li>
     <li><strong>Rocket Lab (RKLB) is the closest public comp to early SpaceX:</strong> They now own launch (Electron + Neutron coming), satellite manufacturing, AND spectrum (Iridium acquisition). Peter Beck is cloning the vertical integration playbook at 1/10th the valuation of where SpaceX would trade.</li>
-    <li><strong>Orbital compute is happening now:</strong> StarCloud launches their first orbital data center in January 2026. Philip's thesis from the Moonshots podcast: energy + infrastructure is 30%+ of terrestrial data center cost. In space, cooling is passive, power is solar, and there's no 5-year grid permitting queue.</li>
+    <li><strong>Orbital compute is happening now:</strong> StarCloud launches their first orbital data center in January 2026. Energy + infrastructure is 30%+ of terrestrial data center cost. In space, cooling is passive, power is solar, and there's no 5-year grid permitting queue.</li>
     <li><strong>Direct-to-phone satellite:</strong> AST SpaceMobile has a working prototype delivering 5G from low Earth orbit. Starlink is 2 years from direct-to-phone video streaming. The telecom industry is about to get disrupted from above.</li>
     <li><strong>The timing:</strong> The space economy in 2026 is where AI was in 2019. The infrastructure is built. The cost curves are bending. The exponential hasn't hit yet — but the slope is about to change.</li>
   </ul>
 </div>
 
 <footer>
-  <span>APEX CAPITAL v5 · 24-Month Growth Portfolio · Built July 2, 2026</span>
-  <span>60 stocks · 6 sectors · Target: +85–140% by July 2028</span>
+  <span>APEX CAPITAL v6 · 24-Month Growth Portfolio</span>
+  <span id="footRight">60 positions · 6 sectors · Target: +85–140% by July 2028</span>
 </footer>
 
 </div>
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// DATA — 6 sectors, 60 allocations, 57 unique tickers
+// ============================================================
+const SECTORS = [
+  { id:'semi', cls:'s1', color:'#00d4ff', name:'Semiconductors', badge:'20% · $20K', alloc:20000,
+    rationale:"The picks-and-shovels of the AI industrial revolution. TSMC's 2nm node, NVIDIA's Rubin architecture, and HBM4 memory drive the next leg. Equipment makers (ASML, AMAT, LRCX) are the monopoly suppliers.",
+    stocks:[
+      {s:'NVDA',n:'NVIDIA',t:'AI GPU monopoly · Rubin 2026',b:180},
+      {s:'AVGO',n:'Broadcom',t:'Custom AI chips + networking',b:350},
+      {s:'TSM',n:'TSMC',t:'Only 2nm fab on Earth',b:210},
+      {s:'AMD',n:'AMD',t:'MI400 challenges NVIDIA',b:170},
+      {s:'ASML',n:'ASML',t:'Only EUV lithography',b:980},
+      {s:'AMAT',n:'Applied Materials',t:'Fab equipment capex supercycle',b:220},
+      {s:'LRCX',n:'Lam Research',t:'Etch leader, 3D NAND + logic',b:95},
+      {s:'MRVL',n:'Marvell',t:'Custom ASIC wins',b:110},
+      {s:'MU',n:'Micron',t:'HBM4 memory cycle',b:130},
+      {s:'INTC',n:'Intel',t:'Turnaround / 18A foundry play',b:35},
+    ]},
+  { id:'nuclear', cls:'s2', color:'#00ffb3', name:'Nuclear / AI Energy', badge:'20% · $20K', alloc:20000,
+    rationale:"Data centers need 5–10GW each. Grid permitting takes 5–10 years. Nuclear is the only zero-carbon baseload answer. SMRs are going from paper to steel. This is the decade's infrastructure trade.",
+    stocks:[
+      {s:'CEG',n:'Constellation Energy',t:'Nuclear PPA · Meta/MSFT deals',b:330},
+      {s:'GEV',n:'GE Vernova',t:'Gas + nuclear turbines',b:420},
+      {s:'VST',n:'Vistra',t:'Nuclear + gas fleet expansion',b:185},
+      {s:'TLN',n:'Talen Energy',t:'AWS data center campus deal',b:220},
+      {s:'OKLO',n:'Oklo',t:'SMR nuclear, first unit 2027',b:85},
+      {s:'BE',n:'Bloom Energy',t:'Fuel cells for on-site power',b:28},
+      {s:'MTZ',n:'MasTec',t:'Energy infrastructure buildout',b:180},
+      {s:'NNE',n:'Nano Nuclear',t:'Portable microreactors',b:28},
+      {s:'CCJ',n:'Cameco',t:'Uranium mining fuel supply',b:65},
+      {s:'FLR',n:'Fluor',t:'Nuclear EPC / SMR construction',b:55},
+    ]},
+  { id:'aiinfra', cls:'s3', color:'#c073ff', name:'AI Infrastructure', badge:'20% · $20K', alloc:20000,
+    rationale:"The AI buildout requires compute, networking, cooling, and platforms. Nebius and CoreWeave are pure-play AI clouds. Palantir owns enterprise AI deployment. Vertiv cools the data centers.",
+    stocks:[
+      {s:'NVDA',n:'NVIDIA',t:'The GPU standard, still the sun',b:180},
+      {s:'NBIS',n:'Nebius',t:'GPU-as-a-service cloud',b:45},
+      {s:'CRWV',n:'CoreWeave',t:'Hyperscaler alternative',b:85},
+      {s:'GOOG',n:'Alphabet',t:'TPU silicon + Gemini',b:195},
+      {s:'AMZN',n:'Amazon',t:'AWS + Trainium cloud monopoly',b:225},
+      {s:'PLTR',n:'Palantir',t:'Enterprise AI OS · AIP platform',b:140},
+      {s:'VRT',n:'Vertiv',t:'Data center liquid cooling',b:135},
+      {s:'IREN',n:'IREN',t:'BTC compute pivots to AI',b:14},
+      {s:'ORCL',n:'Oracle',t:'OCI cloud AI training deals',b:180},
+      {s:'ANET',n:'Arista',t:'400G/800G AI networking',b:110},
+    ]},
+  { id:'robotics', cls:'s4', color:'#ff7a45', name:'Robotics & Physical AI', badge:'15% · $15K', alloc:15000,
+    rationale:"Humanoid robots are having their ChatGPT moment. Unitree ships at $4,900. Tesla Optimus enters production. The software layer (robot foundation models) will be the value capture.",
+    stocks:[
+      {s:'TSLA',n:'Tesla',t:'Optimus humanoid deployment',b:280},
+      {s:'ISRG',n:'Intuitive Surgical',t:'AI-assisted robotic surgery',b:520},
+      {s:'TER',n:'Teradyne',t:'Universal Robots arm',b:110},
+      {s:'NVDA',n:'NVIDIA',t:'GR00T robot foundation models',b:180},
+      {s:'KTOS',n:'Kratos',t:'Valkyrie autonomous drone',b:45},
+      {s:'ABB',n:'ABB',t:'Industrial factory automation',b:55},
+      {s:'CDNS',n:'Cadence',t:'Robot simulation / digital twins',b:330},
+      {s:'FANUY',n:'Fanuc',t:'CNC + Japanese automation',b:18},
+      {s:'PATH',n:'UiPath',t:'RPA → Agentic automation',b:13},
+      {s:'ANDR',n:'Anduril',t:'Defense autonomy · pre-IPO watch',b:null},
+    ]},
+  { id:'space', cls:'s5', color:'#ffc94d', name:'🆕 Space Economy', badge:'15% · $15K', alloc:15000,
+    rationale:"The dark horse. Starship brings launch costs to ~$200/kg. Rocket Lab is cloning the SpaceX playbook. Orbital data centers launch in January. Direct-to-phone satellite internet is coming.",
+    stocks:[
+      {s:'RKLB',n:'Rocket Lab',t:'SpaceX at 1/10th scale · Neutron',t2:'',b:28},
+      {s:'ASTS',n:'AST SpaceMobile',t:'5G phone service from LEO',b:30},
+      {s:'RDW',n:'Redwire',t:'ISS → commercial infrastructure',b:9},
+      {s:'PL',n:'Planet Labs',t:'Daily Earth observation imagery',b:4},
+      {s:'LUNR',n:'Intuitive Machines',t:'Lunar economy pioneer',b:9},
+      {s:'BKSY',n:'BlackSky',t:'Geospatial intel / defense',b:6},
+      {s:'GSAT',n:'Globalstar',t:'Apple satellite partner',b:1.6},
+      {s:'SPIR',n:'Spire Global',t:'Weather + maritime tracking',b:9},
+      {s:'IRDM',n:'Iridium',t:'L-band spectrum, RKLB bid target',b:28},
+      {s:'VSAT',n:'Viasat',t:'Satellite broadband defense',b:14},
+    ]},
+  { id:'biotech', cls:'s6', color:'#ff5cb0', name:'Biotech (Satellite)', badge:'10% · $10K', alloc:10000,
+    rationale:"Selective biotech exposure. AI-driven drug discovery, liquid biopsy, gene editing. Stock-specific outcomes — focus on platforms with multiple pipeline shots on goal.",
+    stocks:[
+      {s:'AMGN',n:'Amgen',t:'Large cap anchor · obesity pipeline',b:290},
+      {s:'GH',n:'Guardant Health',t:'Liquid biopsy cancer screening',b:40},
+      {s:'ILMN',n:'Illumina',t:'NovaSeq X gene sequencing',b:130},
+      {s:'VEEV',n:'Veeva',t:'Life sciences cloud SaaS moat',b:230},
+      {s:'ALNY',n:'Alnylam',t:'RNAi therapeutics, multiple approvals',b:330},
+      {s:'CRSP',n:'CRISPR Therapeutics',t:'Casgevy gene-edit revenue',b:48},
+      {s:'MRNA',n:'Moderna',t:'mRNA platform · cancer + flu',b:35},
+      {s:'EXAS',n:'Exact Sciences',t:'Cologuard cancer screening',b:48},
+      {s:'NTLA',n:'Intellia',t:'In-vivo CRISPR single-dose cure',b:14},
+      {s:'ISRG',n:'Intuitive Surgical',t:'da Vinci 5 robotic surgery',b:520},
+    ]},
+];
+
+// ============================================================
+// LIVE PRICE ENGINE — Finnhub REST/WS with graceful sim fallback
+// ============================================================
+const FINNHUB_KEY  = 'd6f0bi1r01qvn4o1bmfgd6f0bi1r01qvn4o1bmg0';
+const FINNHUB_WS   = 'wss://ws.finnhub.io';
+const FINNHUB_REST = 'https://finnhub.io/api/v1';
+
+// Flatten unique tickers (some symbols span multiple sectors, e.g. NVDA, ISRG)
+const UNIQUE = {};
+SECTORS.forEach(sec => sec.stocks.forEach(st => {
+  if (st.b === null) return; // private / no market price (ANDR)
+  if (!(st.s in UNIQUE)) UNIQUE[st.s] = { s:st.s, n:st.n, b:st.b };
+}));
+const TICKERS = Object.values(UNIQUE);
+
+let lastPrices = {}, basePrices = {}, sessionStart = Date.now();
+let liveMode = false, wsReady = false, fhSocket = null, simInterval = null;
+
+function getStockInvestment(sym){
+  let total = 0;
+  SECTORS.forEach(sec => {
+    const n = sec.stocks.filter(st => st.b !== null).length;
+    if (sec.stocks.some(st => st.s === sym)) total += sec.alloc / n;
+  });
+  return total;
+}
+function getTotalInvested(){ return SECTORS.reduce((a,s)=>a+s.alloc,0); }
+
+function seededRand(seed, step){
+  const a = Math.sin(seed*127.1 + step*311.7) * 43758.5453;
+  const b = Math.cos(seed*269.5 + step*183.3) * 43758.5453;
+  return ((a - Math.floor(a)) + (b - Math.floor(b))) / 2;
+}
+function volFor(price){ return price < 20 ? 0.0028 : price < 150 ? 0.0016 : 0.0009; }
+function simPrice(sym, base){
+  const seed = sym.split('').reduce((a,c,i)=>a+c.charCodeAt(0)*(i+7),1);
+  const sec  = Math.floor((Date.now()-sessionStart)/1000);
+  if (sec === 0) return base;
+  let p = base; const vol = volFor(base);
+  for (let i=0;i<sec;i++){ const r = seededRand(seed,i); p = p*(1+(r-0.5)*2*vol); }
+  return Math.min(Math.max(p, base*0.3), base*2.5);
+}
+function setLiveStatus(mode){
+  liveMode = (mode === 'live');
+  const badge = document.getElementById('liveBadge'), dot = document.getElementById('liveDot');
+  const cfg = {
+    live:    { text:'LIVE PRICES',    color:'var(--a2)' },
+    delayed: { text:'DELAYED PRICES', color:'var(--gold)' },
+    sim:     { text:'SIMULATED',      color:'var(--m2)' },
+  }[mode] || { text:'CONNECTING…', color:'var(--m1)' };
+  badge.textContent = cfg.text; badge.style.color = cfg.color;
+  dot.style.background = cfg.color; dot.style.boxShadow = mode==='sim'?'none':`0 0 8px ${cfg.color}`;
+}
+function initPrices(){ TICKERS.forEach(t => { lastPrices[t.s] = t.b; }); }
+function lockBasePrices(){
+  TICKERS.forEach(t => { basePrices[t.s] = lastPrices[t.s] || t.b; });
+  localStorage.setItem('apex_basis', JSON.stringify(basePrices));
+  localStorage.setItem('apex_basis_time', Date.now());
+  renderDayBadge();
+}
+async function fetchAllQuotes(){
+  const batchSize = 15; let gotAny = false;
+  const syms = TICKERS.map(t=>t.s);
+  for (let i=0;i<syms.length;i+=batchSize){
+    const batch = syms.slice(i, i+batchSize);
+    await Promise.allSettled(batch.map(async sym => {
+      try{
+        const res = await fetch(`${FINNHUB_REST}/quote?symbol=${sym}&token=${FINNHUB_KEY}`);
+        if (!res.ok) return;
+        const d = await res.json();
+        if (d && d.c && d.c > 0){ lastPrices[sym] = d.c; gotAny = true; }
+      }catch(e){}
+    }));
+    if (i+batchSize < syms.length) await new Promise(r=>setTimeout(r,220));
+  }
+  if (gotAny){ setLiveStatus('delayed'); refreshAll(); }
+  return gotAny;
+}
+function connectWebSocket(){
+  try{
+    fhSocket = new WebSocket(`${FINNHUB_WS}?token=${FINNHUB_KEY}`);
+  }catch(e){ return; }
+  fhSocket.addEventListener('open', () => {
+    wsReady = true;
+    TICKERS.forEach(t => fhSocket.send(JSON.stringify({type:'subscribe',symbol:t.s})));
+    setLiveStatus('live');
+    if (simInterval){ clearInterval(simInterval); simInterval = null; }
+  });
+  fhSocket.addEventListener('message', e => {
+    try{
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'trade' && msg.data){
+        msg.data.forEach(tr => { if (tr.s && tr.p > 0 && tr.s in lastPrices) lastPrices[tr.s] = tr.p; });
+        refreshAll();
+      }
+    }catch(e){}
+  });
+  fhSocket.addEventListener('close', () => { wsReady=false; if(!simInterval){setLiveStatus('sim'); simInterval=setInterval(simTick,1000);} });
+  fhSocket.addEventListener('error', () => { wsReady=false; });
+}
+function simTick(){
+  if (liveMode) return;
+  TICKERS.forEach(t => { lastPrices[t.s] = simPrice(t.s, basePrices[t.s] || t.b); });
+  refreshAll();
+}
+async function bootPriceEngine(){
+  const saved = localStorage.getItem('apex_basis');
+  initPrices();
+  if (saved){ try{ basePrices = JSON.parse(saved); }catch(e){ lockBasePrices(); } }
+  else { lockBasePrices(); }
+  renderDayBadge();
+  refreshAll();
+  setLiveStatus('sim');
+  simInterval = setInterval(simTick, 1000);
+  const gotReal = await fetchAllQuotes();
+  connectWebSocket();
+  if (!gotReal) setTimeout(() => { if(!wsReady) setLiveStatus('sim'); }, 4000);
+}
+function resetBasis(){
+  lockBasePrices();
+  refreshAll();
+  showToast('Cost basis reset to current prices — P&L now starts at $0.00');
+}
+function renderDayBadge(){
+  const t = localStorage.getItem('apex_basis_time');
+  const days = t ? Math.max(1, Math.floor((Date.now()-parseInt(t))/86400000)+1) : 1;
+  document.getElementById('dayBadge').textContent = 'DAY ' + days;
+  document.getElementById('trackerSub').textContent = t
+    ? 'COST BASIS LOCKED ' + new Date(parseInt(t)).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+    : 'COST BASIS LOCKED ON LOAD';
+}
+function getPrice(sym){ return lastPrices[sym] ?? UNIQUE[sym]?.b ?? null; }
+function getPct(sym){
+  const cur = lastPrices[sym], base = basePrices[sym];
+  if (cur == null || !base) return 0;
+  return ((cur-base)/base)*100;
+}
+
+// ============================================================
+// RENDER — ticker, tracker, allocation donut, sector cards, detail
+// ============================================================
+function fmtUSD(v){ return '$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function buildTicker(){
+  const inner = document.getElementById('tickerInner');
+  const items = [...TICKERS, ...TICKERS];
+  inner.innerHTML = items.map(t => {
+    const cur = getPrice(t.s), pct = getPct(t.s);
+    return `<span class="ti"><span class="ti-sym" onclick="jumpToSector('${t.s}')">${t.s}</span>` +
+      `<span class="ti-name">${t.n}</span>` +
+      `<span class="ti-price">$${cur.toFixed(2)}</span>` +
+      `<span class="${pct>=0?'ti-up':'ti-dn'}">${pct>=0?'▲':'▼'}${Math.abs(pct).toFixed(2)}%</span></span>`;
+  }).join('');
+}
+
+function updateTracker(){
+  const totalInvested = getTotalInvested();
+  const perf = TICKERS.map(t => {
+    const cur = getPrice(t.s), base = basePrices[t.s] || t.b;
+    const inv = getStockInvestment(t.s);
+    const pct = base>0 ? ((cur-base)/base)*100 : 0;
+    const val = base>0 ? inv*(cur/base) : inv;
+    return { s:t.s, n:t.n, cur, base, pct, inv, val };
+  });
+  const totalVal = perf.reduce((a,x)=>a+x.val,0);
+  const totalRet = totalVal - totalInvested;
+  const totalPct = totalInvested>0 ? (totalRet/totalInvested)*100 : 0;
+
+  document.getElementById('tv').textContent = fmtUSD(totalVal);
+  const plEl = document.getElementById('tpl');
+  plEl.textContent = (totalRet>=0?'+':'') + totalRet.toLocaleString('en-US',{style:'currency',currency:'USD'});
+  plEl.className = 'tk-v ' + (totalRet>=0?'cg':'cr');
+  document.getElementById('tpct').textContent = (totalPct>=0?'+':'') + totalPct.toFixed(3) + '% total return';
+  document.getElementById('tmode').textContent = liveMode ? '● Finnhub Live' : (wsReady ? '● Delayed' : '○ Simulated');
+  document.getElementById('ttime').textContent = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  const sp = SECTORS.map(sec => {
+    const syms = sec.stocks.filter(st=>st.b!==null).map(st=>st.s);
+    const rows = perf.filter(x => syms.includes(x.s));
+    const avg = rows.length ? rows.reduce((a,x)=>a+x.pct,0)/rows.length : 0;
+    return { n:sec.name, avg };
+  }).sort((a,b)=>b.avg-a.avg);
+  if (sp.length){
+    document.getElementById('tbs').textContent = sp[0].n.replace('🆕 ','');
+    document.getElementById('tbsv').textContent = (sp[0].avg>=0?'+':'')+sp[0].avg.toFixed(3)+'% avg';
+    document.getElementById('tws').textContent = sp[sp.length-1].n.replace('🆕 ','');
+    document.getElementById('twsv').textContent = (sp[sp.length-1].avg>=0?'+':'')+sp[sp.length-1].avg.toFixed(3)+'% avg';
+  }
+  const sorted = [...perf].sort((a,b)=>b.pct-a.pct);
+  if (sorted.length){
+    document.getElementById('tbst').textContent = sorted[0].s;
+    document.getElementById('tbstv').textContent = (sorted[0].pct>=0?'+':'')+sorted[0].pct.toFixed(3)+'%';
+  }
+  const gainers = sorted.slice(0,5), losers = [...sorted].reverse().slice(0,5);
+  document.getElementById('gainList').innerHTML = gainers.map((x,i)=>rrow(x,i)).join('');
+  document.getElementById('loseList').innerHTML = losers.map((x,i)=>rrow(x,i)).join('');
+}
+function rrow(x,i){
+  return `<div class="rrow" onclick="jumpToSector('${x.s}')"><span class="rn">${i+1}</span>` +
+    `<span class="rname">${x.s}</span>` +
+    `<span class="rval ${x.pct>=0?'cg':'cr'}">${x.pct>=0?'+':''}${x.pct.toFixed(2)}%</span></div>`;
+}
+
+let allocChart = null;
+function buildAllocChart(){
+  if (typeof Chart === 'undefined'){
+    const total = getTotalInvested();
+    let acc = 0;
+    const stops = SECTORS.map(s => {
+      const from = (acc/total)*360; acc += s.alloc; const to = (acc/total)*360;
+      return `${s.color} ${from}deg ${to}deg`;
+    }).join(', ');
+    const wrap = document.getElementById('donutWrap');
+    wrap.style.background = `conic-gradient(${stops})`;
+    wrap.style.borderRadius = '50%';
+    wrap.style.width = '210px'; wrap.style.height = '210px'; wrap.style.margin = '0 auto';
+    wrap.style.setProperty('--ring-mask','1');
+    const canvas = document.getElementById('allocChart');
+    if (canvas) canvas.style.display = 'none';
+    const hole = document.createElement('div');
+    hole.style.cssText = 'position:absolute;inset:22px;background:var(--p1);border-radius:50%;';
+    wrap.prepend(hole);
+    document.getElementById('ab-legend').innerHTML = SECTORS.map(s => `
+      <div class="ab-item" onclick="toggleSector('${s.id}')">
+        <span class="ab-dot" style="background:${s.color}"></span>
+        <span class="ab-name">${s.name.replace('🆕 ','')}</span>
+        <span class="ab-amt">$${s.alloc.toLocaleString()}</span>
+      </div>`).join('');
+    return;
+  }
+  const ctx = document.getElementById('allocChart');
+  allocChart = new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      labels: SECTORS.map(s=>s.name.replace('🆕 ','')),
+      datasets:[{ data:SECTORS.map(s=>s.alloc), backgroundColor:SECTORS.map(s=>s.color), borderColor:'#0a1220', borderWidth:3, hoverOffset:8 }]
+    },
+    options:{
+      cutout:'72%', responsive:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ callbacks:{ label:(c)=>` ${c.label}: $${c.parsed.toLocaleString()}` } } },
+      onClick:(evt,els)=>{ if(els.length) toggleSector(SECTORS[els[0].index].id); }
+    }
+  });
+  document.getElementById('ab-legend').innerHTML = SECTORS.map(s => `
+    <div class="ab-item" onclick="toggleSector('${s.id}')">
+      <span class="ab-dot" style="background:${s.color}"></span>
+      <span class="ab-name">${s.name.replace('🆕 ','')}</span>
+      <span class="ab-amt">$${s.alloc.toLocaleString()}</span>
+    </div>`).join('');
+}
+
+function buildSectorCards(){
+  const grid = document.getElementById('sectorsGrid');
+  grid.innerHTML = SECTORS.map(sec => `
+    <div class="sector-card ${sec.cls}" id="card-${sec.id}" onclick="toggleSector('${sec.id}')">
+      <div class="sc-header"><span class="sc-name">${sec.name}</span><span class="sc-badge">${sec.badge}</span></div>
+      <div class="sc-rationale">${sec.rationale}</div>
+      <div class="sc-foot"><span>10 positions</span><span class="sc-perf" id="perf-${sec.id}">—</span><span class="sc-expand">▾</span></div>
+    </div>`).join('');
+  buildNav();
+}
+function buildNav(){
+  const nav = document.getElementById('navPills');
+  const pills = SECTORS.map(sec => `<div class="navpill" id="pill-${sec.id}" style="--nc:${sec.color}" onclick="toggleSector('${sec.id}')">${sec.name.replace('🆕 ','')}</div>`).join('');
+  nav.insertAdjacentHTML('afterbegin', pills);
+}
+
+let openSectorId = null, sortState = { key:'pct', dir:-1 };
+function toggleSector(id){
+  if (openSectorId === id){ closeSector(); return; }
+  openSectorId = id;
+  document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.navpill').forEach(c => c.classList.remove('active'));
+  document.getElementById('card-'+id)?.classList.add('active');
+  document.getElementById('pill-'+id)?.classList.add('active');
+  renderDetail(id);
+  document.getElementById('detail').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function closeSector(){
+  openSectorId = null;
+  document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.navpill').forEach(c => c.classList.remove('active'));
+  const d = document.getElementById('detail'); d.classList.remove('open'); d.innerHTML='';
+}
+function renderDetail(id){
+  const sec = SECTORS.find(s=>s.id===id);
+  const d = document.getElementById('detail');
+  d.style.setProperty('--dc', sec.color);
+  const rows = sec.stocks.map(st => {
+    const cur = st.b===null ? null : getPrice(st.s);
+    const pct = st.b===null ? null : getPct(st.s);
+    const inv = st.b===null ? 0 : getStockInvestment(st.s);
+    return {...st, cur, pct, inv};
+  });
+  sortRows(rows);
+  d.innerHTML = `
+    <div class="dt-hd">
+      <div class="dt-title">${sec.name} — Full Holdings</div>
+      <button class="dt-close" onclick="closeSector()">✕</button>
+    </div>
+    <div class="dt-table-wrap">
+      <table class="dt-table">
+        <thead><tr>
+          <th onclick="setSort('s')">Symbol</th><th onclick="setSort('n')">Name</th>
+          <th onclick="setSort('t')">Thesis</th><th onclick="setSort('cur')">Price</th>
+          <th onclick="setSort('pct')" class="${sortState.key==='pct'?'sorted':''}">Chg %</th>
+          <th onclick="setSort('inv')">Allocated</th>
+        </tr></thead>
+        <tbody id="dt-body">${rows.map(rowHtml).join('')}</tbody>
+      </table>
+    </div>`;
+  d.classList.add('open');
+  updateSectorPerf();
+}
+function rowHtml(r){
+  const price = r.cur===null ? '<span style="color:var(--m1)">Pre-IPO</span>' : '$'+r.cur.toFixed(2);
+  const pct = r.pct===null ? '—' : `<span class="${r.pct>=0?'cg':'cr'}">${r.pct>=0?'+':''}${r.pct.toFixed(2)}%</span>`;
+  const alloc = r.inv ? '$'+r.inv.toLocaleString('en-US',{maximumFractionDigits:0}) : '—';
+  return `<tr><td class="dt-sym" onclick="jumpToSector('${r.s}')">${r.s}</td><td class="dt-name">${r.n}</td>` +
+    `<td class="dt-thesis">${r.t}</td><td class="dt-price">${price}</td><td class="dt-pct">${pct}</td><td class="dt-alloc">${alloc}</td></tr>`;
+}
+function setSort(key){
+  sortState.dir = (sortState.key===key) ? -sortState.dir : -1;
+  sortState.key = key;
+  if (openSectorId) renderDetail(openSectorId);
+}
+function sortRows(rows){
+  const {key,dir} = sortState;
+  rows.sort((a,b) => {
+    let av=a[key], bv=b[key];
+    if (av===null) av = key==='pct' ? -Infinity : '';
+    if (bv===null) bv = key==='pct' ? -Infinity : '';
+    if (typeof av === 'string') return av.localeCompare(bv)*dir;
+    return ((av||0)-(bv||0))*dir;
+  });
+}
+function updateSectorPerf(){
+  SECTORS.forEach(sec => {
+    const syms = sec.stocks.filter(st=>st.b!==null).map(st=>st.s);
+    const avg = syms.length ? syms.reduce((a,s)=>a+getPct(s),0)/syms.length : 0;
+    const el = document.getElementById('perf-'+sec.id);
+    if (el){ el.textContent = (avg>=0?'+':'')+avg.toFixed(2)+'%'; el.style.color = avg>=0?'var(--a2)':'var(--red)'; }
+  });
+}
+function jumpToSector(sym){
+  for (const sec of SECTORS){ if (sec.stocks.some(st=>st.s===sym)){ toggleSector(sec.id); break; } }
+}
+
+function refreshAll(){
+  buildTicker();
+  updateTracker();
+  updateSectorPerf();
+  if (openSectorId) renderDetail(openSectorId);
+}
+
+// ── Search ──
+function onSearch(q){
+  q = q.trim().toLowerCase();
+  if (!q){
+    document.querySelectorAll('.sector-card').forEach(c => c.style.opacity = '1');
+    return;
+  }
+  SECTORS.forEach(sec => {
+    const hit = sec.name.toLowerCase().includes(q) ||
+      sec.stocks.some(st => st.s.toLowerCase().includes(q) || st.n.toLowerCase().includes(q) || st.t.toLowerCase().includes(q));
+    const card = document.getElementById('card-'+sec.id);
+    if (card) card.style.opacity = hit ? '1' : '0.25';
+    if (hit && sec.stocks.some(st => st.s.toLowerCase()===q)) toggleSector(sec.id);
+  });
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(showToast._h);
+  showToast._h = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── Boot ──
+document.addEventListener('DOMContentLoaded', () => {
+  try { buildSectorCards(); } catch(e){ console.error('buildSectorCards failed', e); }
+  try { buildAllocChart(); } catch(e){ console.error('buildAllocChart failed', e); }
+  bootPriceEngine();
+});
+</script>
 </body>
 </html>
